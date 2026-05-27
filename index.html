@@ -133,8 +133,8 @@ const {useState,useEffect,useCallback}=React;
 //  ⚙️ CONFIG — edit these after deployment
 // ══════════════════════════════════════════════
 const CFG={
-  SCRIPT_URL:"https://script.google.com/macros/s/AKfycbyz4F9N8elNaYJn3b6BAJbotKRVG9G9VFJnNy6YSNWrg6aVjRhnoLdAppWKSq2VnEUq/exec",
-  DEMO_MODE:false, // set false after pasting your URL above
+  SCRIPT_URL:"YOUR_APPS_SCRIPT_URL_HERE",
+  DEMO_MODE:true, // set false after pasting your URL above
 };
 
 // ── Static data ────────────────────────────────
@@ -185,12 +185,34 @@ function fmtDT(d){try{return new Date(d).toLocaleString('en-IN',{day:'2-digit',m
 function totalBags(items){return items.reduce((s,i)=>s+(parseInt(i.qty)||0),0);}
 
 // ── API ────────────────────────────────────────
-async function api(action,payload={}){
-  if(CFG.DEMO_MODE) throw new Error('DEMO_MODE');
-  const r=await fetch(CFG.SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,...payload})});
-  const d=await r.json();
-  if(d.error) throw new Error(d.error);
-  return d;
+function api(action, payload={}) {
+  if(CFG.DEMO_MODE) return Promise.reject(new Error('DEMO_MODE'));
+  return new Promise((resolve, reject) => {
+    const cbName = 'cb_' + Date.now();
+    const params = new URLSearchParams({action, ...flattenPayload(payload), callback: cbName});
+    const script = document.createElement('script');
+    script.src = CFG.SCRIPT_URL + '?' + params.toString();
+    window[cbName] = (data) => {
+      delete window[cbName];
+      document.body.removeChild(script);
+      if(data.error) reject(new Error(data.error));
+      else resolve(data);
+    };
+    script.onerror = () => reject(new Error('Network error'));
+    document.body.appendChild(script);
+  });
+}
+function flattenPayload(obj, prefix='') {
+  const result = {};
+  for(const key in obj) {
+    const val = obj[key];
+    if(val !== null && typeof val === 'object' && !Array.isArray(val)) {
+      Object.assign(result, flattenPayload(val, prefix+key+'_'));
+    } else {
+      result[prefix+key] = typeof val === 'object' ? JSON.stringify(val) : val;
+    }
+  }
+  return result;
 }
 function demoFallback(e,fn){if(e.message==='DEMO_MODE'){fn();return true;}return false;}
 
