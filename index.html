@@ -152,18 +152,34 @@ const {useState,useEffect,useCallback}=React;
 //  ⚙️ CONFIG — edit these after deployment
 // ══════════════════════════════════════════════
 const CFG={
-  SCRIPT_URL:"https://script.google.com/macros/s/AKfycbyz4F9N8elNaYJn3b6BAJbotKRVG9G9VFJnNy6YSNWrg6aVjRhnoLdAppWKSq2VnEUq/exec",
+  SCRIPT_URL:"https://script.google.com/macros/s/AKfycbxK5NhghQys5ufiOcBuYDSkiCX0Pu7KnyMj4nR9V3S5sNtlErb9wPqcIv3GMWqBIJs6/exec",
   DEMO_MODE:false, // set false after pasting your URL above
 };
 
 // ── Static data ────────────────────────────────
 const CEMENTS=['Champion','Plus','Duratech','All Weather','NFR','OPC'];
 const WHS=[
-  {id:'WH1',name:'Ballia Central Warehouse'},
-  {id:'WH2',name:'Ballia East Warehouse'},
-  {id:'WH3',name:'Mau Main Warehouse'},
-  {id:'WH4',name:'Mau North Warehouse'},
+  {id:'WH1',name:'Indara Warehouse',territories:'Ballia 1,Ballia 2,Mau'},
+  {id:'WH2',name:'Indara Rake Siding',territories:'Ballia 2,Mau'},
+  {id:'WH3',name:'Badhua Godam',territories:'Mau'},
+  {id:'WH4',name:'Gadwar Godam',territories:'Ballia 1,Ballia 2,Mau'},
+  {id:'WH5',name:'Sobaibandh Godam',territories:'Ballia 1,Ballia 2'},
+  {id:'WH6',name:'Phephna Rake Siding',territories:'Ballia 1,Ballia 2,Mau'},
 ];
+
+// Get warehouses accessible to a dealer based on territory + overrides
+function getAccessibleWarehouses(territory, dealerId, overrides=[]){
+  return WHS.filter(wh=>{
+    const territories = wh.territories.split(',').map(t=>t.trim());
+    const defaultAccess = territories.includes(territory);
+    // Check dealer-level override
+    const override = overrides.find(o=>o.DealerID===dealerId && o.WarehouseID===wh.id);
+    if(override){
+      return override.Access === 'Allow';
+    }
+    return defaultAccess;
+  });
+}
 const DEMO_USERS={
   'tse1@novus.in':{role:'tse',name:'Ramesh Gupta',territory:'Ballia 1',email:'tse1@novus.in'},
   'tse2@novus.in':{role:'tse',name:'Sunita Verma',territory:'Ballia 2',email:'tse2@novus.in'},
@@ -564,7 +580,7 @@ function PlaceOrder({user,orders,setOrders,dealers}){
         <div className="ch"><span className="ct">Step 2 — Warehouse & Dispatch Type</span></div>
         <div className="cb">
           <div className="r2">
-            <div className="fg"><label>Preferred Warehouse</label><select value={wh} onChange={e=>setWh(e.target.value)}>{WHS.map(w=><option key={w.id} value={w.id}>{w.name}</option>)}</select></div>
+            <div className="fg"><label>Preferred Warehouse</label><select value={wh} onChange={e=>setWh(e.target.value)}>{getAccessibleWarehouses(user.territory, user.id).map(w=><option key={w.id} value={w.id}>{w.name}</option>)}</select></div>
             <div className="fg"><label>Dispatch Type</label><select value={type} onChange={e=>setType(e.target.value)}><option value="FOR">FOR – Logistics arranges vehicle</option><option value="EX">EX – Own vehicle</option></select></div>
           </div>
         </div>
