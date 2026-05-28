@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Novus Solutions – Cement Order Portal</title>
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#0f1117;color:#e8e6e0;min-height:100vh}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#2a2d38;border-radius:3px}
+.lw{display:flex;align-items:center;justify-content:center;min-height:100vh}
+.lc{background:#1a1e2a;border:1px solid #2a2d3a;border-radius:16px;padding:40px;width:440px;max-width:95vw}
+.brand{display:flex;align-items:center;gap:12px;margin-bottom:24px}
+.bi{width:44px;height:44px;background:#f59e0b;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#0f1117;flex-shrink:0}
+.bn{font-size:18px;font-weight:700;color:#f8f6f0}
+.bs{font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.05em}
+.lc h2{font-size:21px;font-weight:700;color:#f8f6f0;margin-bottom:5px}
+.lsub{font-size:13px;color:#6b7280;margin-bottom:20px}
+.field{margin-bottom:13px}
+.field label{display:block;font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
+.field input,.field select{width:100%;background:#0f1117;border:1px solid #2a2d3a;border-radius:7px;padding:10px 12px;color:#e8e6e0;font-size:14px;outline:none;font-family:inherit;transition:border .15s}
+.field input:focus{border-color:#f59e0b}.field select option{background:#1a1e2a}
+.btn-login{width:100%;background:#f59e0b;border:none;border-radius:8px;padding:12px;color:#0f1117;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .2s}
+.btn-login:hover{opacity:.85}.btn-login:disabled{opacity:.5;cursor:not-allowed}
+.hbox{background:#111520;border-radius:9px;padding:13px;margin-top:18px}
+.hbox h4{font-size:11px;color:#f59e0b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.hr{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid #1e2330;cursor:pointer}
+.hr:last-child{border-bottom:none}.hr:hover .he{color:#f59e0b}
+.he{font-size:12px;color:#9ca3af;transition:color .12s}
+.hrl{background:#2a2d3a;color:#f59e0b;padding:1px 8px;border-radius:4px;font-size:10px;text-transform:uppercase}
+.ebox{background:#2a1010;border:1px solid #5f1010;color:#f87171;border-radius:7px;padding:10px 14px;font-size:13px;margin-bottom:13px}
+.shell{display:flex;min-height:100vh}
+.sidebar{width:226px;background:#13161f;border-right:1px solid #1e2330;display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto}
+.sbb{padding:16px 16px 13px;border-bottom:1px solid #1e2330}
+.nlbl{font-size:10px;color:#4b5563;text-transform:uppercase;letter-spacing:.06em;padding:10px 16px 3px}
+.ni{display:flex;align-items:center;gap:8px;padding:8px 12px;margin:1px 8px;border-radius:7px;cursor:pointer;font-size:13px;color:#9ca3af;transition:all .12s;user-select:none}
+.ni:hover{background:#1e2330;color:#e8e6e0}.ni.active{background:#f59e0b1f;color:#f59e0b}
+.nbadge{margin-left:auto;background:#ef4444;color:#fff;font-size:10px;padding:1px 6px;border-radius:10px;font-weight:700}
+.sbf{margin-top:auto;padding:13px 14px;border-top:1px solid #1e2330}
+.uc{display:flex;align-items:center;gap:8px}
+.uav{width:32px;height:32px;border-radius:50%;background:#f59e0b;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#0f1117;flex-shrink:0}
+.un{font-size:13px;font-weight:500;color:#e8e6e0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ur{font-size:10px;color:#6b7280;text-transform:uppercase}
+.lob{margin-left:auto;background:none;border:none;color:#6b7280;cursor:pointer;font-size:18px;padding:2px 5px}
+.lob:hover{color:#ef4444}
+.main{flex:1;overflow-y:auto}
+.ph{padding:20px 26px 14px;border-bottom:1px solid #1e2330;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.pt{font-size:20px;font-weight:700;color:#f8f6f0;margin-bottom:3px}
+.ps{font-size:13px;color:#6b7280}
+.pb{padding:20px 26px}
+.card{background:#1a1e2a;border:1px solid #1e2330;border-radius:12px;margin-bottom:14px;overflow:hidden}
+.ch{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid #1e2330;flex-wrap:wrap;gap:8px}
+.ct{font-size:14px;font-weight:700;color:#f8f6f0}
+.cb{padding:14px 16px}
+.sg{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+@media(max-width:700px){.sg{grid-template-columns:1fr 1fr}}
+@media(max-width:768px){
+  .sidebar{position:fixed;left:-226px;top:0;height:100vh;z-index:200;transition:left .25s ease;box-shadow:none}
+  .sidebar.open{left:0;box-shadow:4px 0 24px #000a}
+  .mob-overlay{display:block!important;position:fixed;inset:0;background:#000a;z-index:199}
+  .mob-bar{display:flex!important}
+  .main{margin-left:0!important}
+  .shell{display:block}
+  .pg-header{padding:14px 16px 10px}
+  .pb{padding:14px 16px}
+  .pt{font-size:18px}
+  .r2,.r3{grid-template-columns:1fr}
+  .sg{grid-template-columns:1fr 1fr}
+  .tbl th:nth-child(3),.tbl td:nth-child(3),
+  .tbl th:nth-child(4),.tbl td:nth-child(4){display:none}
+  .card{border-radius:10px}
+  .ch{flex-wrap:wrap;gap:8px}
+  .modal{width:100%;border-radius:14px 14px 0 0;position:fixed;bottom:0;left:0;max-height:85vh}
+  .ov{align-items:flex-end;padding:0}
+}
+.sc{background:#1a1e2a;border:1px solid #1e2330;border-radius:10px;padding:13px 14px}
+.sv{font-size:26px;font-weight:800;color:#f59e0b;margin-bottom:2px}
+.sl{font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.04em}
+.badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+.bp{background:#1e2d3a;color:#60a5fa;border:1px solid #1e4060}
+.ba{background:#1a2e1a;color:#4ade80;border:1px solid #166534}
+.bv{background:#2a2010;color:#fbbf24;border:1px solid #3d3010}
+.bd{background:#2a1a0a;color:#fb923c;border:1px solid #3d2010}
+.bdi{background:#1e1e2a;color:#a78bfa;border:1px solid #2a1e4a}
+.bcl{background:#1e1e1e;color:#6b7280;border:1px solid #2a2a2a}
+.tw{overflow-x:auto}
+.tbl{width:100%;border-collapse:collapse;min-width:500px}
+.tbl th{font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;padding:8px 11px;text-align:left;border-bottom:1px solid #1e2330;white-space:nowrap}
+.tbl td{padding:10px 11px;font-size:13px;color:#c9c6c0;border-bottom:1px solid #1a1d28;vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}.tbl tr:hover td{background:#1d2130}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:7px;font-size:12px;font-family:inherit;cursor:pointer;border:1px solid;transition:all .12s;font-weight:600;white-space:nowrap}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.bam{background:#f59e0b1f;border-color:#f59e0b60;color:#f59e0b}.bam:hover:not(:disabled){background:#f59e0b35}
+.bgr{background:#4ade801f;border-color:#4ade8060;color:#4ade80}.bgr:hover:not(:disabled){background:#4ade8035}
+.bbl{background:#60a5fa1f;border-color:#60a5fa60;color:#60a5fa}.bbl:hover:not(:disabled){background:#60a5fa35}
+.brd{background:#ef44441f;border-color:#ef444460;color:#ef4444}.brd:hover:not(:disabled){background:#ef444435}
+.bgh{background:transparent;border-color:#2a2d3a;color:#9ca3af}.bgh:hover:not(:disabled){background:#1e2330;color:#e8e6e0}
+.bsm{padding:5px 10px;font-size:11px}
+.fg{display:flex;flex-direction:column;gap:5px;margin-bottom:11px}
+.fg label{font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:.04em}
+.fg input,.fg select,.fg textarea{background:#0f1117;border:1px solid #2a2d3a;border-radius:7px;padding:8px 11px;color:#e8e6e0;font-size:13px;font-family:inherit;outline:none;transition:border .12s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:#f59e0b}
+.fg select option{background:#0f1117}.fg textarea{resize:vertical;min-height:70px}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.r3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px}
+@media(max-width:600px){.r2,.r3{grid-template-columns:1fr}}
+.ov{position:fixed;inset:0;background:#000b;display:flex;align-items:center;justify-content:center;z-index:999;padding:16px}
+.modal{background:#1a1e2a;border:1px solid #2a2d3a;border-radius:14px;width:520px;max-width:100%;max-height:90vh;overflow-y:auto}
+.mh{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #1e2330}
+.mt{font-size:16px;font-weight:700;color:#f8f6f0}
+.mb{padding:20px}
+.mf{display:flex;gap:8px;justify-content:flex-end;padding:13px 20px;border-top:1px solid #1e2330}
+.cr{display:flex;align-items:center;gap:7px;padding:8px 11px;background:#0f1117;border:1px solid #1e2330;border-radius:8px;margin-bottom:5px}
+.cn{flex:1;font-size:13px;color:#e8e6e0;font-weight:500}
+.ci{width:68px;background:#1a1e2a;border:1px solid #2a2d3a;border-radius:6px;padding:5px 7px;color:#e8e6e0;font-size:13px;font-family:inherit;outline:none;text-align:center;transition:border .12s}
+.ci:focus{border-color:#f59e0b}.cs{width:42px;color:#f59e0b}
+.alert{display:flex;align-items:flex-start;gap:8px;padding:10px 13px;border-radius:8px;margin-bottom:13px;font-size:13px;line-height:1.5}
+.aw{background:#2a1f0a;border:1px solid #78350f;color:#fbbf24}
+.ai{background:#0e1e33;border:1px solid #1e3a5f;color:#60a5fa}
+.aok{background:#0a1f0a;border:1px solid #166534;color:#4ade80}
+.aer{background:#2a0a0a;border:1px solid #7f1d1d;color:#f87171}
+.uz{border:1.5px dashed #2a2d3a;border-radius:10px;padding:18px;text-align:center;cursor:pointer;position:relative;transition:border .15s;margin-top:6px}
+.uz:hover{border-color:#f59e0b}
+.uz input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.empty{text-align:center;padding:38px;color:#4b5563}
+.empty-i{font-size:38px;margin-bottom:8px}
+.chip{display:inline-flex;padding:2px 8px;border-radius:4px;font-size:11px;background:#1e2330;color:#9ca3af;border:1px solid #2a2d3a}
+.dc{background:#0f1117;border:1px solid #1e2330;border-radius:9px;padding:11px 14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid #f59e0b40;border-top-color:#f59e0b;border-radius:50%;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.dopt{border:2px solid #1e2330;border-radius:8px;padding:11px;cursor:pointer;background:#0f1117;transition:all .15s;text-align:center}
+.dopt:hover{border-color:#2a2d3a}.dopt.sel{border-color:#f59e0b;background:#f59e0b18}
+.dopt .di{font-size:20px;margin-bottom:3px}
+.dopt .dl{font-size:12px;font-weight:600;color:#9ca3af}.dopt.sel .dl{color:#f59e0b}
+.dmb{background:#111520;border-radius:8px;padding:2px 0}
+.dmbr{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;border-bottom:1px solid #1e2330;font-size:13px}
+.dmbr:last-child{border-bottom:none}
+.kv{display:flex;flex-direction:column;gap:12px}
+.kvi{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #1a1d28;font-size:13px}
+.kvi:last-child{border-bottom:none}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useEffect,useCallback}=React;
+
+// ══════════════════════════════════════════════
+//  ⚙️ CONFIG — edit these after deployment
+// ══════════════════════════════════════════════
+const CFG={
+  SCRIPT_URL:"https://script.google.com/macros/s/AKfycbzTjWs2rRQa5dgLHiV9CcyN4_X83Cky05rMfA5vK9P3MAXDo69BRTkST735OnN7Sm23/exec",
+  DEMO_MODE:false, // set false after pasting your URL above
+};
+
+// ── Static data ────────────────────────────────
+const CEMENTS=['Champion','Plus','Duratech','All Weather','NFR','OPC'];
+const WHS=[
+  {id:'WH1',name:'Indara Warehouse',territories:'Ballia 1,Ballia 2,Mau'},
+  {id:'WH2',name:'Indara Rake Siding',territories:'Ballia 2,Mau'},
+  {id:'WH3',name:'Badhua Godam',territories:'Mau'},
+  {id:'WH4',name:'Gadwar Godam',territories:'Ballia 1,Ballia 2,Mau'},
+  {id:'WH5',name:'Sobaibandh Godam',territories:'Ballia 1,Ballia 2'},
+  {id:'WH6',name:'Phephna Rake Siding',territories:'Ballia 1,Ballia 2,Mau'},
+];
+
+// Get warehouses accessible to a dealer based on territory + overrides
+function getAccessibleWarehouses(territory, dealerId, overrides=[]){
+  return WHS.filter(wh=>{
+    const territories = wh.territories.split(',').map(t=>t.trim());
+    const defaultAccess = territories.includes(territory);
+    // Check dealer-level override
+    const override = overrides.find(o=>o.DealerID===dealerId && o.WarehouseID===wh.id);
+    if(override){
+      return override.Access === 'Allow';
+    }
+    return defaultAccess;
+  });
+}
+const DEMO_USERS={
+  'tse1@novus.in':{role:'tse',name:'Ramesh Gupta',territory:'Ballia 1',email:'tse1@novus.in'},
+  'tse2@novus.in':{role:'tse',name:'Sunita Verma',territory:'Ballia 2',email:'tse2@novus.in'},
+  'tse3@novus.in':{role:'tse',name:'Anil Yadav',territory:'Mau',email:'tse3@novus.in'},
+  'logistics1@novus.in':{role:'logistics',name:'Mohan Singh',warehouse:'WH1',email:'logistics1@novus.in'},
+  'logistics2@novus.in':{role:'logistics',name:'Priya Sharma',warehouse:'WH2',email:'logistics2@novus.in'},
+  'logistics3@novus.in':{role:'logistics',name:'Deepak Tiwari',warehouse:'WH3',email:'logistics3@novus.in'},
+  'logistics4@novus.in':{role:'logistics',name:'Kavita Patel',warehouse:'WH4',email:'logistics4@novus.in'},
+  'dealer1@novus.in':{role:'dealer',name:'Shyam Trading Co.',territory:'Ballia 1',id:'D001',email:'dealer1@novus.in'},
+  'dealer2@novus.in':{role:'dealer',name:'Rajesh Cement Store',territory:'Ballia 1',id:'D002',email:'dealer2@novus.in'},
+  'dealer3@novus.in':{role:'dealer',name:'Mau Building Supplies',territory:'Mau',id:'D003',email:'dealer3@novus.in'},
+  'admin@novus.in':{role:'admin',name:'Branch Manager',territory:'All',email:'admin@novus.in'},
+};
+const DEMO_DEALERS={
+  D001:{name:'Shyam Trading Co.',territory:'Ballia 1',
+    retailers:[{id:'R001',name:'Karim Hardware',phone:'9000000010'},{id:'R002',name:'Ram Niwas Store',phone:'9000000011'}],
+    sites:[{id:'S001',name:'Rampur Construction Site',address:'Rampur, Ballia'},{id:'S002',name:'Highway Bridge Project',address:'NH-28, Ballia'}]},
+  D002:{name:'Rajesh Cement Store',territory:'Ballia 1',
+    retailers:[{id:'R003',name:'Om Traders',phone:'9000000012'}],
+    sites:[{id:'S003',name:'City Mall Construction',address:'Civil Lines, Ballia'}]},
+  D003:{name:'Mau Building Supplies',territory:'Mau',
+    retailers:[{id:'R004',name:'Shiv Hardware',phone:'9000000013'}],
+    sites:[{id:'S004',name:'Government School Site',address:'Mau Town'}]},
+};
+const DEMO_ORDERS=[
+  {id:'ORD001',dealer:'D001',dealerName:'Shyam Trading Co.',territory:'Ballia 1',warehouse:'WH1',type:'FOR',destination:'Counter',destName:'Shyam Trading Counter',items:[{cement:'Champion',qty:50,seq:1},{cement:'Plus',qty:30,seq:2}],status:'placed',placedAt:'2025-08-10T09:00:00',challanId:null,vehicle:null,receivingUploaded:false,remarks:''},
+  {id:'ORD002',dealer:'D002',dealerName:'Rajesh Cement Store',territory:'Ballia 1',warehouse:'WH1',type:'EX',destination:'Site',destName:'City Mall Construction',items:[{cement:'Duratech',qty:100,seq:1}],status:'approved',placedAt:'2025-08-09T14:00:00',challanId:null,vehicle:null,receivingUploaded:false,remarks:''},
+  {id:'ORD003',dealer:'D003',dealerName:'Mau Building Supplies',territory:'Mau',warehouse:'WH3',type:'FOR',destination:'Retailer',destName:'Shiv Hardware',items:[{cement:'OPC',qty:80,seq:1},{cement:'NFR',qty:40,seq:2}],status:'vehicle_found',placedAt:'2025-08-08T10:00:00',challanId:'CH003',vehicle:{number:'UP65AB1234',driver:'Ram Kumar',phone:'9876543210'},receivingUploaded:false,remarks:''},
+  {id:'ORD004',dealer:'D001',dealerName:'Shyam Trading Co.',territory:'Ballia 1',warehouse:'WH2',type:'EX',destination:'Counter',destName:'Shyam Trading Counter',items:[{cement:'All Weather',qty:60,seq:1}],status:'dispatched',placedAt:'2025-08-07T09:00:00',challanId:'CH004',vehicle:{number:'UP32CD5678',driver:'Suresh Yadav',phone:'9123456780'},receivingUploaded:false,remarks:''},
+];
+
+// ── Helpers ────────────────────────────────────
+function sLabel(s){return{placed:'Order Placed – Waiting for Approval',approved:'Order Approved – Looking for Vehicle',vehicle_found:'Vehicle Found – Loading Started',dispatched:'Loading Complete – Vehicle Dispatched',closed:'Order Closed'}[s]||s;}
+function sCls(s){return{placed:'bp',approved:'ba',vehicle_found:'bv',dispatched:'bd',closed:'bcl'}[s]||'bp';}
+function whName(id){return WHS.find(w=>w.id===id)?.name||id;}
+function fmtD(d){try{return new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});}catch{return d;}}
+function fmtDT(d){try{return new Date(d).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});}catch{return d;}}
+function totalBags(items){return items.reduce((s,i)=>s+(parseInt(i.qty)||0),0);}
+
+// ── API ────────────────────────────────────────
+function api(action, payload={}) {
+  if(CFG.DEMO_MODE) return Promise.reject(new Error('DEMO_MODE'));
+  return new Promise((resolve, reject) => {
+    const cbName = 'cb_' + Date.now();
+    const params = new URLSearchParams({action, ...flattenPayload(payload), callback: cbName});
+    const script = document.createElement('script');
+    script.src = CFG.SCRIPT_URL + '?' + params.toString();
+    window[cbName] = (data) => {
+      delete window[cbName];
+      document.body.removeChild(script);
+      if(data.error) reject(new Error(data.error));
+      else resolve(data);
+    };
+    script.onerror = () => reject(new Error('Network error'));
+    document.body.appendChild(script);
+  });
+}
+function flattenPayload(obj, prefix='') {
+  const result = {};
+  for(const key in obj) {
+    const val = obj[key];
+    if(val !== null && typeof val === 'object' && !Array.isArray(val)) {
+      Object.assign(result, flattenPayload(val, prefix+key+'_'));
+    } else {
+      result[prefix+key] = typeof val === 'object' ? JSON.stringify(val) : val;
+    }
+  }
+  return result;
+}
+function demoFallback(e,fn){if(e.message==='DEMO_MODE'){fn();return true;}return false;}
+
+// ══════════════════════════════════════════════
+//  APP ROOT
+// ══════════════════════════════════════════════
+function App(){
+  const[user,setUser]=useState(()=>{
+    try{
+      const raw=localStorage.getItem('novus_user');
+      if(!raw) return null;
+      const{user:u,loginTime}=JSON.parse(raw);
+      if(Date.now()-loginTime > 24*60*60*1000){
+        localStorage.removeItem('novus_user');
+        return null;
+      }
+      return u;
+    }catch{return null;}
+  });
+  const[orders,setOrders]=useState(DEMO_ORDERS);
+  const[dealers,setDealers]=useState(DEMO_DEALERS);
+
+  const handleSetUser=(u)=>{
+    if(u){
+      const session={user:u, loginTime:Date.now()};
+      localStorage.setItem('novus_user',JSON.stringify(session));
+    } else {
+      localStorage.removeItem('novus_user');
+    }
+    setUser(u);
+  };
+
+  // Auto logout after 24 hours
+  useEffect(()=>{
+    if(!user) return;
+    const check=()=>{
+      try{
+        const raw=localStorage.getItem('novus_user');
+        if(!raw){setUser(null);return;}
+        const{loginTime}=JSON.parse(raw);
+        if(Date.now()-loginTime > 24*60*60*1000){
+          localStorage.removeItem('novus_user');
+          setUser(null);
+          alert('Your session has expired. Please log in again.');
+        }
+      }catch{setUser(null);}
+    };
+    check();
+    const timer=setInterval(check, 60*1000); // check every minute
+    return()=>clearInterval(timer);
+  },[user]);
+
+  if(!user)return <Login setUser={handleSetUser} setOrders={setOrders} setDealers={setDealers}/>;
+  return <Shell user={user} setUser={handleSetUser} orders={orders} setOrders={setOrders} dealers={dealers} setDealers={setDealers}/>;
+}
+
+// ══════════════════════════════════════════════
+//  LOGIN
+// ══════════════════════════════════════════════
+function Login({setUser,setOrders,setDealers}){
+  const[email,setEmail]=useState('');
+  const[pw,setPw]=useState('');
+  const[err,setErr]=useState('');
+  const[loading,setLoading]=useState(false);
+
+  const go=async()=>{
+    setErr('');setLoading(true);
+    try{
+      if(CFG.DEMO_MODE){
+        const u=DEMO_USERS[email.toLowerCase().trim()];
+        if(!u||pw!=='novus123'){setErr('Invalid credentials. Demo password: novus123');setLoading(false);return;}
+        setUser({...u});
+      } else {
+        const d=await api('login',{email:email.toLowerCase().trim(),password:pw});
+        setUser(d.user);
+        const appData=await api('getAppData',{email:email.toLowerCase().trim()});
+        if(appData.orders) setOrders(appData.orders);
+        if(appData.dealers) setDealers(Object.fromEntries(appData.dealers.map(d=>[d.id,d])));
+      }
+    }catch(e){if(e.message!=='DEMO_MODE')setErr('Login failed: '+e.message);}
+    setLoading(false);
+  };
+
+  return(
+    <div className="lw">
+      <div className="lc">
+        <div className="brand">
+          <div className="bi">N</div>
+          <div><div className="bn">Novus Solutions</div><div className="bs">Ballia Branch · C&F Portal</div></div>
+        </div>
+        <h2>Sign in to your portal</h2>
+        <p className="lsub">Enter your registered email and password</p>
+        {err&&<div className="ebox">⚠ {err}</div>}
+        {CFG.DEMO_MODE&&<div className="alert ai" style={{marginBottom:14}}><span>ℹ️</span><span><strong>Demo Mode</strong> — not yet connected to Google Sheets. Complete setup to go live.</span></div>}
+        <div className="field"><label>Email</label><input value={email} onChange={e=>setEmail(e.target.value)} placeholder="yourname@novus.in" type="email" onKeyDown={e=>e.key==='Enter'&&go()}/></div>
+        <div className="field"><label>Password</label><input value={pw} onChange={e=>setPw(e.target.value)} type="password" placeholder="••••••••" onKeyDown={e=>e.key==='Enter'&&go()}/></div>
+        <button className="btn-login" onClick={go} disabled={loading}>{loading?<><span className="spin"/> Signing in…</>:'Sign In →'}</button>
+        <div className="hbox">
+          <h4>Demo accounts (password: novus123)</h4>
+          {Object.entries(DEMO_USERS).map(([e,u])=>(
+            <div className="hr" key={e} onClick={()=>setEmail(e)}>
+              <span className="he">{e}</span>
+              <span className="hrl">{u.role==='tse'?`TSE·${u.territory.replace('Ballia ','B')}`:u.role==='logistics'?`WH·${u.warehouse||''}`:u.role==='admin'?'Admin':'Dealer'}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════
+//  SHELL
+// ══════════════════════════════════════════════
+function Shell({user,setUser,orders,setOrders,dealers,setDealers}){
+  const[page,setPage]=useState('home');
+
+  const myOrders=orders.filter(o=>{
+    if(user.role==='dealer') return o.dealer===user.id;
+    if(user.role==='tse')    return o.territory===user.territory;
+    if(user.role==='logistics') return o.warehouse===user.warehouse;
+    return true; // admin sees all
+  });
+
+  const navMap={
+    dealer:[
+      {id:'home',ic:'🏠',lb:'Dashboard'},
+      {id:'place',ic:'➕',lb:'Place Order'},
+      {id:'pending',ic:'⏳',lb:'Pending Orders'},
+      {id:'closed',ic:'✅',lb:'Closed Orders'},
+      {id:'retailers',ic:'🏪',lb:'My Retailers'},
+      {id:'sites',ic:'🏗️',lb:'My Sites'},
+    ],
+    tse:[
+      {id:'home',ic:'🏠',lb:'Dashboard'},
+      {id:'dealers',ic:'👥',lb:'My Dealers'},
+      {id:'approve',ic:'✏️',lb:'Approve Orders',badge:myOrders.filter(o=>o.status==='placed').length},
+      {id:'approved',ic:'🚚',lb:'Approved – Pending Dispatch'},
+      {id:'dispatched',ic:'📍',lb:'Dispatched Orders'},
+    ],
+    logistics:[
+      {id:'home',ic:'🏠',lb:'Dashboard'},
+      {id:'wh_pending',ic:'⏳',lb:'Pending Approval'},
+      {id:'wh_vehicle',ic:'🚛',lb:'Assign Vehicle',badge:myOrders.filter(o=>o.status==='approved').length},
+      {id:'wh_loading',ic:'📦',lb:'Currently Loading'},
+      {id:'wh_dispatched',ic:'📍',lb:'Dispatched'},
+      {id:'wh_receiving',ic:'📷',lb:'Upload Receiving',badge:myOrders.filter(o=>o.status==='dispatched'&&!o.receivingUploaded).length},
+    ],
+    admin:[
+      {id:'home',ic:'🏠',lb:'Dashboard'},
+      {id:'admin_orders',ic:'📋',lb:'All Orders'},
+      {id:'admin_dealers',ic:'👥',lb:'All Dealers'},
+      {id:'admin_pending',ic:'⚠️',lb:'Pending Receivings'},
+    ],
+  };
+
+  const navs=navMap[user.role]||[];
+  const sub=user.role==='tse'?`Territory: ${user.territory}`:user.role==='logistics'?whName(user.warehouse):user.role==='admin'?'All Territories':user.territory;
+
+  const[sideOpen,setSideOpen]=useState(false);
+  const closeSide=()=>setSideOpen(false);
+
+  return(
+    <div className="shell">
+      {/* Mobile top bar */}
+      <div className="mob-bar" style={{display:'none',alignItems:'center',gap:12,padding:'12px 16px',background:'#fff',borderBottom:'1.5px solid #e5e7eb',position:'sticky',top:0,zIndex:100}}>
+        <button onClick={()=>setSideOpen(true)} style={{background:'none',border:'none',color:'#374151',fontSize:22,cursor:'pointer',padding:'2px 6px',lineHeight:1}}>☰</button>
+        <div className="bi" style={{width:30,height:30,fontSize:14,borderRadius:7,flexShrink:0}}>N</div>
+        <div style={{flex:1}}><div className="bn" style={{fontSize:13}}>Novus Solutions</div></div>
+        <div className="uav" style={{width:28,height:28,fontSize:12}}>{user.name[0]}</div>
+      </div>
+      {/* Sidebar overlay */}
+      {sideOpen&&<div className="mob-overlay" style={{display:'none'}} onClick={closeSide}/>}
+      <div className={`sidebar${sideOpen?' open':''}`}>
+        <div className="sbb">
+          <div className="brand">
+            <div className="bi" style={{width:34,height:34,fontSize:16,borderRadius:8}}>N</div>
+            <div><div className="bn" style={{fontSize:14}}>Novus Solutions</div><div className="bs" style={{fontSize:9}}>Ballia Branch</div></div>
+          </div>
+        </div>
+        <div className="nlbl">{user.role==='dealer'?'Dealer':user.role==='tse'?'TSE':user.role==='admin'?'Admin':'Logistics'} Portal</div>
+        {navs.map(n=>(
+          <div key={n.id} className={`ni${page===n.id?' active':''}`} onClick={()=>{setPage(n.id);closeSide();}}>
+            <span>{n.ic}</span><span style={{flex:1}}>{n.lb}</span>
+            {n.badge>0&&<span className="nbadge">{n.badge}</span>}
+          </div>
+        ))}
+        <div className="sbf">
+          <div className="uc">
+            <div className="uav">{user.name[0]}</div>
+            <div style={{flex:1,minWidth:0}}>
+              <div className="un">{user.name}</div>
+              <div className="ur">{sub}</div>
+            </div>
+            <button className="lob" onClick={()=>setUser(null)} title="Sign out">⏻</button>
+          </div>
+        </div>
+      </div>
+      <div className="main">
+        {CFG.DEMO_MODE&&<div className="alert aw" style={{margin:0,borderRadius:0,borderLeft:'none',borderRight:'none',borderTop:'none',borderBottom:'1.5px solid #fde68a'}}>
+          <span>🔧</span><strong>Demo Mode</strong> — changes are not saved. Paste your Apps Script URL and set DEMO_MODE: false to go live.
+        </div>}
+        <Router page={page} user={user} orders={orders} setOrders={setOrders} dealers={dealers} setDealers={setDealers} myOrders={myOrders} setPage={setPage}/>
+      </div>
+    </div>
+  );
+}
+
+function Router({page,...p}){
+  const{user}=p;
+  if(page==='home') return <Dashboard {...p}/>;
+  if(user.role==='dealer'){
+    if(page==='place')    return <PlaceOrder {...p}/>;
+    if(page==='pending')  return <DealerOrders {...p} filter={['placed','approved','vehicle_found','dispatched']} title="Pending Orders"/>;
+    if(page==='closed')   return <DealerOrders {...p} filter={['closed']} title="Closed Orders"/>;
+    if(page==='retailers')return <Contacts {...p} type="retailers"/>;
+    if(page==='sites')    return <Contacts {...p} type="sites"/>;
+  }
+  if(user.role==='tse'){
+    if(page==='dealers')  return <TSEDealers {...p}/>;
+    if(page==='approve')  return <TSEApprove {...p}/>;
+    if(page==='approved') return <OList {...p} filter={['approved']} title="Approved – Awaiting Dispatch"/>;
+    if(page==='dispatched')return <OList {...p} filter={['dispatched','closed']} title="Dispatched Orders"/>;
+  }
+  if(user.role==='logistics'){
+    if(page==='wh_pending')   return <OList {...p} filter={['placed']} title="Waiting for TSE Approval"/>;
+    if(page==='wh_vehicle')   return <WHVehicle {...p}/>;
+    if(page==='wh_loading')   return <WHLoading {...p}/>;
+    if(page==='wh_dispatched')return <OList {...p} filter={['dispatched','closed']} title="Dispatched Orders"/>;
+    if(page==='wh_receiving') return <WHReceiving {...p}/>;
+  }
+  if(user.role==='admin'){
+    if(page==='admin_orders')  return <AdminOrders {...p}/>;
+    if(page==='admin_dealers') return <AdminDealers {...p}/>;
+    if(page==='admin_pending') return <AdminPending {...p}/>;
+  }
+  return <Dashboard {...p}/>;
+}
+
+// ══════════════════════════════════════════════
+//  DASHBOARD
+// ══════════════════════════════════════════════
+function Dashboard({user,myOrders,setPage}){
+  const c={placed:0,approved:0,vehicle_found:0,dispatched:0,closed:0};
+  myOrders.forEach(o=>{if(c[o.status]!==undefined)c[o.status]++;});
+  const unreceivedCount=myOrders.filter(o=>o.status==='dispatched'&&!o.receivingUploaded).length;
+  return <>
+    <div className="ph">
+      <div><div className="pt">Welcome, {user.name.split(' ')[0]} 👋</div>
+      <div className="ps">{user.role==='tse'?`Territory: ${user.territory}`:user.role==='logistics'?whName(user.warehouse):user.role==='admin'?'All Territories · Branch Manager View':user.name}</div></div>
+    </div>
+    <div className="pb">
+      {user.role==='dealer'&&unreceivedCount>0&&<div className="alert aw"><span>⛔</span><strong>Action required!</strong> You have {unreceivedCount} dispatched order(s) with pending receiving. Upload receiving to unblock new orders.</div>}
+      {user.role==='dealer'&&unreceivedCount===0&&<div className="alert ai"><span>ℹ️</span>Delivery challan receiving must be uploaded within 24 hours of dispatch to avoid order block.</div>}
+      <div className="sg">
+        <div className="sc"><div className="sv">{c.placed}</div><div className="sl">Awaiting Approval</div></div>
+        <div className="sc"><div className="sv" style={{color:'#16a34a'}}>{c.approved}</div><div className="sl">Looking for Vehicle</div></div>
+        <div className="sc"><div className="sv" style={{color:'#ea580c'}}>{c.vehicle_found}</div><div className="sl">Loading</div></div>
+        <div className="sc"><div className="sv" style={{color:'#7c3aed'}}>{c.dispatched}</div><div className="sl">Dispatched</div></div>
+      </div>
+      <div className="card">
+        <div className="ch"><span className="ct">Recent Orders</span></div>
+        {myOrders.length===0?<div className="empty"><div className="empty-i">📋</div>No orders yet</div>:
+        <div className="tw"><table className="tbl">
+          <thead><tr><th>Order ID</th><th>Dealer</th><th>Items</th><th>Warehouse</th><th>Status</th><th>Date</th></tr></thead>
+          <tbody>{myOrders.slice(0,6).map(o=>(
+            <tr key={o.id}>
+              <td style={{color:'#d97706',fontWeight:700}}>{o.id}</td>
+              <td>{o.dealerName}</td>
+              <td style={{fontSize:12}}>{o.items.map(i=>`${i.qty}×${i.cement}`).join(', ')}</td>
+              <td style={{fontSize:12}}>{whName(o.warehouse).split(' ').slice(0,2).join(' ')}</td>
+              <td><span className={`badge ${sCls(o.status)}`}>{sLabel(o.status).split('–')[0].trim()}</span></td>
+              <td style={{fontSize:12}}>{fmtD(o.placedAt)}</td>
+            </tr>
+          ))}</tbody>
+        </table></div>}
+      </div>
+    </div>
+  </>;
+}
+
+// ══════════════════════════════════════════════
+//  PLACE ORDER
+// ══════════════════════════════════════════════
+function PlaceOrder({user,orders,setOrders,dealers}){
+  const d=dealers[user.id];
+  const[dest,setDest]=useState('counter');
+  const[destId,setDestId]=useState('');
+  const[wh,setWh]=useState('WH1');
+  const[type,setType]=useState('FOR');
+  const[items,setItems]=useState(CEMENTS.map(c=>({cement:c,qty:'',seq:''})));
+  const[done,setDone]=useState(false);
+  const[saving,setSaving]=useState(false);
+  const blocked=orders.some(o=>o.dealer===user.id&&o.status==='dispatched'&&!o.receivingUploaded);
+  const total=totalBags(items);
+
+  const submit=async()=>{
+    const sel=items.filter(i=>parseInt(i.qty)>0).map(i=>({cement:i.cement,qty:parseInt(i.qty),seq:parseInt(i.seq)||1}));
+    if(!sel.length){alert('Add at least one cement item');return;}
+    if((dest==='retailer'||dest==='site')&&!destId){alert('Please select a destination');return;}
+    const destName=dest==='counter'?d.name:dest==='retailer'?d.retailers.find(r=>r.id===destId)?.name:d.sites.find(s=>s.id===destId)?.name;
+    const o={id:'ORD'+Date.now().toString().slice(-6),dealer:user.id,dealerName:user.name,territory:user.territory,warehouse:wh,type,destination:dest==='counter'?'Counter':dest==='retailer'?'Retailer':'Site',destName,items:sel,status:'placed',placedAt:new Date().toISOString(),challanId:null,vehicle:null,receivingUploaded:false,remarks:''};
+    setSaving(true);
+    try{await api('addOrder',{order:o,items:sel});}catch(e){if(!demoFallback(e,()=>{})){alert('Error: '+e.message);setSaving(false);return;}}
+    setOrders(prev=>[...prev,o]);
+    setDone(true);setSaving(false);
+  };
+
+  if(blocked)return<><div className="ph"><div className="pt">Place Order</div></div><div className="pb"><div className="alert aw"><span>⛔</span><div><strong>Orders blocked.</strong> Upload receiving for all dispatched challans first.</div></div></div></>;
+  if(done)return<><div className="ph"><div className="pt">Place Order</div></div><div className="pb"><div className="alert aok"><span>✅</span><strong>Order placed!</strong> Your TSE will approve it shortly.</div><button className="btn bam" onClick={()=>{setDone(false);setItems(CEMENTS.map(c=>({cement:c,qty:'',seq:''})));setDestId('');setDest('counter');}}>+ Place Another Order</button></div></>;
+
+  return <>
+    <div className="ph"><div><div className="pt">Place New Order</div><div className="ps">Total: <strong style={{color:'#d97706'}}>{total} bags</strong></div></div></div>
+    <div className="pb">
+      <div className="card">
+        <div className="ch"><span className="ct">Step 1 — Delivery Destination</span></div>
+        <div className="cb">
+          <div className="r3" style={{marginBottom:12}}>
+            {[['counter','🏬','My Counter'],['retailer','🏪','Retailer'],['site','🏗️','Site']].map(([v,ic,lb])=>(
+              <div key={v} className={`dopt${dest===v?' sel':''}`} onClick={()=>{setDest(v);setDestId('');}}>
+                <div className="di">{ic}</div><div className="dl">{lb}</div>
+              </div>
+            ))}
+          </div>
+          {dest==='retailer'&&<div className="fg"><label>Select Retailer</label><select value={destId} onChange={e=>setDestId(e.target.value)}><option value="">-- Choose --</option>{d.retailers.map(r=><option key={r.id} value={r.id}>{r.name}</option>)}</select></div>}
+          {dest==='site'&&<div className="fg"><label>Select Site</label><select value={destId} onChange={e=>setDestId(e.target.value)}><option value="">-- Choose --</option>{d.sites.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></div>}
+        </div>
+      </div>
+      <div className="card">
+        <div className="ch"><span className="ct">Step 2 — Warehouse & Dispatch Type</span></div>
+        <div className="cb">
+          <div className="r2">
+            <div className="fg"><label>Preferred Warehouse</label><select value={wh} onChange={e=>setWh(e.target.value)}>{getAccessibleWarehouses(user.territory, user.id).map(w=><option key={w.id} value={w.id}>{w.name}</option>)}</select></div>
+            <div className="fg"><label>Dispatch Type</label><select value={type} onChange={e=>setType(e.target.value)}><option value="FOR">FOR – Logistics arranges vehicle</option><option value="EX">EX – Own vehicle</option></select></div>
+          </div>
+        </div>
+      </div>
+      <div className="card">
+        <div className="ch"><span className="ct">Step 3 — Items & Loading Sequence</span><span style={{fontSize:11,color:'#6b7280'}}>Seq = loading order</span></div>
+        <div className="cb">
+          {items.map((item,i)=>(
+            <div key={item.cement} className="cr">
+              <span className="cn">{item.cement}</span>
+              <span style={{fontSize:11,color:'#6b7280'}}>Bags</span>
+              <input className="ci" type="number" min="0" value={item.qty} placeholder="0" onChange={e=>setItems(items.map((it,j)=>j===i?{...it,qty:e.target.value}:it))}/>
+              <span style={{fontSize:11,color:'#6b7280'}}>Seq</span>
+              <input className="ci cs" type="number" min="1" value={item.seq} placeholder="#" onChange={e=>setItems(items.map((it,j)=>j===i?{...it,seq:e.target.value}:it))}/>
+            </div>
+          ))}
+          <div style={{marginTop:12,textAlign:'right'}}><button className="btn bam" onClick={submit} disabled={saving}>{saving?<><span className="spin"/> Saving…</>:'Submit Order →'}</button></div>
+        </div>
+      </div>
+    </div>
+  </>;
+}
+
+// ══════════════════════════════════════════════
+//  DEALER ORDERS
+// ══════════════════════════════════════════════
+function DealerOrders({user,orders,setOrders,myOrders,filter,title}){
+  const list=myOrders.filter(o=>filter.includes(o.status));
+  const[uploadId,setUploadId]=useState(null);
+  const[remarks,setRemarks]=useState('');
+
+  const markReceived=async(id)=>{
+    const upd={receivingUploaded:true,status:'closed'};
+    try{await api('uploadReceiving',{orderId:id,uploadedBy:user.email,uploaderRole:'dealer',remarks});}
+    catch(e){if(!demoFallback(e,()=>{}))return;}
+    setOrders(orders.map(o=>o.id===id?{...o,...upd,remarks:remarks||o.remarks}:o));
+    setUploadId(null);setRemarks('');
+  };
+
+  return <>
+    <div className="ph"><div className="pt">{title}</div><div className="ps">{list.length} order(s)</div></div>
+    <div className="pb">
+      {list.length===0&&<div className="card"><div className="empty"><div className="empty-i">📋</div>No orders here</div></div>}
+      {list.map(o=>(
+        <div key={o.id} className="card">
+          <div className="ch">
+            <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
+              <strong style={{color:'#d97706'}}>{o.id}</strong>
+              <span className={`badge ${sCls(o.status)}`}>{sLabel(o.status)}</span>
+            </div>
+            <span style={{fontSize:12,color:'#6b7280'}}>{fmtD(o.placedAt)}</span>
+          </div>
+          <div className="cb">
+            <OInfo o={o}/>
+            {o.status==='dispatched'&&!o.receivingUploaded&&(
+              <div className="alert aw" style={{marginTop:12}}>
+                <span>⚠️</span><div><strong>Action Required:</strong> Upload receiving for challan <strong>{o.challanId}</strong> within 24 hours.
+                <button className="btn bam bsm" style={{marginLeft:10}} onClick={()=>setUploadId(o.id)}>📷 Upload Receiving</button></div>
+              </div>
+            )}
+            {o.receivingUploaded&&<div className="alert aok" style={{marginTop:10}}><span>✅</span> Receiving uploaded — Order closed{o.remarks?` · Remarks: ${o.remarks}`:''}</div>}
+          </div>
+        </div>
+      ))}
+    </div>
+    {uploadId&&(
+      <UploadModal title="Upload Receiving" subtitle="Upload the signed delivery challan received from driver" onClose={()=>{setUploadId(null);setRemarks('');}} onSave={()=>markReceived(uploadId)} showRemarks={true} remarks={remarks} setRemarks={setRemarks}/>
+    )}
+  </>;
+}
+
+// ══════════════════════════════════════════════
+//  CONTACTS (Retailers / Sites)
+// ══════════════════════════════════════════════
+function Contacts({user,dealers,setDealers,type}){
+  const d=dealers[user.id];
+  const[modal,setModal]=useState(false);
+  const[name,setName]=useState('');
+  const[extra,setExtra]=useState('');
+  const items=type==='retailers'?d.retailers:d.sites;
+  const save=async()=>{
+    if(!name.trim())return;
+    const newItem=type==='retailers'?{id:'R'+Date.now(),name:name.trim(),phone:extra}:{id:'S'+Date.now(),name:name.trim(),address:extra};
+    try{
+      if(type==='retailers') await api('addRetailer',{dealerId:user.id,name:name.trim(),phone:extra});
+      else await api('addSite',{dealerId:user.id,name:name.trim(),address:extra});
+    }catch(e){if(!demoFallback(e,()=>{}))return;}
+    setDealers({...dealers,[user.id]:{...d,[type]:[...items,newItem]}});
+    setModal(false);setName('');setExtra('');
+  };
+  return <>
+    <div className="ph">
+      <div><div className="pt">{type==='retailers'?'My Retailers':'My Sites'}</div><div className="ps">{items.length} registered</div></div>
+      <button className="btn bam" onClick={()=>setModal(true)}>+ Add {type==='retailers'?'Retailer':'Site'}</button>
+    </div>
+    <div className="pb">
+      {items.length===0&&<div className="card"><div className="empty"><div className="empty-i">{type==='retailers'?'🏪':'🏗️'}</div>None added yet</div></div>}
+      {items.map(it=>(
+        <div key={it.id} className="dc">
+          <div><div style={{fontWeight:600,color:'#e8e6e0',marginBottom:2}}>{it.name}</div><div style={{fontSize:12,color:'#6b7280'}}>{type==='retailers'?it.phone:it.address}</div></div>
+          <span className="chip">{type==='retailers'?'Retailer':'Site'}</span>
+        </div>
+      ))}
+    </div>
+    {modal&&<div className="ov"><div className="modal">
+      <div className="mh"><span className="mt">Add {type==='retailers'?'Retailer':'Site'}</span><button className="btn bgh bsm" onClick={()=>setModal(false)}>✕</button></div>
+      <div className="mb">
+        <div className="fg"><label>Name</label><input value={name} onChange={e=>setName(e.target.value)} placeholder={type==='retailers'?'Shop name':'Site name'}/></div>
+        <div className="fg"><label>{type==='retailers'?'Phone Number':'Address'}</label><input value={extra} onChange={e=>setExtra(e.target.value)} placeholder={type==='retailers'?'10-digit mobile':'Full address'}/></div>
+      </div>
+      <div className="mf"><button className="btn bgh" onClick={()=>setModal(false)}>Cancel</button><button className="btn bam" onClick={save}>Save</button></div>
+    </div></div>}
+  </>;
+}
+
+// ══════════════════════════════════════════════
+//  TSE PAGES
+// ══════════════════════════════════════════════
+function TSEDealers({user,dealers}){
+  const myD=Object.values(DEMO_DEALERS).filter(d=>d.territory===user.territory);
+  return <>
+    <div className="ph"><div className="pt">My Dealers</div><div className="ps">Territory: {user.territory}</div></div>
+    <div className="pb">
+      {myD.map((d,i)=>(
+        <div key={i} className="card"><div className="cb">
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:8}}>
+            <div>
+              <div style={{fontSize:15,fontWeight:700,color:'#111827',marginBottom:3}}>{d.name}</div>
+              <div style={{fontSize:12,color:'#6b7280',marginBottom:8}}>{d.territory}</div>
+              <div style={{display:'flex',gap:7,flexWrap:'wrap'}}>
+                <span className="chip">🏪 {d.retailers.length} Retailers</span>
+                <span className="chip">🏗️ {d.sites.length} Sites</span>
+              </div>
+            </div>
+            <span className="chip">{d.territory}</span>
+          </div>
+        </div></div>
+      ))}
+    </div>
+  </>;
+}
+
+function TSEApprove({user,orders,setOrders,myOrders}){
+  const pending=myOrders.filter(o=>o.status==='placed');
+  const act=async(id,newStatus)=>{
+    try{await api('updateOrderStatus',{orderId:id,status:newStatus,changedBy:user.email});}
+    catch(e){if(!demoFallback(e,()=>{}))return;}
+    setOrders(orders.map(o=>o.id===id?{...o,status:newStatus,approvedAt:new Date().toISOString()}:o));
+  };
+  return <>
+    <div className="ph"><div className="pt">Approve Orders</div><div className="ps">{pending.length} order(s) awaiting your approval</div></div>
+    <div className="pb">
+      {pending.length===0&&<div className="card"><div className="empty"><div className="empty-i">✅</div>All orders reviewed!</div></div>}
+      {pending.map(o=>(
+        <div key={o.id} className="card">
+          <div className="ch">
+            <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
+              <strong style={{color:'#d97706'}}>{o.id}</strong>
+              <span className={`badge ${sCls(o.status)}`}>{sLabel(o.status)}</span>
+            </div>
+            <div style={{display:'flex',gap:7}}>
+              <button className="btn brd bsm" onClick={()=>act(o.id,'closed')}>✕ Reject</button>
+              <button className="btn bgr bsm" onClick={()=>act(o.id,'approved')}>✓ Approve</button>
+            </div>
+          </div>
+          <div className="cb"><OInfo o={o}/></div>
+        </div>
+      ))}
+    </div>
+  </>;
+}
+
+// ══════════════════════════════════════════════
+//  GENERIC ORDER LIST
+// ══════════════════════════════════════════════
+function OList({myOrders,filter,title}){
+  const list=myOrders.filter(o=>filter.includes(o.status));
+  return <>
+    <div className="ph"><div className="pt">{title}</div><div className="ps">{list.length} order(s)</div></div>
+    <div className="pb">
+      {list.length===0&&<div className="card"><div className="empty"><div className="empty-i">📋</div>Nothing here yet</div></div>}
+      {list.map(o=>(
+        <div key={o.id} className="card">
+          <div className="ch">
+            <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
+              <strong style={{color:'#d97706'}}>{o.id}</strong>
+              {o.challanId&&<span className="chip">Challan: {o.challanId}</span>}
+              <span className={`badge ${sCls(o.status)}`}>{sLabel(o.status)}</span>
+            </div>
+            <span style={{fontSize:12,color:'#6b7280'}}>{fmtD(o.placedAt)}</span>
+          </div>
+          <div className="cb"><OInfo o={o}/></div>
+        </div>
+      ))}
+    </div>
+  </>;
+}
+
+// ══════════════════════════════════════════════
+//  WAREHOUSE PAGES
+// ══════════════════════════════════════════════
+function WHVehicle({user,orders,setOrders,myOrders}){
+  const list=myOrders.filter(o=>o.status==='approved');
+  const[sel,setSel]=useState(null);
+  const[vNum,setVNum]=useState('');
+  const[driver,setDriver]=useState('');
+  const[dPhone,setDPhone]=useState('');
+  const[saving,setSaving]=useState(false);
+
+  const assign=async()=>{
+    if(!vNum.trim()||!driver.trim()){alert('Fill vehicle number and driver name');return;}
+    const challanId='CH'+Date.now().toString().slice(-5);
+    const upd={status:'vehicle_found',vehicleAt:new Date().toISOString(),challanId,vehicle:{number:vNum.trim(),driver:driver.trim(),phone:dPhone.trim()}};
+    setSaving(true);
+    try{await api('assignVehicle',{orderId:sel,vehicle:{number:vNum.trim(),driver:driver.trim(),phone:dPhone.trim()},assignedBy:user.email});}
+    catch(e){if(!demoFallback(e,()=>{})){setSaving(false);return;}}
+    setOrders(orders.map(o=>o.id===sel?{...o,...upd}:o));
+    setSaving(false);setSel(null);setVNum('');setDriver('');setDPhone('');
+  };
+
+  return <>
+    <div className="ph"><div className="pt">Assign Vehicle</div><div className="ps">{list.length} order(s) looking for vehicle</div></div>
+    <div className="pb">
+      {list.length===0&&<div className="card"><div className="empty"><div className="empty-i">🚛</div>No orders awaiting vehicle</div></div>}
+      {list.map(o=>(
+        <div key={o.id} className="card">
+          <div className="ch">
+            <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
+              <strong style={{color:'#d97706'}}>{o.id}</strong>
+              <span className={`badge ${sCls(o.status)}`}>{sLabel(o.status)}</span>
+            </div>
+            <button className="btn bam bsm" onClick={()=>setSel(o.id)}>Assign Vehicle</button>
+          </div>
+          <div className="cb"><OInfo o={o}/></div>
+        </div>
+      ))}
+    </div>
+    {sel&&<div className="ov"><div className="modal">
+      <div className="mh"><span className="mt">Assign Vehicle & Create Challan</span><button className="btn bgh bsm" onClick={()=>setSel(null)}>✕</button></div>
+      <div className="mb">
+        <div className="fg"><label>Vehicle Number</label><input value={vNum} onChange={e=>setVNum(e.target.value)} placeholder="UP65AB1234"/></div>
+        <div className="r2">
+          <div className="fg"><label>Driver Name</label><input value={driver} onChange={e=>setDriver(e.target.value)} placeholder="Full name"/></div>
+          <div className="fg"><label>Driver Phone</label><input value={dPhone} onChange={e=>setDPhone(e.target.value)} placeholder="Mobile number"/></div>
+        </div>
+        <div className="alert ai"><span>ℹ️</span>A Delivery Challan ID will be auto-generated. Status will change to "Vehicle Found – Loading Started".</div>
+      </div>
+      <div className="mf"><button className="btn bgh" onClick={()=>setSel(null)}>Cancel</button><button className="btn bam" onClick={assign} disabled={saving}>{saving?<><span className="spin"/> Saving…</>:'Save & Create Challan'}</button></div>
+    </div></div>}
+  </>;
+}
+
+function WHLoading({user,orders,setOrders,myOrders}){
+  const list=myOrders.filter(o=>o.status==='vehicle_found');
+  const[dispId,setDispId]=useState(null);
+  const dispatch=async()=>{
+    try{await api('updateOrderStatus',{orderId:dispId,status:'dispatched',changedBy:user.email});}
+    catch(e){if(!demoFallback(e,()=>{}))return;}
+    setOrders(orders.map(o=>o.id===dispId?{...o,status:'dispatched',dispatchedAt:new Date().toISOString()}:o));
+    setDispId(null);
+  };
+  return <>
+    <div className="ph"><div className="pt">Currently Loading</div><div className="ps">{list.length} vehicle(s) being loaded</div></div>
+    <div className="pb">
+      {list.length===0&&<div className="card"><div className="empty"><div className="empty-i">📦</div>No loading in progress</div></div>}
+      {list.map(o=>(
+        <div key={o.id} className="card">
+          <div className="ch">
+            <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
+              <strong style={{color:'#d97706'}}>{o.id}</strong>
+              {o.challanId&&<span className="chip">Challan: {o.challanId}</span>}
+              <span className={`badge ${sCls(o.status)}`}>{sLabel(o.status)}</span>
+            </div>
+            <button className="btn bam bsm" onClick={()=>setDispId(o.id)}>📷 Upload Challan & Dispatch</button>
+          </div>
+          <div className="cb"><OInfo o={o}/></div>
+        </div>
+      ))}
+    </div>
+    {dispId&&<UploadModal title="Upload Signed Delivery Challan" subtitle="Photograph the hand-written challan before dispatching the vehicle" onClose={()=>setDispId(null)} onSave={dispatch}/>}
+  </>;
+}
+
+function WHReceiving({user,orders,setOrders,myOrders}){
+  const list=myOrders.filter(o=>o.status==='dispatched'&&!o.receivingUploaded);
+  const[upId,setUpId]=useState(null);
+  const[remarks,setRemarks]=useState('');
+  const mark=async()=>{
+    try{await api('uploadReceiving',{orderId:upId,uploadedBy:user.email,uploaderRole:'logistics',remarks});}
+    catch(e){if(!demoFallback(e,()=>{}))return;}
+    setOrders(orders.map(o=>o.id===upId?{...o,receivingUploaded:true,status:'closed',remarks:remarks||o.remarks}:o));
+    setUpId(null);setRemarks('');
+  };
+  return <>
+    <div className="ph"><div className="pt">Upload Receiving</div><div className="ps">Challans pending receiving confirmation</div></div>
+    <div className="pb">
+      {list.length===0&&<div className="card"><div className="empty"><div className="empty-i">✅</div>All receivings uploaded!</div></div>}
+      {list.map(o=>(
+        <div key={o.id} className="card">
+          <div className="ch">
+            <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
+              <strong style={{color:'#d97706'}}>{o.id}</strong>
+              {o.challanId&&<span className="chip">Challan: {o.challanId}</span>}
+            </div>
+            <button className="btn bbl bsm" onClick={()=>setUpId(o.id)}>📷 Upload Receiving</button>
+          </div>
+          <div className="cb">
+            <div style={{fontSize:13,color:'#c9c6c0',marginBottom:4}}>Dealer: <strong style={{color:'#111827'}}>{o.dealerName}</strong> · {o.destination}: {o.destName}</div>
+            {o.vehicle&&<div style={{fontSize:12,color:'#6b7280'}}>🚛 {o.vehicle.number} · {o.vehicle.driver} · {o.vehicle.phone}</div>}
+            <div style={{fontSize:12,color:'#dc2626',marginTop:7}}>⚠ Must upload within 24 hours of dispatch</div>
+          </div>
+        </div>
+      ))}
+    </div>
+    {upId&&<UploadModal title="Upload Receiving" subtitle="Scan or photograph the returned delivery challan" onClose={()=>{setUpId(null);setRemarks('');}} onSave={mark} showRemarks={true} remarks={remarks} setRemarks={setRemarks}/>}
+  </>;
+}
+
+// ══════════════════════════════════════════════
+//  BRANCH MANAGER / ADMIN PAGES
+// ══════════════════════════════════════════════
+function AdminOrders({myOrders}){
+  const[filter,setFilter]=useState('all');
+  const[search,setSearch]=useState('');
+  const filtered=myOrders.filter(o=>{
+    if(filter!=='all'&&o.status!==filter) return false;
+    if(search&&!o.dealerName.toLowerCase().includes(search.toLowerCase())&&!o.id.toLowerCase().includes(search.toLowerCase())) return false;
+    return true;
+  });
+  const counts={all:myOrders.length};
+  myOrders.forEach(o=>{counts[o.status]=(counts[o.status]||0)+1;});
+
+  return <>
+    <div className="ph"><div className="pt">All Orders</div><div className="ps">{myOrders.length} total across all territories</div></div>
+    <div className="pb">
+      <div className="sg">
+        <div className="sc"><div className="sv">{counts.placed||0}</div><div className="sl">Awaiting Approval</div></div>
+        <div className="sc"><div className="sv" style={{color:'#16a34a'}}>{counts.approved||0}</div><div className="sl">Looking for Vehicle</div></div>
+        <div className="sc"><div className="sv" style={{color:'#ea580c'}}>{counts.vehicle_found||0}</div><div className="sl">Loading</div></div>
+        <div className="sc"><div className="sv" style={{color:'#7c3aed'}}>{counts.dispatched||0}</div><div className="sl">Dispatched</div></div>
+      </div>
+      <div style={{display:'flex',gap:8,marginBottom:14,flexWrap:'wrap'}}>
+        {['all','placed','approved','vehicle_found','dispatched','closed'].map(s=>(
+          <button key={s} className={`btn ${filter===s?'bam':'bgh'} bsm`} onClick={()=>setFilter(s)}>
+            {s==='all'?'All':sLabel(s).split('–')[0].trim()}
+          </button>
+        ))}
+      </div>
+      <div className="fg"><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search by dealer name or order ID…"/></div>
+      {filtered.length===0&&<div className="card"><div className="empty"><div className="empty-i">📋</div>No orders match</div></div>}
+      {filtered.map(o=>(
+        <div key={o.id} className="card">
+          <div className="ch">
+            <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
+              <strong style={{color:'#d97706'}}>{o.id}</strong>
+              <span className="chip">{o.territory}</span>
+              {o.challanId&&<span className="chip">Challan: {o.challanId}</span>}
+              <span className={`badge ${sCls(o.status)}`}>{sLabel(o.status)}</span>
+            </div>
+            <span style={{fontSize:12,color:'#6b7280'}}>{fmtD(o.placedAt)}</span>
+          </div>
+          <div className="cb"><OInfo o={o}/></div>
+        </div>
+      ))}
+    </div>
+  </>;
+}
+
+function AdminDealers({dealers}){
+  const all=Object.values(DEMO_DEALERS);
+  return <>
+    <div className="ph"><div className="pt">All Dealers</div><div className="ps">{all.length} dealers across all territories</div></div>
+    <div className="pb">
+      {all.map((d,i)=>(
+        <div key={i} className="card"><div className="cb">
+          <div style={{display:'flex',justifyContent:'space-between',flexWrap:'wrap',gap:8}}>
+            <div>
+              <div style={{fontSize:15,fontWeight:700,color:'#111827',marginBottom:3}}>{d.name}</div>
+              <div style={{display:'flex',gap:7,flexWrap:'wrap',marginTop:6}}>
+                <span className="chip">{d.territory}</span>
+                <span className="chip">🏪 {d.retailers.length} Retailers</span>
+                <span className="chip">🏗️ {d.sites.length} Sites</span>
+              </div>
+            </div>
+          </div>
+        </div></div>
+      ))}
+    </div>
+  </>;
+}
+
+function AdminPending({myOrders}){
+  const pending=myOrders.filter(o=>o.status==='dispatched'&&!o.receivingUploaded);
+  return <>
+    <div className="ph"><div className="pt">Pending Receivings</div><div className="ps">{pending.length} challan(s) awaiting receiving upload</div></div>
+    <div className="pb">
+      {pending.length===0&&<div className="card"><div className="empty"><div className="empty-i">✅</div>All receivings uploaded!</div></div>}
+      {pending.length>0&&<div className="alert aw"><span>⚠️</span><strong>{pending.length} challan(s)</strong> have not been received yet. Dealers and logistics managers have been reminded.</div>}
+      {pending.map(o=>(
+        <div key={o.id} className="card">
+          <div className="ch">
+            <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
+              <strong style={{color:'#d97706'}}>{o.id}</strong>
+              <span className="chip">{o.territory}</span>
+              {o.challanId&&<span className="chip">Challan: {o.challanId}</span>}
+            </div>
+            <span style={{fontSize:12,color:'#dc2626'}}>Receiving overdue</span>
+          </div>
+          <div className="cb">
+            <div style={{fontSize:13,color:'#c9c6c0',marginBottom:4}}>Dealer: <strong style={{color:'#111827'}}>{o.dealerName}</strong> · {o.destination}: {o.destName}</div>
+            {o.vehicle&&<div style={{fontSize:12,color:'#6b7280',marginBottom:4}}>🚛 {o.vehicle.number} · {o.vehicle.driver} · {o.vehicle.phone}</div>}
+            <div style={{fontSize:12,color:'#6b7280'}}>Dispatched: {fmtDT(o.dispatchedAt||o.placedAt)}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </>;
+}
+
+// ══════════════════════════════════════════════
+//  SHARED COMPONENTS
+// ══════════════════════════════════════════════
+function OInfo({o}){
+  return(
+    <div className="r2">
+      <div>
+        <div style={{fontSize:11,color:'#6b7280',marginBottom:5,textTransform:'uppercase',letterSpacing:'.04em'}}>Details</div>
+        <div style={{fontWeight:600,color:'#e8e6e0',fontSize:14,marginBottom:2}}>{o.dealerName}</div>
+        <div style={{fontSize:12,color:'#6b7280',marginBottom:2}}>📍 {o.destination}: {o.destName}</div>
+        <div style={{fontSize:12,color:'#6b7280',marginBottom:2}}>🏭 {whName(o.warehouse)}</div>
+        <div style={{fontSize:12,color:'#6b7280'}}>🚚 <span className="chip">{o.type}</span></div>
+        {o.vehicle&&<div style={{fontSize:12,color:'#6b7280',marginTop:5}}>🚛 {o.vehicle.number} · {o.vehicle.driver} · {o.vehicle.phone}</div>}
+        {o.remarks&&<div style={{fontSize:12,color:'#d97706',marginTop:5}}>📝 {o.remarks}</div>}
+      </div>
+      <div>
+        <div style={{fontSize:11,color:'#6b7280',marginBottom:5,textTransform:'uppercase',letterSpacing:'.04em'}}>Items</div>
+        {o.items.map(i=>(
+          <div key={i.cement} style={{display:'flex',justifyContent:'space-between',fontSize:13,color:'#c9c6c0',marginBottom:3,paddingBottom:3,borderBottom:'1px solid #1a1d28'}}>
+            <span>#{i.seq} {i.cement}</span><span style={{color:'#d97706',fontWeight:700}}>{i.qty} bags</span>
+          </div>
+        ))}
+        <div style={{display:'flex',justifyContent:'space-between',fontSize:13,marginTop:4,paddingTop:4,borderTop:'1px solid #2a2d3a'}}>
+          <span style={{color:'#9ca3af'}}>Total</span>
+          <span style={{color:'#d97706',fontWeight:700}}>{totalBags(o.items)} bags</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function UploadModal({title,subtitle,onClose,onSave,showRemarks,remarks,setRemarks}){
+  const[file,setFile]=useState(null);
+  return(
+    <div className="ov">
+      <div className="modal">
+        <div className="mh"><span className="mt">{title}</span><button className="btn bgh bsm" onClick={onClose}>✕</button></div>
+        <div className="mb">
+          {subtitle&&<div style={{fontSize:13,color:'#9ca3af',marginBottom:12}}>{subtitle}</div>}
+          <div className="uz">
+            <input type="file" accept="image/*,.pdf" onChange={e=>setFile(e.target.files[0])}/>
+            <div style={{fontSize:28,marginBottom:6}}>📎</div>
+            {file?<div style={{fontSize:13}}><strong style={{color:'#d97706'}}>{file.name}</strong><br/><span style={{color:'#9ca3af',fontSize:12}}>{(file.size/1024).toFixed(1)} KB</span></div>
+            :<div style={{fontSize:13,color:'#6b7280'}}><strong style={{color:'#d97706'}}>Tap to choose file</strong> or drag & drop<br/>JPG, PNG, or PDF</div>}
+          </div>
+          {showRemarks&&<div className="fg" style={{marginTop:12}}>
+            <label>Remarks (damaged / short goods? note here)</label>
+            <textarea value={remarks} onChange={e=>setRemarks(e.target.value)} placeholder="e.g. 5 bags damaged, 2 bags short delivered…"/>
+          </div>}
+        </div>
+        <div className="mf">
+          <button className="btn bgh" onClick={onClose}>Cancel</button>
+          <button className="btn bam" onClick={onSave}>Confirm Upload ✓</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
