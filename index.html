@@ -152,7 +152,7 @@ const {useState,useEffect,useCallback}=React;
 //  ⚙️ CONFIG — edit these after deployment
 // ══════════════════════════════════════════════
 const CFG={
-  SCRIPT_URL:"https://script.google.com/macros/s/AKfycbwdHyb-nokhZRYluIeIyviQ3tyF_X6iOgbIzR6OzCPMF-pXg_XQQmGlLse3gRI7XGA/exec",
+  SCRIPT_URL:"https://script.google.com/macros/s/AKfycbzTjWs2rRQa5dgLHiV9CcyN4_X83Cky05rMfA5vK9P3MAXDo69BRTkST735OnN7Sm23/exec",
   DEMO_MODE:false, // set false after pasting your URL above
 };
 
@@ -413,8 +413,8 @@ function Shell({user,setUser,orders,setOrders,dealers,setDealers}){
   return(
     <div className="shell">
       {/* Mobile top bar */}
-      <div className="mob-bar" style={{display:'none',alignItems:'center',gap:12,padding:'12px 16px',background:'#13161f',borderBottom:'1px solid #1e2330',position:'sticky',top:0,zIndex:100}}>
-        <button onClick={()=>setSideOpen(true)} style={{background:'none',border:'none',color:'#e8e6e0',fontSize:22,cursor:'pointer',padding:'2px 6px',lineHeight:1}}>☰</button>
+      <div className="mob-bar" style={{display:'none',alignItems:'center',gap:12,padding:'12px 16px',background:'#fff',borderBottom:'1.5px solid #e5e7eb',position:'sticky',top:0,zIndex:100}}>
+        <button onClick={()=>setSideOpen(true)} style={{background:'none',border:'none',color:'#374151',fontSize:22,cursor:'pointer',padding:'2px 6px',lineHeight:1}}>☰</button>
         <div className="bi" style={{width:30,height:30,fontSize:14,borderRadius:7,flexShrink:0}}>N</div>
         <div style={{flex:1}}><div className="bn" style={{fontSize:13}}>Novus Solutions</div></div>
         <div className="uav" style={{width:28,height:28,fontSize:12}}>{user.name[0]}</div>
@@ -447,7 +447,7 @@ function Shell({user,setUser,orders,setOrders,dealers,setDealers}){
         </div>
       </div>
       <div className="main">
-        {CFG.DEMO_MODE&&<div className="alert aw" style={{margin:0,borderRadius:0,borderLeft:'none',borderRight:'none',borderTop:'none'}}>
+        {CFG.DEMO_MODE&&<div className="alert aw" style={{margin:0,borderRadius:0,borderLeft:'none',borderRight:'none',borderTop:'none',borderBottom:'1.5px solid #fde68a'}}>
           <span>🔧</span><strong>Demo Mode</strong> — changes are not saved. Paste your Apps Script URL and set DEMO_MODE: false to go live.
         </div>}
         <Router page={page} user={user} orders={orders} setOrders={setOrders} dealers={dealers} setDealers={setDealers} myOrders={myOrders} setPage={setPage}/>
@@ -504,9 +504,9 @@ function Dashboard({user,myOrders,setPage}){
       {user.role==='dealer'&&unreceivedCount===0&&<div className="alert ai"><span>ℹ️</span>Delivery challan receiving must be uploaded within 24 hours of dispatch to avoid order block.</div>}
       <div className="sg">
         <div className="sc"><div className="sv">{c.placed}</div><div className="sl">Awaiting Approval</div></div>
-        <div className="sc"><div className="sv" style={{color:'#4ade80'}}>{c.approved}</div><div className="sl">Looking for Vehicle</div></div>
-        <div className="sc"><div className="sv" style={{color:'#fb923c'}}>{c.vehicle_found}</div><div className="sl">Loading</div></div>
-        <div className="sc"><div className="sv" style={{color:'#a78bfa'}}>{c.dispatched}</div><div className="sl">Dispatched</div></div>
+        <div className="sc"><div className="sv" style={{color:'#16a34a'}}>{c.approved}</div><div className="sl">Looking for Vehicle</div></div>
+        <div className="sc"><div className="sv" style={{color:'#ea580c'}}>{c.vehicle_found}</div><div className="sl">Loading</div></div>
+        <div className="sc"><div className="sv" style={{color:'#7c3aed'}}>{c.dispatched}</div><div className="sl">Dispatched</div></div>
       </div>
       <div className="card">
         <div className="ch"><span className="ct">Recent Orders</span></div>
@@ -515,7 +515,7 @@ function Dashboard({user,myOrders,setPage}){
           <thead><tr><th>Order ID</th><th>Dealer</th><th>Items</th><th>Warehouse</th><th>Status</th><th>Date</th></tr></thead>
           <tbody>{myOrders.slice(0,6).map(o=>(
             <tr key={o.id}>
-              <td style={{color:'#f59e0b',fontWeight:700}}>{o.id}</td>
+              <td style={{color:'#d97706',fontWeight:700}}>{o.id}</td>
               <td>{o.dealerName}</td>
               <td style={{fontSize:12}}>{o.items.map(i=>`${i.qty}×${i.cement}`).join(', ')}</td>
               <td style={{fontSize:12}}>{whName(o.warehouse).split(' ').slice(0,2).join(' ')}</td>
@@ -560,7 +560,7 @@ function PlaceOrder({user,orders,setOrders,dealers}){
   if(done)return<><div className="ph"><div className="pt">Place Order</div></div><div className="pb"><div className="alert aok"><span>✅</span><strong>Order placed!</strong> Your TSE will approve it shortly.</div><button className="btn bam" onClick={()=>{setDone(false);setItems(CEMENTS.map(c=>({cement:c,qty:'',seq:''})));setDestId('');setDest('counter');}}>+ Place Another Order</button></div></>;
 
   return <>
-    <div className="ph"><div><div className="pt">Place New Order</div><div className="ps">Total: <strong style={{color:'#f59e0b'}}>{total} bags</strong></div></div></div>
+    <div className="ph"><div><div className="pt">Place New Order</div><div className="ps">Total: <strong style={{color:'#d97706'}}>{total} bags</strong></div></div></div>
     <div className="pb">
       <div className="card">
         <div className="ch"><span className="ct">Step 1 — Delivery Destination</span></div>
@@ -628,7 +628,7 @@ function DealerOrders({user,orders,setOrders,myOrders,filter,title}){
         <div key={o.id} className="card">
           <div className="ch">
             <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
-              <strong style={{color:'#f59e0b'}}>{o.id}</strong>
+              <strong style={{color:'#d97706'}}>{o.id}</strong>
               <span className={`badge ${sCls(o.status)}`}>{sLabel(o.status)}</span>
             </div>
             <span style={{fontSize:12,color:'#6b7280'}}>{fmtD(o.placedAt)}</span>
@@ -708,7 +708,7 @@ function TSEDealers({user,dealers}){
         <div key={i} className="card"><div className="cb">
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:8}}>
             <div>
-              <div style={{fontSize:15,fontWeight:700,color:'#f8f6f0',marginBottom:3}}>{d.name}</div>
+              <div style={{fontSize:15,fontWeight:700,color:'#111827',marginBottom:3}}>{d.name}</div>
               <div style={{fontSize:12,color:'#6b7280',marginBottom:8}}>{d.territory}</div>
               <div style={{display:'flex',gap:7,flexWrap:'wrap'}}>
                 <span className="chip">🏪 {d.retailers.length} Retailers</span>
@@ -738,7 +738,7 @@ function TSEApprove({user,orders,setOrders,myOrders}){
         <div key={o.id} className="card">
           <div className="ch">
             <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
-              <strong style={{color:'#f59e0b'}}>{o.id}</strong>
+              <strong style={{color:'#d97706'}}>{o.id}</strong>
               <span className={`badge ${sCls(o.status)}`}>{sLabel(o.status)}</span>
             </div>
             <div style={{display:'flex',gap:7}}>
@@ -766,7 +766,7 @@ function OList({myOrders,filter,title}){
         <div key={o.id} className="card">
           <div className="ch">
             <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
-              <strong style={{color:'#f59e0b'}}>{o.id}</strong>
+              <strong style={{color:'#d97706'}}>{o.id}</strong>
               {o.challanId&&<span className="chip">Challan: {o.challanId}</span>}
               <span className={`badge ${sCls(o.status)}`}>{sLabel(o.status)}</span>
             </div>
@@ -809,7 +809,7 @@ function WHVehicle({user,orders,setOrders,myOrders}){
         <div key={o.id} className="card">
           <div className="ch">
             <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
-              <strong style={{color:'#f59e0b'}}>{o.id}</strong>
+              <strong style={{color:'#d97706'}}>{o.id}</strong>
               <span className={`badge ${sCls(o.status)}`}>{sLabel(o.status)}</span>
             </div>
             <button className="btn bam bsm" onClick={()=>setSel(o.id)}>Assign Vehicle</button>
@@ -850,7 +850,7 @@ function WHLoading({user,orders,setOrders,myOrders}){
         <div key={o.id} className="card">
           <div className="ch">
             <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
-              <strong style={{color:'#f59e0b'}}>{o.id}</strong>
+              <strong style={{color:'#d97706'}}>{o.id}</strong>
               {o.challanId&&<span className="chip">Challan: {o.challanId}</span>}
               <span className={`badge ${sCls(o.status)}`}>{sLabel(o.status)}</span>
             </div>
@@ -882,15 +882,15 @@ function WHReceiving({user,orders,setOrders,myOrders}){
         <div key={o.id} className="card">
           <div className="ch">
             <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
-              <strong style={{color:'#f59e0b'}}>{o.id}</strong>
+              <strong style={{color:'#d97706'}}>{o.id}</strong>
               {o.challanId&&<span className="chip">Challan: {o.challanId}</span>}
             </div>
             <button className="btn bbl bsm" onClick={()=>setUpId(o.id)}>📷 Upload Receiving</button>
           </div>
           <div className="cb">
-            <div style={{fontSize:13,color:'#c9c6c0',marginBottom:4}}>Dealer: <strong style={{color:'#e8e6e0'}}>{o.dealerName}</strong> · {o.destination}: {o.destName}</div>
-            {o.vehicle&&<div style={{fontSize:12,color:'#9ca3af'}}>🚛 {o.vehicle.number} · {o.vehicle.driver} · {o.vehicle.phone}</div>}
-            <div style={{fontSize:12,color:'#ef4444',marginTop:7}}>⚠ Must upload within 24 hours of dispatch</div>
+            <div style={{fontSize:13,color:'#c9c6c0',marginBottom:4}}>Dealer: <strong style={{color:'#111827'}}>{o.dealerName}</strong> · {o.destination}: {o.destName}</div>
+            {o.vehicle&&<div style={{fontSize:12,color:'#6b7280'}}>🚛 {o.vehicle.number} · {o.vehicle.driver} · {o.vehicle.phone}</div>}
+            <div style={{fontSize:12,color:'#dc2626',marginTop:7}}>⚠ Must upload within 24 hours of dispatch</div>
           </div>
         </div>
       ))}
@@ -918,9 +918,9 @@ function AdminOrders({myOrders}){
     <div className="pb">
       <div className="sg">
         <div className="sc"><div className="sv">{counts.placed||0}</div><div className="sl">Awaiting Approval</div></div>
-        <div className="sc"><div className="sv" style={{color:'#4ade80'}}>{counts.approved||0}</div><div className="sl">Looking for Vehicle</div></div>
-        <div className="sc"><div className="sv" style={{color:'#fb923c'}}>{counts.vehicle_found||0}</div><div className="sl">Loading</div></div>
-        <div className="sc"><div className="sv" style={{color:'#a78bfa'}}>{counts.dispatched||0}</div><div className="sl">Dispatched</div></div>
+        <div className="sc"><div className="sv" style={{color:'#16a34a'}}>{counts.approved||0}</div><div className="sl">Looking for Vehicle</div></div>
+        <div className="sc"><div className="sv" style={{color:'#ea580c'}}>{counts.vehicle_found||0}</div><div className="sl">Loading</div></div>
+        <div className="sc"><div className="sv" style={{color:'#7c3aed'}}>{counts.dispatched||0}</div><div className="sl">Dispatched</div></div>
       </div>
       <div style={{display:'flex',gap:8,marginBottom:14,flexWrap:'wrap'}}>
         {['all','placed','approved','vehicle_found','dispatched','closed'].map(s=>(
@@ -935,7 +935,7 @@ function AdminOrders({myOrders}){
         <div key={o.id} className="card">
           <div className="ch">
             <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
-              <strong style={{color:'#f59e0b'}}>{o.id}</strong>
+              <strong style={{color:'#d97706'}}>{o.id}</strong>
               <span className="chip">{o.territory}</span>
               {o.challanId&&<span className="chip">Challan: {o.challanId}</span>}
               <span className={`badge ${sCls(o.status)}`}>{sLabel(o.status)}</span>
@@ -958,7 +958,7 @@ function AdminDealers({dealers}){
         <div key={i} className="card"><div className="cb">
           <div style={{display:'flex',justifyContent:'space-between',flexWrap:'wrap',gap:8}}>
             <div>
-              <div style={{fontSize:15,fontWeight:700,color:'#f8f6f0',marginBottom:3}}>{d.name}</div>
+              <div style={{fontSize:15,fontWeight:700,color:'#111827',marginBottom:3}}>{d.name}</div>
               <div style={{display:'flex',gap:7,flexWrap:'wrap',marginTop:6}}>
                 <span className="chip">{d.territory}</span>
                 <span className="chip">🏪 {d.retailers.length} Retailers</span>
@@ -983,15 +983,15 @@ function AdminPending({myOrders}){
         <div key={o.id} className="card">
           <div className="ch">
             <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
-              <strong style={{color:'#f59e0b'}}>{o.id}</strong>
+              <strong style={{color:'#d97706'}}>{o.id}</strong>
               <span className="chip">{o.territory}</span>
               {o.challanId&&<span className="chip">Challan: {o.challanId}</span>}
             </div>
-            <span style={{fontSize:12,color:'#ef4444'}}>Receiving overdue</span>
+            <span style={{fontSize:12,color:'#dc2626'}}>Receiving overdue</span>
           </div>
           <div className="cb">
-            <div style={{fontSize:13,color:'#c9c6c0',marginBottom:4}}>Dealer: <strong style={{color:'#e8e6e0'}}>{o.dealerName}</strong> · {o.destination}: {o.destName}</div>
-            {o.vehicle&&<div style={{fontSize:12,color:'#9ca3af',marginBottom:4}}>🚛 {o.vehicle.number} · {o.vehicle.driver} · {o.vehicle.phone}</div>}
+            <div style={{fontSize:13,color:'#c9c6c0',marginBottom:4}}>Dealer: <strong style={{color:'#111827'}}>{o.dealerName}</strong> · {o.destination}: {o.destName}</div>
+            {o.vehicle&&<div style={{fontSize:12,color:'#6b7280',marginBottom:4}}>🚛 {o.vehicle.number} · {o.vehicle.driver} · {o.vehicle.phone}</div>}
             <div style={{fontSize:12,color:'#6b7280'}}>Dispatched: {fmtDT(o.dispatchedAt||o.placedAt)}</div>
           </div>
         </div>
@@ -1009,22 +1009,22 @@ function OInfo({o}){
       <div>
         <div style={{fontSize:11,color:'#6b7280',marginBottom:5,textTransform:'uppercase',letterSpacing:'.04em'}}>Details</div>
         <div style={{fontWeight:600,color:'#e8e6e0',fontSize:14,marginBottom:2}}>{o.dealerName}</div>
-        <div style={{fontSize:12,color:'#9ca3af',marginBottom:2}}>📍 {o.destination}: {o.destName}</div>
-        <div style={{fontSize:12,color:'#9ca3af',marginBottom:2}}>🏭 {whName(o.warehouse)}</div>
-        <div style={{fontSize:12,color:'#9ca3af'}}>🚚 <span className="chip">{o.type}</span></div>
-        {o.vehicle&&<div style={{fontSize:12,color:'#9ca3af',marginTop:5}}>🚛 {o.vehicle.number} · {o.vehicle.driver} · {o.vehicle.phone}</div>}
-        {o.remarks&&<div style={{fontSize:12,color:'#fbbf24',marginTop:5}}>📝 {o.remarks}</div>}
+        <div style={{fontSize:12,color:'#6b7280',marginBottom:2}}>📍 {o.destination}: {o.destName}</div>
+        <div style={{fontSize:12,color:'#6b7280',marginBottom:2}}>🏭 {whName(o.warehouse)}</div>
+        <div style={{fontSize:12,color:'#6b7280'}}>🚚 <span className="chip">{o.type}</span></div>
+        {o.vehicle&&<div style={{fontSize:12,color:'#6b7280',marginTop:5}}>🚛 {o.vehicle.number} · {o.vehicle.driver} · {o.vehicle.phone}</div>}
+        {o.remarks&&<div style={{fontSize:12,color:'#d97706',marginTop:5}}>📝 {o.remarks}</div>}
       </div>
       <div>
         <div style={{fontSize:11,color:'#6b7280',marginBottom:5,textTransform:'uppercase',letterSpacing:'.04em'}}>Items</div>
         {o.items.map(i=>(
           <div key={i.cement} style={{display:'flex',justifyContent:'space-between',fontSize:13,color:'#c9c6c0',marginBottom:3,paddingBottom:3,borderBottom:'1px solid #1a1d28'}}>
-            <span>#{i.seq} {i.cement}</span><span style={{color:'#f59e0b',fontWeight:700}}>{i.qty} bags</span>
+            <span>#{i.seq} {i.cement}</span><span style={{color:'#d97706',fontWeight:700}}>{i.qty} bags</span>
           </div>
         ))}
         <div style={{display:'flex',justifyContent:'space-between',fontSize:13,marginTop:4,paddingTop:4,borderTop:'1px solid #2a2d3a'}}>
-          <span style={{color:'#6b7280'}}>Total</span>
-          <span style={{color:'#f59e0b',fontWeight:700}}>{totalBags(o.items)} bags</span>
+          <span style={{color:'#9ca3af'}}>Total</span>
+          <span style={{color:'#d97706',fontWeight:700}}>{totalBags(o.items)} bags</span>
         </div>
       </div>
     </div>
@@ -1042,8 +1042,8 @@ function UploadModal({title,subtitle,onClose,onSave,showRemarks,remarks,setRemar
           <div className="uz">
             <input type="file" accept="image/*,.pdf" onChange={e=>setFile(e.target.files[0])}/>
             <div style={{fontSize:28,marginBottom:6}}>📎</div>
-            {file?<div style={{fontSize:13}}><strong style={{color:'#f59e0b'}}>{file.name}</strong><br/><span style={{color:'#6b7280',fontSize:12}}>{(file.size/1024).toFixed(1)} KB</span></div>
-            :<div style={{fontSize:13,color:'#6b7280'}}><strong style={{color:'#f59e0b'}}>Tap to choose file</strong> or drag & drop<br/>JPG, PNG, or PDF</div>}
+            {file?<div style={{fontSize:13}}><strong style={{color:'#d97706'}}>{file.name}</strong><br/><span style={{color:'#9ca3af',fontSize:12}}>{(file.size/1024).toFixed(1)} KB</span></div>
+            :<div style={{fontSize:13,color:'#6b7280'}}><strong style={{color:'#d97706'}}>Tap to choose file</strong> or drag & drop<br/>JPG, PNG, or PDF</div>}
           </div>
           {showRemarks&&<div className="fg" style={{marginTop:12}}>
             <label>Remarks (damaged / short goods? note here)</label>
