@@ -234,30 +234,24 @@ function api(action, payload={}) {
   if(CFG.DEMO_MODE) return Promise.reject(new Error('DEMO_MODE'));
   return new Promise((resolve, reject) => {
     const cbName = 'cb_' + Date.now();
-    const params = new URLSearchParams({action, ...flattenPayload(payload), callback: cbName});
+    // Serialize all values — keep objects/arrays as JSON strings
+    const flat = {action, callback: cbName};
+    for(const key in payload){
+      const val = payload[key];
+      flat[key] = (val !== null && typeof val === 'object') ? JSON.stringify(val) : val;
+    }
+    const params = new URLSearchParams(flat);
     const script = document.createElement('script');
     script.src = CFG.SCRIPT_URL + '?' + params.toString();
     window[cbName] = (data) => {
       delete window[cbName];
-      document.body.removeChild(script);
+      if(document.body.contains(script)) document.body.removeChild(script);
       if(data.error) reject(new Error(data.error));
       else resolve(data);
     };
     script.onerror = () => reject(new Error('Network error'));
     document.body.appendChild(script);
   });
-}
-function flattenPayload(obj, prefix='') {
-  const result = {};
-  for(const key in obj) {
-    const val = obj[key];
-    if(val !== null && typeof val === 'object' && !Array.isArray(val)) {
-      Object.assign(result, flattenPayload(val, prefix+key+'_'));
-    } else {
-      result[prefix+key] = typeof val === 'object' ? JSON.stringify(val) : val;
-    }
-  }
-  return result;
 }
 function demoFallback(e,fn){if(e.message==='DEMO_MODE'){fn();return true;}return false;}
 
