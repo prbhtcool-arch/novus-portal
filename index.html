@@ -267,8 +267,26 @@ function App(){
       return u;
     }catch{return null;}
   });
-  const[orders,setOrders]=useState(DEMO_ORDERS);
-  const[dealers,setDealers]=useState(DEMO_DEALERS);
+  const[orders,setOrders]=useState(CFG.DEMO_MODE?DEMO_ORDERS:[]);
+  const[dealers,setDealers]=useState(CFG.DEMO_MODE?DEMO_DEALERS:{});
+  const[appLoaded,setAppLoaded]=useState(CFG.DEMO_MODE);
+
+  // Reload app data when user is restored from localStorage (e.g. page refresh)
+  useEffect(()=>{
+    if(!user||CFG.DEMO_MODE||appLoaded) return;
+    api('getAppData',{email:user.email}).then(data=>{
+      if(data.orders) setOrders(data.orders);
+      if(data.dealers&&data.dealers.length>0)
+        setDealers(Object.fromEntries(data.dealers.map(d=>[d.id,d])));
+      if(data.dealerData&&user.role==='dealer')
+        setDealers(prev=>({...prev,[user.id]:{
+          name:user.name,territory:user.territory,
+          retailers:data.dealerData.retailers||[],
+          sites:data.dealerData.sites||[],
+        }}));
+      setAppLoaded(true);
+    }).catch(()=>setAppLoaded(true));
+  },[user]);
 
   const handleSetUser=(u)=>{
     if(u){
@@ -301,6 +319,12 @@ function App(){
   },[user]);
 
   if(!user)return <Login setUser={handleSetUser} setOrders={setOrders} setDealers={setDealers}/>;
+  if(!appLoaded)return(
+    <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',background:'#f5f6fa',flexDirection:'column',gap:12}}>
+      <div style={{width:40,height:40,border:'3px solid #fde68a',borderTopColor:'#f59e0b',borderRadius:'50%',animation:'sp .7s linear infinite'}}/>
+      <div style={{fontSize:14,color:'#6b7280',fontWeight:500}}>Loading your portal…</div>
+    </div>
+  );
   return <Shell user={user} setUser={handleSetUser} orders={orders} setOrders={setOrders} dealers={dealers} setDealers={setDealers}/>;
 }
 
@@ -321,22 +345,25 @@ function Login({setUser,setOrders,setDealers}){
         if(!u||pw!=='novus123'){setErr('Invalid credentials. Demo password: novus123');setLoading(false);return;}
         setUser({...u});
       } else {
-        const d=await api('login',{email:email.toLowerCase().trim(),password:pw});
-        setUser(d.user);
+        const loginRes=await api('login',{email:email.toLowerCase().trim(),password:pw});
+        const u=loginRes.user;
+        // Load all app data
         const appData=await api('getAppData',{email:email.toLowerCase().trim()});
         if(appData.orders) setOrders(appData.orders);
-        if(appData.dealers && appData.dealers.length>0){
-          setDealers(Object.fromEntries(appData.dealers.map(d=>[d.id,d])));
-        }
-        // For dealer role — load their own retailers/sites
-        if(d.user.role==='dealer' && appData.dealerData){
-          setDealers(prev=>({...prev,[d.user.id]:{
-            name:d.user.name,
-            territory:d.user.territory,
+        // Build dealers map for TSE/admin
+        let newDealers={};
+        if(appData.dealers&&appData.dealers.length>0)
+          newDealers=Object.fromEntries(appData.dealers.map(dd=>[dd.id,dd]));
+        // For dealer: set their own retailers and sites
+        if(u.role==='dealer'&&appData.dealerData){
+          newDealers[u.id]={
+            name:u.name, territory:u.territory,
             retailers:appData.dealerData.retailers||[],
             sites:appData.dealerData.sites||[],
-          }}));
+          };
         }
+        setDealers(newDealers);
+        setUser(u);
       }
     }catch(e){if(e.message!=='DEMO_MODE')setErr('Login failed: '+e.message);}
     setLoading(false);
@@ -559,7 +586,7 @@ function PlaceOrder({user,orders,setOrders,dealers}){
     const sel=items.filter(i=>parseInt(i.qty)>0).map(i=>({cement:i.cement,qty:parseInt(i.qty),seq:parseInt(i.seq)||1}));
     if(!sel.length){alert('Add at least one cement item');return;}
     if((dest==='retailer'||dest==='site')&&!destId){alert('Please select a destination');return;}
-    const destName=dest==='counter'?d.name:dest==='retailer'?d.retailers.find(r=>r.id===destId)?.name:d.sites.find(s=>s.id===destId)?.name;
+    const destName=dest==='counter'?(d.name||user.name):dest==='retailer'?d.retailers.find(r=>r.id===destId)?.name:d.sites.find(s=>s.id===destId)?.name;
     const o={id:'ORD'+Date.now().toString().slice(-6),dealer:user.id,dealerName:user.name,territory:user.territory,warehouse:wh,type,destination:dest==='counter'?'Counter':dest==='retailer'?'Retailer':'Site',destName,items:sel,status:'placed',placedAt:new Date().toISOString(),challanId:null,vehicle:null,receivingUploaded:false,remarks:''};
     setSaving(true);
     try{await api('addOrder',{order:o,items:sel});}catch(e){if(!demoFallback(e,()=>{})){alert('Error: '+e.message);setSaving(false);return;}}
