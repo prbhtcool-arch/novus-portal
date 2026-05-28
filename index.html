@@ -278,18 +278,20 @@ function App(){
   // Reload app data when user is restored from localStorage (e.g. page refresh)
   useEffect(()=>{
     if(!user||CFG.DEMO_MODE||appLoaded) return;
+    setAppLoaded(true); // prevent double-load
     api('getAppData',{email:user.email}).then(data=>{
       if(data.orders) setOrders(data.orders);
+      let nd={};
       if(data.dealers&&data.dealers.length>0)
-        setDealers(Object.fromEntries(data.dealers.map(d=>[d.id,d])));
+        nd=Object.fromEntries(data.dealers.map(d=>[d.id,d]));
       if(data.dealerData&&user.role==='dealer')
-        setDealers(prev=>({...prev,[user.id]:{
+        nd[user.id]={
           name:user.name,territory:user.territory,
           retailers:data.dealerData.retailers||[],
           sites:data.dealerData.sites||[],
-        }}));
-      setAppLoaded(true);
-    }).catch(()=>setAppLoaded(true));
+        };
+      if(Object.keys(nd).length>0) setDealers(nd);
+    }).catch(()=>{});
   },[user]);
 
   const handleSetUser=(u)=>{
@@ -366,8 +368,10 @@ function Login({setUser,setOrders,setDealers}){
             sites:appData.dealerData.sites||[],
           };
         }
+        // Set appLoaded true first to block useEffect from overwriting
         setDealers(newDealers);
         setUser(u);
+        setAppLoaded(true);
       }
     }catch(e){if(e.message!=='DEMO_MODE')setErr('Login failed: '+e.message);}
     setLoading(false);
