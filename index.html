@@ -325,7 +325,18 @@ function Login({setUser,setOrders,setDealers}){
         setUser(d.user);
         const appData=await api('getAppData',{email:email.toLowerCase().trim()});
         if(appData.orders) setOrders(appData.orders);
-        if(appData.dealers) setDealers(Object.fromEntries(appData.dealers.map(d=>[d.id,d])));
+        if(appData.dealers && appData.dealers.length>0){
+          setDealers(Object.fromEntries(appData.dealers.map(d=>[d.id,d])));
+        }
+        // For dealer role — load their own retailers/sites
+        if(d.user.role==='dealer' && appData.dealerData){
+          setDealers(prev=>({...prev,[d.user.id]:{
+            name:d.user.name,
+            territory:d.user.territory,
+            retailers:appData.dealerData.retailers||[],
+            sites:appData.dealerData.sites||[],
+          }}));
+        }
       }
     }catch(e){if(e.message!=='DEMO_MODE')setErr('Login failed: '+e.message);}
     setLoading(false);
@@ -533,7 +544,7 @@ function Dashboard({user,myOrders,setPage}){
 //  PLACE ORDER
 // ══════════════════════════════════════════════
 function PlaceOrder({user,orders,setOrders,dealers}){
-  const d=dealers[user.id];
+  const d=dealers[user.id]||{name:user.name,retailers:[],sites:[]};
   const[dest,setDest]=useState('counter');
   const[destId,setDestId]=useState('');
   const[wh,setWh]=useState('WH1');
@@ -656,11 +667,11 @@ function DealerOrders({user,orders,setOrders,myOrders,filter,title}){
 //  CONTACTS (Retailers / Sites)
 // ══════════════════════════════════════════════
 function Contacts({user,dealers,setDealers,type}){
-  const d=dealers[user.id];
+  const d=dealers[user.id]||{name:user.name,retailers:[],sites:[]};
   const[modal,setModal]=useState(false);
   const[name,setName]=useState('');
   const[extra,setExtra]=useState('');
-  const items=type==='retailers'?d.retailers:d.sites;
+  const items=type==='retailers'?(d.retailers||[]):(d.sites||[]);
   const save=async()=>{
     if(!name.trim())return;
     const newItem=type==='retailers'?{id:'R'+Date.now(),name:name.trim(),phone:extra}:{id:'S'+Date.now(),name:name.trim(),address:extra};
