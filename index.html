@@ -850,7 +850,7 @@ function Contacts({user,dealers,setDealers,type}){
 //  TSE PAGES
 // ══════════════════════════════════════════════
 function TSEDealers({user,dealers}){
-  const myD=Object.values(DEMO_DEALERS).filter(d=>d.territory===user.territory);
+  const myD=Object.values(dealers).filter(d=>d.territory===user.territory);
   return <>
     <div className="ph"><div className="pt">My Dealers</div><div className="ps">Territory: {user.territory}</div></div>
     <div className="pb">
@@ -1100,7 +1100,7 @@ function AdminOrders({myOrders}){
 }
 
 function AdminDealers({dealers}){
-  const all=Object.values(DEMO_DEALERS);
+  const all=Object.values(dealers);
   return <>
     <div className="ph"><div className="pt">All Dealers</div><div className="ps">{all.length} dealers across all territories</div></div>
     <div className="pb">
