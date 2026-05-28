@@ -135,6 +135,16 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#f5f6fa;color:#1a1d2
 .dopt:hover{border-color:#d1d5db;background:#fff}.dopt.sel{border-color:#f59e0b;background:#fffbeb}
 .dopt .di{font-size:20px;margin-bottom:3px}
 .dopt .dl{font-size:12px;font-weight:600;color:#9ca3af}.dopt.sel .dl{color:#d97706}
+.search-dd{position:relative}
+.search-dd input{width:100%;background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:8px;padding:9px 12px 9px 34px;color:#111827;font-size:13px;font-family:inherit;outline:none;transition:border .12s}
+.search-dd input:focus{border-color:#f59e0b;background:#fff}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:14px;pointer-events:none}
+.dd-list{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1.5px solid #e5e7eb;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.1);z-index:100;max-height:220px;overflow-y:auto}
+.dd-item{padding:9px 12px;font-size:13px;color:#374151;cursor:pointer;border-bottom:1px solid #f3f4f6;transition:background .1s}
+.dd-item:last-child{border-bottom:none}
+.dd-item:hover{background:#fef3c7;color:#d97706}
+.dd-item.selected{background:#fffbeb;color:#d97706;font-weight:600}
+.dd-empty{padding:10px 12px;font-size:13px;color:#9ca3af;text-align:center}
 .dmb{background:#111520;border-radius:8px;padding:2px 0}
 .dmbr{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;border-bottom:1px solid #1e2330;font-size:13px}
 .dmbr:last-child{border-bottom:none}
@@ -567,6 +577,94 @@ function Dashboard({user,myOrders,setPage}){
   </>;
 }
 
+
+// ══════════════════════════════════════════════
+//  SEARCHABLE DROPDOWN
+// ══════════════════════════════════════════════
+function SearchDropdown({items,value,onChange,placeholder,labelKey='name',valueKey='id',onAddNew,addNewLabel}){
+  const[query,setQuery]=useState('');
+  const[open,setOpen]=useState(false);
+  const[addModal,setAddModal]=useState(false);
+  const[newName,setNewName]=useState('');
+  const[newPhone,setNewPhone]=useState('');
+  const[newAddr,setNewAddr]=useState('');
+  const ref=React.useRef(null);
+
+  const selected=items.find(i=>i[valueKey]===value);
+  const filtered=items.filter(i=>(i[labelKey]||'').toLowerCase().includes(query.toLowerCase()));
+  const showAdd=onAddNew&&query.trim().length>0&&!filtered.find(i=>(i[labelKey]||'').toLowerCase()===query.toLowerCase());
+
+  useEffect(()=>{
+    const handler=(e)=>{ if(ref.current&&!ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown',handler);
+    return()=>document.removeEventListener('mousedown',handler);
+  },[]);
+
+  const select=(item)=>{ onChange(item[valueKey]); setQuery(''); setOpen(false); };
+
+  const handleAdd=()=>{
+    if(!newName.trim()) return;
+    onAddNew({name:newName.trim(),phone:newPhone.trim(),address:newAddr.trim()},
+      (newItem)=>{ onChange(newItem[valueKey]); setAddModal(false); setNewName(''); setNewPhone(''); setNewAddr(''); setOpen(false); }
+    );
+  };
+
+  return(
+    <div className="search-dd" ref={ref}>
+      <span className="search-icon">🔍</span>
+      <input
+        value={open?query:(selected?selected[labelKey]:'')}
+        onChange={e=>{setQuery(e.target.value);setOpen(true);}}
+        onFocus={()=>{setOpen(true);setQuery('');}}
+        placeholder={placeholder||'Search...'}
+      />
+      {open&&(
+        <div className="dd-list">
+          {filtered.map(item=>(
+            <div key={item[valueKey]} className={`dd-item${item[valueKey]===value?' selected':''}`} onMouseDown={()=>select(item)}>
+              {item[labelKey]}
+            </div>
+          ))}
+          {showAdd&&(
+            <div className="dd-item" style={{color:'#16a34a',fontWeight:600,borderTop:'1.5px solid #e5e7eb'}}
+              onMouseDown={(e)=>{e.preventDefault();setNewName(query);setAddModal(true);setOpen(false);}}>
+              ＋ Add "{query}" as new {addNewLabel||'entry'}
+            </div>
+          )}
+          {filtered.length===0&&!showAdd&&(
+            <div className="dd-empty">No results found</div>
+          )}
+        </div>
+      )}
+      {addModal&&(
+        <div className="ov" onClick={e=>e.target===e.currentTarget&&setAddModal(false)}>
+          <div className="modal">
+            <div className="mh">
+              <span className="mt">Add New {addNewLabel||'Entry'}</span>
+              <button className="btn bgh bsm" onClick={()=>setAddModal(false)}>✕</button>
+            </div>
+            <div className="mb">
+              <div className="fg"><label>Name</label>
+                <input value={newName} onChange={e=>setNewName(e.target.value)} placeholder="Full name"/>
+              </div>
+              {addNewLabel==='Retailer'&&<div className="fg"><label>Phone (optional)</label>
+                <input value={newPhone} onChange={e=>setNewPhone(e.target.value)} placeholder="Mobile number"/>
+              </div>}
+              {addNewLabel==='Site'&&<div className="fg"><label>Address (optional)</label>
+                <input value={newAddr} onChange={e=>setNewAddr(e.target.value)} placeholder="Full address"/>
+              </div>}
+            </div>
+            <div className="mf">
+              <button className="btn bgh" onClick={()=>setAddModal(false)}>Cancel</button>
+              <button className="btn bgr" onClick={handleAdd}>✓ Save & Select</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ══════════════════════════════════════════════
 //  PLACE ORDER
 // ══════════════════════════════════════════════
@@ -610,8 +708,28 @@ function PlaceOrder({user,orders,setOrders,dealers}){
               </div>
             ))}
           </div>
-          {dest==='retailer'&&<div className="fg"><label>Select Retailer</label><select value={destId} onChange={e=>setDestId(e.target.value)}><option value="">-- Choose --</option>{d.retailers.map(r=><option key={r.id} value={r.id}>{r.name}</option>)}</select></div>}
-          {dest==='site'&&<div className="fg"><label>Select Site</label><select value={destId} onChange={e=>setDestId(e.target.value)}><option value="">-- Choose --</option>{d.sites.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></div>}
+          {dest==='retailer'&&<div className="fg"><label>Select Retailer</label><SearchDropdown
+            items={d.retailers} value={destId} onChange={setDestId}
+            placeholder="Search retailer name..." labelKey="name" valueKey="id"
+            addNewLabel="Retailer"
+            onAddNew={(data,cb)=>{
+              const newR={id:'R'+Date.now(),name:data.name,phone:data.phone||''};
+              setDealers(prev=>({...prev,[user.id]:{...d,retailers:[...d.retailers,newR]}}));
+              api('addRetailer',{dealerId:user.id,name:data.name,phone:data.phone||''}).catch(()=>{});
+              cb(newR);
+            }}
+          /></div>}
+          {dest==='site'&&<div className="fg"><label>Select Site</label><SearchDropdown
+            items={d.sites} value={destId} onChange={setDestId}
+            placeholder="Search site name..." labelKey="name" valueKey="id"
+            addNewLabel="Site"
+            onAddNew={(data,cb)=>{
+              const newS={id:'S'+Date.now(),name:data.name,address:data.address||''};
+              setDealers(prev=>({...prev,[user.id]:{...d,sites:[...d.sites,newS]}}));
+              api('addSite',{dealerId:user.id,name:data.name,address:data.address||''}).catch(()=>{});
+              cb(newS);
+            }}
+          /></div>}
         </div>
       </div>
       <div className="card">
