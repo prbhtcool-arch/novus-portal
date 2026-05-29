@@ -467,7 +467,7 @@ function Shell({user,setUser,orders,setOrders,dealers,setDealers,locationData,fr
 function Router({page,locationData,freightMatrix,warehouses,...p}){
   const pL={...p,locationData,freightMatrix,warehouses};
   const{user}=p;
-  if(page==='home') return <Dashboard {...p}/>;
+  if(page==='home') return <Dashboard {...pL}/>;
   if(page==='report') return <DispatchReport {...pL}/>;
   if(user.role==='dealer'){
     if(page==='place')    return <PlaceOrder {...pL}/>;
@@ -494,13 +494,13 @@ function Router({page,locationData,freightMatrix,warehouses,...p}){
     if(page==='admin_dealers') return <AdminDealers {...p}/>;
     if(page==='admin_pending') return <AdminPending {...p}/>;
   }
-  return <Dashboard {...p}/>;
+  return <Dashboard {...pL}/>;
 }
 
 // ══════════════════════════════════════════════
 //  DASHBOARD
 // ══════════════════════════════════════════════
-function Dashboard({user,myOrders,setPage}){
+function Dashboard({user,myOrders,setPage,warehouses}){
   const c={placed:0,approved:0,vehicle_found:0,dispatched:0,closed:0};
   myOrders.forEach(o=>{if(c[o.status]!==undefined)c[o.status]++;});
   const unreceivedCount=myOrders.filter(o=>o.status==='dispatched'&&!o.receivingUploaded).length;
@@ -528,7 +528,7 @@ function Dashboard({user,myOrders,setPage}){
               <td style={{color:'#d97706',fontWeight:700}}>{o.id}</td>
               <td>{o.dealerName}</td>
               <td style={{fontSize:12}}>{o.items.map(i=>`${i.qty}×${i.cement}`).join(', ')}</td>
-              <td style={{fontSize:12}}>{whName(o.warehouse).split(' ').slice(0,2).join(' ')}</td>
+              <td style={{fontSize:12}}>{whName(o.warehouse,warehouses).split(' ').slice(0,2).join(' ')}</td>
               <td><span className={`badge ${sCls(o.status)}`}>{sLabel(o.status).split('–')[0].trim()}</span></td>
               <td style={{fontSize:12}}>{fmtD(o.placedAt)}</td>
             </tr>
@@ -695,7 +695,7 @@ function LocationPicker({locationData,value,onChange}){
 // ══════════════════════════════════════════════
 //  PLACE ORDER
 // ══════════════════════════════════════════════
-function PlaceOrder({user,orders,setOrders,dealers}){
+function PlaceOrder({user,orders,setOrders,dealers,setDealers,warehouses}){
   const d=dealers[user.id];
   const[dest,setDest]=useState('counter');
   const[destId,setDestId]=useState('');
