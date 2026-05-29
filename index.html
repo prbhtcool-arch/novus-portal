@@ -210,7 +210,10 @@ const DEMO_ORDERS=[
 // ── Helpers ────────────────────────────────────
 function sLabel(s){return{placed:'Order Placed – Waiting for Approval',approved:'Order Approved – Looking for Vehicle',vehicle_found:'Vehicle Found – Loading Started',dispatched:'Loading Complete – Vehicle Dispatched',closed:'Order Closed'}[s]||s;}
 function sCls(s){return{placed:'bp',approved:'ba',vehicle_found:'bv',dispatched:'bd',closed:'bcl'}[s]||'bp';}
-function whName(id){return WHS.find(w=>w.id===id)?.name||id;}
+function whName(id,whs){
+  const list=whs||(typeof warehouses!=='undefined'?warehouses:WHS);
+  return (list||WHS).find(w=>w.id===id)?.name||id;
+}
 function fmtD(d){try{return new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});}catch{return d;}}
 function fmtDT(d){try{return new Date(d).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});}catch{return d;}}
 function totalBags(items){return items.reduce((s,i)=>s+(parseInt(i.qty)||0),0);}
@@ -256,6 +259,7 @@ function App(){
   const[dealers,setDealers]=useState(CFG.DEMO_MODE?DEMO_DEALERS:{});
   const[locationData,setLocationData]=useState([]);
   const[freightMatrix,setFreightMatrix]=useState([]);
+  const[warehouses,setWarehouses]=useState(WHS);
   const[appLoaded,setAppLoaded]=useState(CFG.DEMO_MODE);
 
   const handleSetUser=(u)=>{
@@ -275,6 +279,7 @@ function App(){
       if(Object.keys(nd).length>0) setDealers(nd);
       if(appData.locationData) setLocationData(appData.locationData);
       if(appData.freightMatrix) setFreightMatrix(appData.freightMatrix);
+      if(appData.warehouses&&appData.warehouses.length>0) setWarehouses(appData.warehouses);
     }).catch(()=>{});
   },[user]);
 
@@ -300,7 +305,7 @@ function App(){
       <div style={{fontSize:14,color:'#6b7280',fontWeight:500}}>Loading your portal...</div>
     </div>
   );
-  return <Shell user={user} setUser={handleSetUser} orders={orders} setOrders={setOrders} dealers={dealers} setDealers={setDealers} locationData={locationData} freightMatrix={freightMatrix}/>;
+  return <Shell user={user} setUser={handleSetUser} orders={orders} setOrders={setOrders} dealers={dealers} setDealers={setDealers} locationData={locationData} freightMatrix={freightMatrix} warehouses={warehouses}/>;
 }
 
 // ══════════════════════════════════════════════
@@ -365,7 +370,7 @@ function Login({setUser,setOrders,setDealers}){
 // ══════════════════════════════════════════════
 //  SHELL
 // ══════════════════════════════════════════════
-function Shell({user,setUser,orders,setOrders,dealers,setDealers,locationData,freightMatrix}){
+function Shell({user,setUser,orders,setOrders,dealers,setDealers,locationData,freightMatrix,warehouses}){
   const[page,setPage]=useState('home');
 
   const myOrders=orders.filter(o=>{
@@ -411,7 +416,7 @@ function Shell({user,setUser,orders,setOrders,dealers,setDealers,locationData,fr
   };
 
   const navs=navMap[user.role]||[];
-  const sub=user.role==='tse'?`Territory: ${user.territory}`:user.role==='logistics'?whName(user.warehouse):user.role==='admin'?'All Territories':user.territory;
+  const sub=user.role==='tse'?`Territory: ${user.territory}`:user.role==='logistics'?whName(user.warehouse,warehouses):user.role==='admin'?'All Territories':user.territory;
 
   const[sideOpen,setSideOpen]=useState(false);
   const closeSide=()=>setSideOpen(false);
@@ -453,13 +458,14 @@ function Shell({user,setUser,orders,setOrders,dealers,setDealers,locationData,fr
         {CFG.DEMO_MODE&&<div className="alert aw" style={{margin:0,borderRadius:0,borderLeft:'none',borderRight:'none',borderTop:'none'}}>
           <span>🔧</span><strong>Demo Mode</strong> — changes are not saved. Paste your Apps Script URL and set DEMO_MODE: false to go live.
         </div>}
-        <Router page={page} user={user} orders={orders} setOrders={setOrders} dealers={dealers} setDealers={setDealers} myOrders={myOrders} setPage={setPage} locationData={locationData} freightMatrix={freightMatrix}/>
+        <Router page={page} user={user} orders={orders} setOrders={setOrders} dealers={dealers} setDealers={setDealers} myOrders={myOrders} setPage={setPage} locationData={locationData} freightMatrix={freightMatrix} warehouses={warehouses}/>
       </div>
     </div>
   );
 }
 
-function Router({page,locationData,freightMatrix,...p}){
+function Router({page,locationData,freightMatrix,warehouses,...p}){
+  const pL={...p,locationData,freightMatrix,warehouses};
   const pL={...p,locationData,freightMatrix};
   const{user}=p;
   if(page==='home') return <Dashboard {...p}/>;
@@ -502,7 +508,7 @@ function Dashboard({user,myOrders,setPage}){
   return <>
     <div className="ph">
       <div><div className="pt">Welcome, {user.name.split(' ')[0]} 👋</div>
-      <div className="ps">{user.role==='tse'?`Territory: ${user.territory}`:user.role==='logistics'?whName(user.warehouse):user.role==='admin'?'All Territories · Branch Manager View':user.name}</div></div>
+      <div className="ps">{user.role==='tse'?`Territory: ${user.territory}`:user.role==='logistics'?whName(user.warehouse,warehouses):user.role==='admin'?'All Territories · Branch Manager View':user.name}</div></div>
     </div>
     <div className="pb">
       {user.role==='dealer'&&unreceivedCount>0&&<div className="alert aw"><span>⛔</span><strong>Action required!</strong> You have {unreceivedCount} dispatched order(s) with pending receiving. Upload receiving to unblock new orders.</div>}
@@ -762,7 +768,7 @@ function PlaceOrder({user,orders,setOrders,dealers}){
         <div className="ch"><span className="ct">Step 2 — Warehouse & Dispatch Type</span></div>
         <div className="cb">
           <div className="r2">
-            <div className="fg"><label>Preferred Warehouse</label><select value={wh} onChange={e=>setWh(e.target.value)}>{WHS.map(w=><option key={w.id} value={w.id}>{w.name}</option>)}</select></div>
+            <div className="fg"><label>Preferred Warehouse</label><select value={wh} onChange={e=>setWh(e.target.value)}>{getAccessibleWarehouses(user.territory,user.id,warehouses||WHS).map(w=><option key={w.id} value={w.id}>{w.name}</option>)}</select></div>
             <div className="fg"><label>Dispatch Type</label><select value={type} onChange={e=>setType(e.target.value)}><option value="FOR">FOR – Logistics arranges vehicle</option><option value="EX">EX – Own vehicle</option></select></div>
           </div>
         </div>
