@@ -471,28 +471,28 @@ function Router({page,locationData,freightMatrix,warehouses,...p}){
   if(page==='report') return <DispatchReport {...pL}/>;
   if(user.role==='dealer'){
     if(page==='place')    return <PlaceOrder {...pL}/>;
-    if(page==='pending')  return <DealerOrders {...p} filter={['placed','approved','vehicle_found','dispatched']} title="Pending Orders"/>;
-    if(page==='closed')   return <DealerOrders {...p} filter={['closed']} title="Closed Orders"/>;
+    if(page==='pending')  return <DealerOrders {...pL} filter={['placed','approved','vehicle_found','dispatched']} title="Pending Orders"/>;
+    if(page==='closed')   return <DealerOrders {...pL} filter={['closed']} title="Closed Orders"/>;
     if(page==='retailers')return <Contacts {...pL} type="retailers"/>;
     if(page==='sites')    return <Contacts {...pL} type="sites"/>;
   }
   if(user.role==='tse'){
-    if(page==='dealers')  return <TSEDealers {...p}/>;
-    if(page==='approve')  return <TSEApprove {...p}/>;
-    if(page==='approved') return <OList {...p} filter={['approved']} title="Approved – Awaiting Dispatch"/>;
-    if(page==='dispatched')return <OList {...p} filter={['dispatched','closed']} title="Dispatched Orders"/>;
+    if(page==='dealers')  return <TSEDealers {...pL}/>;
+    if(page==='approve')  return <TSEApprove {...pL}/>;
+    if(page==='approved') return <OList {...pL} filter={['approved']} title="Approved – Awaiting Dispatch"/>;
+    if(page==='dispatched')return <OList {...pL} filter={['dispatched','closed']} title="Dispatched Orders"/>;
   }
   if(user.role==='logistics'){
-    if(page==='wh_pending')   return <OList {...p} filter={['placed']} title="Waiting for TSE Approval"/>;
-    if(page==='wh_vehicle')   return <WHVehicle {...p}/>;
-    if(page==='wh_loading')   return <WHLoading {...p}/>;
-    if(page==='wh_dispatched')return <OList {...p} filter={['dispatched','closed']} title="Dispatched Orders"/>;
-    if(page==='wh_receiving') return <WHReceiving {...p}/>;
+    if(page==='wh_pending')   return <OList {...pL} filter={['placed']} title="Waiting for TSE Approval"/>;
+    if(page==='wh_vehicle')   return <WHVehicle {...pL}/>;
+    if(page==='wh_loading')   return <WHLoading {...pL}/>;
+    if(page==='wh_dispatched')return <OList {...pL} filter={['dispatched','closed']} title="Dispatched Orders"/>;
+    if(page==='wh_receiving') return <WHReceiving {...pL}/>;
   }
   if(user.role==='admin'){
-    if(page==='admin_orders')  return <AdminOrders {...p}/>;
-    if(page==='admin_dealers') return <AdminDealers {...p}/>;
-    if(page==='admin_pending') return <AdminPending {...p}/>;
+    if(page==='admin_orders')  return <AdminOrders {...pL}/>;
+    if(page==='admin_dealers') return <AdminDealers {...pL}/>;
+    if(page==='admin_pending') return <AdminPending {...pL}/>;
   }
   return <Dashboard {...pL}/>;
 }
@@ -794,7 +794,7 @@ function PlaceOrder({user,orders,setOrders,dealers,setDealers,warehouses}){
 // ══════════════════════════════════════════════
 //  DEALER ORDERS
 // ══════════════════════════════════════════════
-function DealerOrders({user,orders,setOrders,myOrders,filter,title}){
+function DealerOrders({user,orders,setOrders,myOrders,filter,title,warehouses}){
   const list=myOrders.filter(o=>filter.includes(o.status));
   const[uploadId,setUploadId]=useState(null);
   const[remarks,setRemarks]=useState('');
@@ -821,7 +821,7 @@ function DealerOrders({user,orders,setOrders,myOrders,filter,title}){
             <span style={{fontSize:12,color:'#6b7280'}}>{fmtD(o.placedAt)}</span>
           </div>
           <div className="cb">
-            <OInfo o={o}/>
+            <OInfo o={o} warehouses={warehouses}/>
             {o.status==='dispatched'&&!o.receivingUploaded&&(
               <div className="alert aw" style={{marginTop:12}}>
                 <span>⚠️</span><div><strong>Action Required:</strong> Upload receiving for challan <strong>{o.challanId}</strong> within 24 hours.
@@ -1173,7 +1173,7 @@ function TSEDealers({user,dealers}){
   </>;
 }
 
-function TSEApprove({user,orders,setOrders,myOrders}){
+function TSEApprove({user,orders,setOrders,myOrders,warehouses}){
   const pending=myOrders.filter(o=>o.status==='placed');
   const act=async(id,newStatus)=>{
     try{await api('updateOrderStatus',{orderId:id,status:newStatus,changedBy:user.email});}
@@ -1196,7 +1196,7 @@ function TSEApprove({user,orders,setOrders,myOrders}){
               <button className="btn bgr bsm" onClick={()=>act(o.id,'approved')}>✓ Approve</button>
             </div>
           </div>
-          <div className="cb"><OInfo o={o}/></div>
+          <div className="cb"><OInfo o={o} warehouses={warehouses}/></div>
         </div>
       ))}
     </div>
@@ -1206,7 +1206,7 @@ function TSEApprove({user,orders,setOrders,myOrders}){
 // ══════════════════════════════════════════════
 //  GENERIC ORDER LIST
 // ══════════════════════════════════════════════
-function OList({myOrders,filter,title}){
+function OList({myOrders,filter,title,warehouses}){
   const list=myOrders.filter(o=>filter.includes(o.status));
   return <>
     <div className="ph"><div className="pt">{title}</div><div className="ps">{list.length} order(s)</div></div>
@@ -1222,7 +1222,7 @@ function OList({myOrders,filter,title}){
             </div>
             <span style={{fontSize:12,color:'#6b7280'}}>{fmtD(o.placedAt)}</span>
           </div>
-          <div className="cb"><OInfo o={o}/></div>
+          <div className="cb"><OInfo o={o} warehouses={warehouses}/></div>
         </div>
       ))}
     </div>
@@ -1232,7 +1232,7 @@ function OList({myOrders,filter,title}){
 // ══════════════════════════════════════════════
 //  WAREHOUSE PAGES
 // ══════════════════════════════════════════════
-function WHVehicle({user,orders,setOrders,myOrders}){
+function WHVehicle({user,orders,setOrders,myOrders,warehouses}){
   const list=myOrders.filter(o=>o.status==='approved');
   const[sel,setSel]=useState(null);
   const[manualNo,setManualNo]=useState('');
@@ -1246,7 +1246,7 @@ function WHVehicle({user,orders,setOrders,myOrders}){
     if(!vNum.trim()||!driver.trim()){alert('Fill vehicle number and driver name');return;}
     const challanId='CH'+Date.now().toString().slice(-5);
     const selOrd=orders.find(o=>o.id===sel);
-    const challanRef=manualNo.trim()+'/'+whName(selOrd?.warehouse||'')+'/'+new Date().toLocaleDateString('en-IN');
+    const challanRef=manualNo.trim()+'/'+whName(selOrd?.warehouse||'',warehouses)+'/'+new Date().toLocaleDateString('en-IN');
     const upd={status:'vehicle_found',vehicleAt:new Date().toISOString(),challanId,challanRef,manualChallanNo:manualNo.trim(),vehicle:{number:vNum.trim(),driver:driver.trim(),phone:dPhone.trim()}};
     setSaving(true);
     try{await api('assignVehicle',{orderId:sel,vehicle:{number:vNum.trim(),driver:driver.trim(),phone:dPhone.trim()},assignedBy:user.email,manualChallanNo:manualNo.trim(),challanRef});}
@@ -1268,7 +1268,7 @@ function WHVehicle({user,orders,setOrders,myOrders}){
             </div>
             <button className="btn bam bsm" onClick={()=>setSel(o.id)}>Assign Vehicle</button>
           </div>
-          <div className="cb"><OInfo o={o}/></div>
+          <div className="cb"><OInfo o={o} warehouses={warehouses}/></div>
         </div>
       ))}
     </div>
@@ -1290,7 +1290,7 @@ function WHVehicle({user,orders,setOrders,myOrders}){
   </>;
 }
 
-function WHLoading({user,orders,setOrders,myOrders}){
+function WHLoading({user,orders,setOrders,myOrders,warehouses}){
   const list=myOrders.filter(o=>o.status==='vehicle_found');
   const[dispId,setDispId]=useState(null);
   const dispatch=async()=>{
@@ -1313,7 +1313,7 @@ function WHLoading({user,orders,setOrders,myOrders}){
             </div>
             <button className="btn bam bsm" onClick={()=>setDispId(o.id)}>📷 Upload Challan & Dispatch</button>
           </div>
-          <div className="cb"><OInfo o={o}/></div>
+          <div className="cb"><OInfo o={o} warehouses={warehouses}/></div>
         </div>
       ))}
     </div>
@@ -1321,7 +1321,7 @@ function WHLoading({user,orders,setOrders,myOrders}){
   </>;
 }
 
-function WHReceiving({user,orders,setOrders,myOrders}){
+function WHReceiving({user,orders,setOrders,myOrders,warehouses}){
   const list=myOrders.filter(o=>o.status==='dispatched'&&!o.receivingUploaded);
   const[upId,setUpId]=useState(null);
   const[remarks,setRemarks]=useState('');
@@ -1359,7 +1359,7 @@ function WHReceiving({user,orders,setOrders,myOrders}){
 // ══════════════════════════════════════════════
 //  BRANCH MANAGER / ADMIN PAGES
 // ══════════════════════════════════════════════
-function AdminOrders({myOrders}){
+function AdminOrders({myOrders,warehouses}){
   const[filter,setFilter]=useState('all');
   const[search,setSearch]=useState('');
   const filtered=myOrders.filter(o=>{
@@ -1399,7 +1399,7 @@ function AdminOrders({myOrders}){
             </div>
             <span style={{fontSize:12,color:'#6b7280'}}>{fmtD(o.placedAt)}</span>
           </div>
-          <div className="cb"><OInfo o={o}/></div>
+          <div className="cb"><OInfo o={o} warehouses={warehouses}/></div>
         </div>
       ))}
     </div>
@@ -1429,7 +1429,7 @@ function AdminDealers({dealers}){
   </>;
 }
 
-function AdminPending({myOrders}){
+function AdminPending({myOrders,warehouses}){
   const pending=myOrders.filter(o=>o.status==='dispatched'&&!o.receivingUploaded);
   return <>
     <div className="ph"><div className="pt">Pending Receivings</div><div className="ps">{pending.length} challan(s) awaiting receiving upload</div></div>
@@ -1460,7 +1460,7 @@ function AdminPending({myOrders}){
 // ══════════════════════════════════════════════
 //  SHARED COMPONENTS
 // ══════════════════════════════════════════════
-function OInfo({o}){
+function OInfo({o,warehouses}){
   return(
     <div className="r2">
       <div>
