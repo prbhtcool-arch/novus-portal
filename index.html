@@ -924,46 +924,8 @@ function Contacts({user,dealers,setDealers,type,locationData}){
       </div>
     </div></div>}
   </>;
-}){
-  const d=dealers[user.id];
-  const[modal,setModal]=useState(false);
-  const[name,setName]=useState('');
-  const[extra,setExtra]=useState('');
-  const items=type==='retailers'?d.retailers:d.sites;
-  const save=async()=>{
-    if(!name.trim())return;
-    const newItem=type==='retailers'?{id:'R'+Date.now(),name:name.trim(),phone:extra}:{id:'S'+Date.now(),name:name.trim(),address:extra};
-    try{
-      if(type==='retailers') await api('addRetailer',{dealerId:user.id,name:name.trim(),phone:extra});
-      else await api('addSite',{dealerId:user.id,name:name.trim(),address:extra});
-    }catch(e){if(!demoFallback(e,()=>{}))return;}
-    setDealers({...dealers,[user.id]:{...d,[type]:[...items,newItem]}});
-    setModal(false);setName('');setExtra('');
-  };
-  return <>
-    <div className="ph">
-      <div><div className="pt">{type==='retailers'?'My Retailers':'My Sites'}</div><div className="ps">{items.length} registered</div></div>
-      <button className="btn bam" onClick={()=>setModal(true)}>+ Add {type==='retailers'?'Retailer':'Site'}</button>
-    </div>
-    <div className="pb">
-      {items.length===0&&<div className="card"><div className="empty"><div className="empty-i">{type==='retailers'?'🏪':'🏗️'}</div>None added yet</div></div>}
-      {items.map(it=>(
-        <div key={it.id} className="dc">
-          <div><div style={{fontWeight:600,color:'#374151',marginBottom:2}}>{it.name}</div><div style={{fontSize:12,color:'#6b7280'}}>{type==='retailers'?it.phone:it.address}</div></div>
-          <span className="chip">{type==='retailers'?'Retailer':'Site'}</span>
-        </div>
-      ))}
-    </div>
-    {modal&&<div className="ov"><div className="modal">
-      <div className="mh"><span className="mt">Add {type==='retailers'?'Retailer':'Site'}</span><button className="btn bgh bsm" onClick={()=>setModal(false)}>✕</button></div>
-      <div className="mb">
-        <div className="fg"><label>Name</label><input value={name} onChange={e=>setName(e.target.value)} placeholder={type==='retailers'?'Shop name':'Site name'}/></div>
-        <div className="fg"><label>{type==='retailers'?'Phone Number':'Address'}</label><input value={extra} onChange={e=>setExtra(e.target.value)} placeholder={type==='retailers'?'10-digit mobile':'Full address'}/></div>
-      </div>
-      <div className="mf"><button className="btn bgh" onClick={()=>setModal(false)}>Cancel</button><button className="btn bam" onClick={save}>Save</button></div>
-    </div></div>}
-  </>;
 }
+
 
 // ══════════════════════════════════════════════
 //  TSE PAGES
