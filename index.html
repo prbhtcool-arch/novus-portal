@@ -147,8 +147,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#f5f6fa;color:#1a1d2
 .search-dd input{width:100%;background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:8px;padding:9px 12px 9px 34px;color:#111827;font-size:13px;font-family:inherit;outline:none;transition:border .12s}
 .search-dd input:focus{border-color:#f59e0b;background:#fff}
 .search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:14px;pointer-events:none}
-.dd-list{position:fixed;background:#fff;border:1.5px solid #e5e7eb;border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,.15);z-index:9999;max-height:280px;overflow-y:auto;min-width:300px}
-.dd-item{padding:10px 14px;font-size:13px;color:#374151;cursor:pointer;border-bottom:1px solid #f3f4f6;transition:background .1s;display:flex;flex-direction:column;gap:2px;min-height:44px;justify-content:center}
+.dd-list{position:fixed;background:#fff;border:1.5px solid #e5e7eb;border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,.15);z-index:9999;max-height:220px;overflow-y:auto;min-width:300px}
+.dd-item{padding:10px 14px;font-size:13px;color:#374151;cursor:pointer;border-bottom:1px solid #f3f4f6;transition:background .1s;display:flex;flex-direction:column;gap:2px;min-height:42px;justify-content:center}
 .dd-item:last-child{border-bottom:none}
 .dd-item:hover,.dd-item.selected{background:#fef3c7;color:#d97706}
 .dd-empty{padding:10px 12px;font-size:13px;color:#9ca3af;text-align:center}
@@ -243,6 +243,38 @@ function api(action,payload={}){
   });
 }
 function demoFallback(e,fn){if(e.message==='DEMO_MODE'){fn();return true;}return false;}
+
+function fileToDataUrl(file){
+  return new Promise((resolve,reject)=>{
+    if(!file) return reject(new Error('Please choose a file first'));
+    if(file.type && file.type.startsWith('image/')){
+      const img=new Image();
+      const reader=new FileReader();
+      reader.onload=()=>{img.onload=()=>{
+        const max=1200;
+        let w=img.width,h=img.height;
+        if(w>h&&w>max){h=Math.round(h*max/w);w=max;}
+        else if(h>=w&&h>max){w=Math.round(w*max/h);h=max;}
+        const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+        const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,w,h);
+        resolve(canvas.toDataURL('image/jpeg',0.68));
+      }; img.onerror=reject; img.src=reader.result;};
+      reader.onerror=reject; reader.readAsDataURL(file);
+    } else {
+      const reader=new FileReader();
+      reader.onload=()=>resolve(reader.result);
+      reader.onerror=reject;
+      reader.readAsDataURL(file);
+    }
+  });
+}
+
+function safeFileExt(file){
+  if(!file||!file.name) return 'jpg';
+  const m=file.name.toLowerCase().match(/\.([a-z0-9]+)$/);
+  return m?m[1]:'jpg';
+}
+
 
 // ══════════════════════════════════════════════
 //  APP ROOT
@@ -406,7 +438,7 @@ function Shell({user,setUser,orders,setOrders,dealers,setDealers,locationData,fr
       {id:'wh_vehicle',ic:'🚛',lb:'Assign Vehicle',badge:myOrders.filter(o=>o.status==='approved').length},
       {id:'wh_loading',ic:'📦',lb:'Currently Loading'},
       {id:'wh_dispatched',ic:'📍',lb:'Dispatched'},
-      {id:'wh_receiving',ic:'📷',lb:'Upload Receiving',badge:myOrders.filter(o=>o.status==='dispatched'&&!o.receivingUploaded).length},
+      {id:'wh_receiving',ic:'📷',lb:'Upload Receiving',badge:myOrders.filter(o=>o.status==='dispatched'&&!o.logisticsReceivingUploaded).length},
     ],
     admin:[
       {id:'home',ic:'🏠',lb:'Dashboard'},
@@ -505,7 +537,7 @@ function Router({page,locationData,freightMatrix,warehouses,...p}){
 function Dashboard({user,myOrders,setPage,warehouses}){
   const c={placed:0,approved:0,vehicle_found:0,dispatched:0,closed:0};
   myOrders.forEach(o=>{if(c[o.status]!==undefined)c[o.status]++;});
-  const unreceivedCount=myOrders.filter(o=>o.status==='dispatched'&&!o.receivingUploaded).length;
+  const unreceivedCount=myOrders.filter(o=>o.status==='dispatched'&&!o.dealerReceivingUploaded).length;
   return <>
     <div className="ph">
       <div><div className="pt">Welcome, {user.name.split(' ')[0]} 👋</div>
@@ -513,7 +545,7 @@ function Dashboard({user,myOrders,setPage,warehouses}){
     </div>
     <div className="pb">
       {user.role==='dealer'&&unreceivedCount>0&&<div className="alert aw"><span>⛔</span><strong>Action required!</strong> You have {unreceivedCount} dispatched order(s) with pending receiving. Upload receiving to unblock new orders.</div>}
-      {user.role==='dealer'&&unreceivedCount===0&&<div className="alert ai"><span>ℹ️</span>Delivery challan receiving must be uploaded within 24 hours of dispatch to avoid order block.</div>}
+      {user.role==='dealer'&&unreceivedCount===0&&<div className="alert ai"><span>ℹ️</span>Delivery challan receiving must be uploaded within 24 hours after dispatch to avoid order block.</div>}
       <div className="sg">
         <div className="sc"><div className="sv">{c.placed}</div><div className="sl">Awaiting Approval</div></div>
         <div className="sc"><div className="sv" style={{color:'#16a34a'}}>{c.approved}</div><div className="sl">Looking for Vehicle</div></div>
@@ -557,6 +589,11 @@ function SearchDropdown({items,value,onChange,placeholder,labelKey='name',valueK
   const[dropPos,setDropPos]=useState({});
 
   const selected=items.find(i=>i[valueKey]===value);
+  const updateDropPosition=()=>{
+    if(!inputRef.current) return;
+    const r=inputRef.current.getBoundingClientRect();
+    setDropPos({top:(r.bottom+4)+'px',left:r.left+'px',width:r.width+'px',maxHeight:'220px'});
+  };
   const filtered=items.filter(i=>{
     const q=query.toLowerCase();
     return (i[labelKey]||'').toLowerCase().includes(q)||
@@ -568,9 +605,10 @@ function SearchDropdown({items,value,onChange,placeholder,labelKey='name',valueK
 
   useEffect(()=>{
     const h=(e)=>{ if(ref.current&&!ref.current.contains(e.target)) setOpen(false); };
-    document.addEventListener('mousedown',h);
-    return()=>document.removeEventListener('mousedown',h);
-  },[]);
+    const r=()=>{if(open) updateDropPosition();};
+    document.addEventListener('mousedown',h);window.addEventListener('resize',r);window.addEventListener('scroll',r,true);
+    return()=>{document.removeEventListener('mousedown',h);window.removeEventListener('resize',r);window.removeEventListener('scroll',r,true);};
+  },[open]);
 
   const select=(item)=>{ onChange(item[valueKey]); setQuery(''); setOpen(false); };
 
@@ -587,8 +625,8 @@ function SearchDropdown({items,value,onChange,placeholder,labelKey='name',valueK
       <input
         ref={inputRef}
         value={open?query:(selected?selected[labelKey]:'')}
-        onChange={e=>{setQuery(e.target.value);setOpen(true);}}
-        onFocus={()=>{setOpen(true);setQuery('');}}
+        onChange={e=>{setQuery(e.target.value);setOpen(true);updateDropPosition();}}
+        onFocus={()=>{setOpen(true);setQuery('');updateDropPosition();}}
         placeholder={placeholder||'Search...'}
       />
       {open&&(
@@ -707,9 +745,12 @@ function PlaceOrder({user,orders,setOrders,dealers,setDealers,warehouses}){
   const[done,setDone]=useState(false);
   const[saving,setSaving]=useState(false);
   const blocked=orders.some(o=>{
-    if(o.dealer!==user.id||o.status!=='dispatched'||o.receivingUploaded) return false;
+    if(o.dealer!==user.id||o.status!=='dispatched') return false;
+    if(o.dealerReceivingUploaded) return false;
     if(!o.dispatchedAt) return false;
-    return (Date.now()-new Date(o.dispatchedAt))/(1000*60*60)>24;
+    const dispatchedTime=new Date(o.dispatchedAt).getTime();
+    if(Number.isNaN(dispatchedTime)) return false;
+    return (Date.now()-dispatchedTime)/(1000*60*60)>24;
   });
   const total=totalBags(items);
 
@@ -801,11 +842,15 @@ function DealerOrders({user,orders,setOrders,myOrders,filter,title,warehouses}){
   const[uploadId,setUploadId]=useState(null);
   const[remarks,setRemarks]=useState('');
 
-  const markReceived=async(id)=>{
-    const upd={receivingUploaded:true,status:'closed'};
-    try{await api('uploadReceiving',{orderId:id,uploadedBy:user.email,uploaderRole:'dealer',remarks});}
-    catch(e){if(!demoFallback(e,()=>{}))return;}
-    setOrders(orders.map(o=>o.id===id?{...o,...upd,remarks:remarks||o.remarks}:o));
+  const markReceived=async(id,file)=>{
+    if(!file){alert('Please choose the receiving photo/PDF first');return;}
+    const ord=orders.find(o=>o.id===id);
+    try{
+      const photoData=await fileToDataUrl(file);
+      const res=await api('uploadReceivingPhoto',{orderId:id,challanId:ord?.challanId||'',manualChallanNo:ord?.manualChallanNo||ord?.challanId||id,warehouseName:whName(ord?.warehouse||'',warehouses),uploadedBy:user.email,uploaderRole:'dealer',remarks,fileExt:safeFileExt(file),photoData});
+      const upd={dealerReceivingUploaded:true,receivingDealerUrl:res.url||ord?.receivingDealerUrl||'',receivingUploaded:true,status:(ord?.logisticsReceivingUploaded?'closed':ord?.status),remarks:remarks||ord?.remarks};
+      setOrders(orders.map(o=>o.id===id?{...o,...upd}:o));
+    }catch(e){if(!demoFallback(e,()=>{})){alert('Upload failed: '+e.message);return;}}
     setUploadId(null);setRemarks('');
   };
 
@@ -824,19 +869,19 @@ function DealerOrders({user,orders,setOrders,myOrders,filter,title,warehouses}){
           </div>
           <div className="cb">
             <OInfo o={o} warehouses={warehouses}/>
-            {o.status==='dispatched'&&!o.receivingUploaded&&(
+            {o.status==='dispatched'&&!o.dealerReceivingUploaded&&(
               <div className="alert aw" style={{marginTop:12}}>
                 <span>⚠️</span><div><strong>Action Required:</strong> Upload receiving for challan <strong>{o.challanId}</strong> within 24 hours.
                 <button className="btn bam bsm" style={{marginLeft:10}} onClick={()=>setUploadId(o.id)}>📷 Upload Receiving</button></div>
               </div>
             )}
-            {o.receivingUploaded&&<div className="alert aok" style={{marginTop:10}}><span>✅</span> Receiving uploaded — Order closed{o.remarks?` · Remarks: ${o.remarks}`:''}</div>}
+            {o.dealerReceivingUploaded&&<div className="alert aok" style={{marginTop:10}}><span>✅</span> Receiving uploaded — Order closed{o.remarks?` · Remarks: ${o.remarks}`:''}</div>}
           </div>
         </div>
       ))}
     </div>
     {uploadId&&(
-      <UploadModal title="Upload Receiving" subtitle="Upload the signed delivery challan received from driver" onClose={()=>{setUploadId(null);setRemarks('');}} onSave={()=>markReceived(uploadId)} showRemarks={true} remarks={remarks} setRemarks={setRemarks}/>
+      <UploadModal title="Upload Receiving" subtitle="Upload the signed delivery challan received from driver" onClose={()=>{setUploadId(null);setRemarks('');}} onSave={(file)=>markReceived(uploadId,file)} showRemarks={true} remarks={remarks} setRemarks={setRemarks}/>
     )}
   </>;
 }
@@ -953,7 +998,7 @@ function DispatchReport({user,myOrders}){
   const lastMonthStart = new Date(today); lastMonthStart.setMonth(lastMonthStart.getMonth()-1);
   const thisMonthStart = new Date(today.getFullYear(), today.getMonth(), 1);
 
-  const[period,setPeriod]=useState('today');
+  const[period,setPeriod]=useState('all');
   const[dispType,setDispType]=useState('all');
   const[destType,setDestType]=useState('all');
   const[search,setSearch]=useState('');
@@ -1080,7 +1125,7 @@ function DispatchReport({user,myOrders}){
           <span style={{fontSize:12,color:'#6b7280'}}>{filtered.length} orders shown</span>
         </div>
         {filtered.length===0
-          ?<div className="empty"><div className="empty-i">📋</div>No dispatched orders for this period</div>
+          ?<div className="empty"><div className="empty-i">📋</div>No dispatched orders for this period. Try All Time, or dispatch an order by uploading the signed challan first.</div>
           :<div className="tw">
             <table className="tbl">
               <thead>
@@ -1295,10 +1340,14 @@ function WHVehicle({user,orders,setOrders,myOrders,warehouses}){
 function WHLoading({user,orders,setOrders,myOrders,warehouses}){
   const list=myOrders.filter(o=>o.status==='vehicle_found');
   const[dispId,setDispId]=useState(null);
-  const dispatch=async()=>{
-    try{await api('updateOrderStatus',{orderId:dispId,status:'dispatched',changedBy:user.email});}
-    catch(e){if(!demoFallback(e,()=>{}))return;}
-    setOrders(orders.map(o=>o.id===dispId?{...o,status:'dispatched',dispatchedAt:new Date().toISOString()}:o));
+  const dispatch=async(file)=>{
+    if(!file){alert('Please choose the signed challan photo/PDF first');return;}
+    const ord=orders.find(o=>o.id===dispId);
+    try{
+      const photoData=await fileToDataUrl(file);
+      const res=await api('uploadChallanPhoto',{orderId:dispId,challanId:ord?.challanId||'',manualChallanNo:ord?.manualChallanNo||ord?.challanId||dispId,warehouseName:whName(ord?.warehouse||'',warehouses),uploadedBy:user.email,fileExt:safeFileExt(file),photoData});
+      setOrders(orders.map(o=>o.id===dispId?{...o,status:'dispatched',dispatchedAt:new Date().toISOString(),challanPhotoUrl:res.url||o.challanPhotoUrl}:o));
+    }catch(e){if(!demoFallback(e,()=>{})){alert('Upload failed: '+e.message);return;}}
     setDispId(null);
   };
   return <>
@@ -1319,18 +1368,23 @@ function WHLoading({user,orders,setOrders,myOrders,warehouses}){
         </div>
       ))}
     </div>
-    {dispId&&<UploadModal title="Upload Signed Delivery Challan" subtitle="Photograph the hand-written challan before dispatching the vehicle" onClose={()=>setDispId(null)} onSave={dispatch}/>}
+    {dispId&&<UploadModal title="Upload Signed Delivery Challan" subtitle="Photograph the hand-written challan before dispatching the vehicle. This will be saved in Google Drive under this warehouse." onClose={()=>setDispId(null)} onSave={dispatch}/>}
   </>;
 }
 
 function WHReceiving({user,orders,setOrders,myOrders,warehouses}){
-  const list=myOrders.filter(o=>o.status==='dispatched'&&!o.receivingUploaded);
+  const list=myOrders.filter(o=>o.status==='dispatched'&&!o.logisticsReceivingUploaded);
   const[upId,setUpId]=useState(null);
   const[remarks,setRemarks]=useState('');
-  const mark=async()=>{
-    try{await api('uploadReceiving',{orderId:upId,uploadedBy:user.email,uploaderRole:'logistics',remarks});}
-    catch(e){if(!demoFallback(e,()=>{}))return;}
-    setOrders(orders.map(o=>o.id===upId?{...o,receivingUploaded:true,status:'closed',remarks:remarks||o.remarks}:o));
+  const mark=async(file)=>{
+    if(!file){alert('Please choose the receiving photo/PDF first');return;}
+    const ord=orders.find(o=>o.id===upId);
+    try{
+      const photoData=await fileToDataUrl(file);
+      const res=await api('uploadReceivingPhoto',{orderId:upId,challanId:ord?.challanId||'',manualChallanNo:ord?.manualChallanNo||ord?.challanId||upId,warehouseName:whName(ord?.warehouse||'',warehouses),uploadedBy:user.email,uploaderRole:'logistics',remarks,fileExt:safeFileExt(file),photoData});
+      const upd={logisticsReceivingUploaded:true,receivingLogisticsUrl:res.url||ord?.receivingLogisticsUrl||'',receivingUploaded:true,status:(ord?.dealerReceivingUploaded?'closed':ord?.status),remarks:remarks||ord?.remarks};
+      setOrders(orders.map(o=>o.id===upId?{...o,...upd}:o));
+    }catch(e){if(!demoFallback(e,()=>{})){alert('Upload failed: '+e.message);return;}}
     setUpId(null);setRemarks('');
   };
   return <>
@@ -1432,7 +1486,7 @@ function AdminDealers({dealers}){
 }
 
 function AdminPending({myOrders,warehouses}){
-  const pending=myOrders.filter(o=>o.status==='dispatched'&&!o.receivingUploaded);
+  const pending=myOrders.filter(o=>o.status==='dispatched'&&(!o.dealerReceivingUploaded||!o.logisticsReceivingUploaded));
   return <>
     <div className="ph"><div className="pt">Pending Receivings</div><div className="ps">{pending.length} challan(s) awaiting receiving upload</div></div>
     <div className="pb">
@@ -1472,6 +1526,11 @@ function OInfo({o,warehouses}){
         <div style={{fontSize:12,color:'#6b7280',marginBottom:2}}>🏭 {whName(o.warehouse, warehouses)}</div>
         <div style={{fontSize:12,color:'#6b7280'}}>🚚 <span className="chip">{o.type}</span></div>
         {o.vehicle&&<div style={{fontSize:12,color:'#6b7280',marginTop:5}}>🚛 {o.vehicle.number} · {o.vehicle.driver} · {o.vehicle.phone}</div>}
+        {(o.challanPhotoUrl||o.receivingDealerUrl||o.receivingLogisticsUrl)&&<div style={{display:'flex',gap:6,flexWrap:'wrap',marginTop:8}}>
+          {o.challanPhotoUrl&&<a className="btn bbl bsm" href={o.challanPhotoUrl} target="_blank" rel="noopener noreferrer">📄 View Challan</a>}
+          {o.receivingDealerUrl&&<a className="btn bgr bsm" href={o.receivingDealerUrl} target="_blank" rel="noopener noreferrer">📷 Dealer Receiving</a>}
+          {o.receivingLogisticsUrl&&<a className="btn bam bsm" href={o.receivingLogisticsUrl} target="_blank" rel="noopener noreferrer">📷 Warehouse Receiving</a>}
+        </div>}
         {o.remarks&&<div style={{fontSize:12,color:'#d97706',marginTop:5}}>📝 {o.remarks}</div>}
       </div>
       <div>
@@ -1492,6 +1551,8 @@ function OInfo({o,warehouses}){
 
 function UploadModal({title,subtitle,onClose,onSave,showRemarks,remarks,setRemarks}){
   const[file,setFile]=useState(null);
+  const[busy,setBusy]=useState(false);
+  const save=async()=>{setBusy(true);try{await onSave(file);}finally{setBusy(false);}};
   return(
     <div className="ov">
       <div className="modal">
@@ -1511,7 +1572,7 @@ function UploadModal({title,subtitle,onClose,onSave,showRemarks,remarks,setRemar
         </div>
         <div className="mf">
           <button className="btn bgh" onClick={onClose}>Cancel</button>
-          <button className="btn bam" onClick={onSave}>Confirm Upload ✓</button>
+          <button className="btn bam" onClick={save} disabled={busy}>{busy?<><span className="spin"/> Uploading…</>:'Confirm Upload ✓'}</button>
         </div>
       </div>
     </div>
