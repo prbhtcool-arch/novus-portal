@@ -267,6 +267,10 @@ function apiPost(action,payload={}){
     form.style.display='none';
     form.enctype='application/x-www-form-urlencoded';
 
+    let settled=false;
+    let submitted=false;
+    let fallbackLoadTimer=null;
+
     const add=(name,value)=>{
       const input=document.createElement('input');
       input.type='hidden';
@@ -283,24 +287,40 @@ function apiPost(action,payload={}){
 
     const cleanup=()=>{
       window.removeEventListener('message',onMessage);
-      if(document.body.contains(form)) document.body.removeChild(form);
-      if(document.body.contains(iframe)) document.body.removeChild(iframe);
+      if(fallbackLoadTimer) clearTimeout(fallbackLoadTimer);
+      setTimeout(()=>{
+        if(document.body.contains(form)) document.body.removeChild(form);
+        if(document.body.contains(iframe)) document.body.removeChild(iframe);
+      },500);
+    };
+    const finish=(data)=>{
+      if(settled) return;
+      settled=true;
+      clearTimeout(timer);
+      cleanup();
+      if(data&&data.error) reject(new Error(data.error));
+      else resolve(data||{success:true,responseLost:true});
     };
     const timer=setTimeout(()=>{
-      cleanup();
-      reject(new Error('Upload timeout. Please check Apps Script deployment permissions and try a smaller image.'));
-    },120000);
+      // Do not blindly mark upload successful if Apps Script response is lost.
+      // Resolve as needsVerify; the caller will confirm the Drive URL/status from Google Sheets.
+      finish({success:false,needsVerify:true,responseLost:true});
+    },150000);
     const onMessage=(event)=>{
       const data=event.data;
       if(!data||data.novusPostId!==postId) return;
-      clearTimeout(timer);
-      cleanup();
-      if(data.error) reject(new Error(data.error));
-      else resolve(data);
+      finish(data);
+    };
+    iframe.onload=()=>{
+      if(!submitted||settled) return;
+      // If Apps Script's HtmlService response loads but postMessage is dropped,
+      // do not assume success. Ask the caller to verify against Google Sheets.
+      fallbackLoadTimer=setTimeout(()=>finish({success:false,needsVerify:true,responseLost:true}),2500);
     };
     window.addEventListener('message',onMessage);
     document.body.appendChild(iframe);
     document.body.appendChild(form);
+    submitted=true;
     form.submit();
   });
 }
@@ -312,6 +332,23 @@ function api(action,payload={}){
   return apiJSONP(action,payload);
 }
 function demoFallback(e,fn){if(e.message==='DEMO_MODE'){fn();return true;}return false;}
+
+async function verifyUploadAfterResponse(res,user,orderId,checkFn,setOrders){
+  if(!res || !res.needsVerify) return res || {};
+  // Give Apps Script a brief moment to finish writing Drive URL / order status to Sheets.
+  await new Promise(r=>setTimeout(r,1200));
+  const appData=await apiJSONP('getAppData',{email:user.email});
+  if(appData && appData.orders) setOrders(appData.orders);
+  const ord=(appData.orders||[]).find(o=>o.id===orderId);
+  if(ord && checkFn(ord)){
+    return {
+      success:true,
+      verified:true,
+      url:ord.challanPhotoUrl||ord.receivingDealerUrl||ord.receivingLogisticsUrl||''
+    };
+  }
+  throw new Error('Upload response was not received and the upload could not be verified in Google Sheets. Please check Drive/Sheets and try again.');
+}
 
 function fileToDataUrl(file){
   return new Promise((resolve,reject)=>{
@@ -916,7 +953,9 @@ function DealerOrders({user,orders,setOrders,myOrders,filter,title,warehouses}){
     const ord=orders.find(o=>o.id===id);
     try{
       const photoData=await fileToDataUrl(file);
-      const res=await api('uploadReceivingPhoto',{orderId:id,challanId:ord?.challanId||'',manualChallanNo:ord?.manualChallanNo||ord?.challanId||id,warehouseName:whName(ord?.warehouse||'',warehouses),uploadedBy:user.email,uploaderRole:'dealer',remarks,fileExt:safeFileExt(file),photoData});
+      const res0=await api('uploadReceivingPhoto',{orderId:id,challanId:ord?.challanId||'',manualChallanNo:ord?.manualChallanNo||ord?.challanId||id,warehouseName:whName(ord?.warehouse||'',warehouses),uploadedBy:user.email,uploaderRole:'dealer',remarks,fileExt:safeFileExt(file),photoData});
+      const res=await verifyUploadAfterResponse(res0,user,id,o=>!!(o.receivingDealerUrl||o.dealerReceivingUploaded),setOrders);
+      if(res.verified){ setUploadId(null); setRemarks(''); return; }
       const upd={dealerReceivingUploaded:true,receivingDealerUrl:res.url||ord?.receivingDealerUrl||'',receivingUploaded:true,status:(ord?.logisticsReceivingUploaded?'closed':ord?.status),remarks:remarks||ord?.remarks};
       setOrders(orders.map(o=>o.id===id?{...o,...upd}:o));
     }catch(e){if(!demoFallback(e,()=>{})){alert('Upload failed: '+e.message);return;}}
@@ -1414,7 +1453,9 @@ function WHLoading({user,orders,setOrders,myOrders,warehouses}){
     const ord=orders.find(o=>o.id===dispId);
     try{
       const photoData=await fileToDataUrl(file);
-      const res=await api('uploadChallanPhoto',{orderId:dispId,challanId:ord?.challanId||'',manualChallanNo:ord?.manualChallanNo||ord?.challanId||dispId,warehouseName:whName(ord?.warehouse||'',warehouses),uploadedBy:user.email,fileExt:safeFileExt(file),photoData});
+      const res0=await api('uploadChallanPhoto',{orderId:dispId,challanId:ord?.challanId||'',manualChallanNo:ord?.manualChallanNo||ord?.challanId||dispId,warehouseName:whName(ord?.warehouse||'',warehouses),uploadedBy:user.email,fileExt:safeFileExt(file),photoData});
+      const res=await verifyUploadAfterResponse(res0,user,dispId,o=>!!(o.challanPhotoUrl||o.status==='dispatched'),setOrders);
+      if(res.verified){ setDispId(null); return; }
       setOrders(orders.map(o=>o.id===dispId?{...o,status:'dispatched',dispatchedAt:new Date().toISOString(),challanPhotoUrl:res.url||o.challanPhotoUrl}:o));
     }catch(e){if(!demoFallback(e,()=>{})){alert('Upload failed: '+e.message);return;}}
     setDispId(null);
@@ -1450,7 +1491,9 @@ function WHReceiving({user,orders,setOrders,myOrders,warehouses}){
     const ord=orders.find(o=>o.id===upId);
     try{
       const photoData=await fileToDataUrl(file);
-      const res=await api('uploadReceivingPhoto',{orderId:upId,challanId:ord?.challanId||'',manualChallanNo:ord?.manualChallanNo||ord?.challanId||upId,warehouseName:whName(ord?.warehouse||'',warehouses),uploadedBy:user.email,uploaderRole:'logistics',remarks,fileExt:safeFileExt(file),photoData});
+      const res0=await api('uploadReceivingPhoto',{orderId:upId,challanId:ord?.challanId||'',manualChallanNo:ord?.manualChallanNo||ord?.challanId||upId,warehouseName:whName(ord?.warehouse||'',warehouses),uploadedBy:user.email,uploaderRole:'logistics',remarks,fileExt:safeFileExt(file),photoData});
+      const res=await verifyUploadAfterResponse(res0,user,upId,o=>!!(o.receivingLogisticsUrl||o.logisticsReceivingUploaded),setOrders);
+      if(res.verified){ setUpId(null); setRemarks(''); return; }
       const upd={logisticsReceivingUploaded:true,receivingLogisticsUrl:res.url||ord?.receivingLogisticsUrl||'',receivingUploaded:true,status:(ord?.dealerReceivingUploaded?'closed':ord?.status),remarks:remarks||ord?.remarks};
       setOrders(orders.map(o=>o.id===upId?{...o,...upd}:o));
     }catch(e){if(!demoFallback(e,()=>{})){alert('Upload failed: '+e.message);return;}}
