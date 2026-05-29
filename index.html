@@ -171,10 +171,12 @@ const CFG={
 // ── Static data ────────────────────────────────
 const CEMENTS=['Champion','Plus','Duratech','All Weather','NFR','OPC'];
 const WHS=[
-  {id:'WH1',name:'Ballia Central Warehouse'},
-  {id:'WH2',name:'Ballia East Warehouse'},
-  {id:'WH3',name:'Mau Main Warehouse'},
-  {id:'WH4',name:'Mau North Warehouse'},
+  {id:'WH1',name:'Indara Warehouse'},
+  {id:'WH2',name:'Indara Rake Siding'},
+  {id:'WH3',name:'Badhua Godam'},
+  {id:'WH4',name:'Gadwar Godam'},
+  {id:'WH5',name:'Sobaibandh Godam'},
+  {id:'WH6',name:'Phephna Rake Siding'},
 ];
 const DEMO_USERS={
   'tse1@novus.in':{role:'tse',name:'Ramesh Gupta',territory:'Ballia 1',email:'tse1@novus.in'},
@@ -1283,7 +1285,7 @@ function WHVehicle({user,orders,setOrders,myOrders,warehouses}){
           <div className="fg"><label>Driver Name</label><input value={driver} onChange={e=>setDriver(e.target.value)} placeholder="Full name"/></div>
           <div className="fg"><label>Driver Phone</label><input value={dPhone} onChange={e=>setDPhone(e.target.value)} placeholder="Mobile number"/></div>
         </div>
-        {manualNo&&<div className="alert ai"><span>Challan Ref:</span> <strong>{manualNo}/{whName(orders.find(o=>o.id===sel)?.warehouse||'')}/{new Date().toLocaleDateString('en-IN')}</strong></div>}
+        {manualNo&&<div className="alert ai"><span>Challan Ref:</span> <strong>{manualNo}/{whName(orders.find(o=>o.id===sel)?.warehouse||'', warehouses)}/{new Date().toLocaleDateString('en-IN')}</strong></div>}
       </div>
       <div className="mf"><button className="btn bgh" onClick={()=>setSel(null)}>Cancel</button><button className="btn bam" onClick={assign} disabled={saving}>{saving?<><span className="spin"/> Saving…</>:'Save & Create Challan'}</button></div>
     </div></div>}
