@@ -147,7 +147,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#f5f6fa;color:#1a1d2
 .search-dd input{width:100%;background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:8px;padding:9px 12px 9px 34px;color:#111827;font-size:13px;font-family:inherit;outline:none;transition:border .12s}
 .search-dd input:focus{border-color:#f59e0b;background:#fff}
 .search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:14px;pointer-events:none}
-.dd-list{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1.5px solid #e5e7eb;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.1);z-index:100;max-height:300px;overflow-y:auto}
+.dd-list{position:fixed;background:#fff;border:1.5px solid #e5e7eb;border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,.15);z-index:9999;max-height:280px;overflow-y:auto;min-width:300px}
 .dd-item{padding:10px 14px;font-size:13px;color:#374151;cursor:pointer;border-bottom:1px solid #f3f4f6;transition:background .1s;display:flex;flex-direction:column;gap:2px;min-height:44px;justify-content:center}
 .dd-item:last-child{border-bottom:none}
 .dd-item:hover,.dd-item.selected{background:#fef3c7;color:#d97706}
@@ -383,6 +383,7 @@ function Shell({user,setUser,orders,setOrders,dealers,setDealers,locationData,fr
       {id:'closed',ic:'✅',lb:'Closed Orders'},
       {id:'retailers',ic:'🏪',lb:'My Retailers'},
       {id:'sites',ic:'🏗️',lb:'My Sites'},
+      {id:'report',ic:'📊',lb:'Dispatch Report'},
     ],
     tse:[
       {id:'home',ic:'🏠',lb:'Dashboard'},
@@ -390,6 +391,7 @@ function Shell({user,setUser,orders,setOrders,dealers,setDealers,locationData,fr
       {id:'approve',ic:'✏️',lb:'Approve Orders',badge:myOrders.filter(o=>o.status==='placed').length},
       {id:'approved',ic:'🚚',lb:'Approved – Pending Dispatch'},
       {id:'dispatched',ic:'📍',lb:'Dispatched Orders'},
+      {id:'report',ic:'📊',lb:'Dispatch Report'},
     ],
     logistics:[
       {id:'home',ic:'🏠',lb:'Dashboard'},
@@ -404,6 +406,7 @@ function Shell({user,setUser,orders,setOrders,dealers,setDealers,locationData,fr
       {id:'admin_orders',ic:'📋',lb:'All Orders'},
       {id:'admin_dealers',ic:'👥',lb:'All Dealers'},
       {id:'admin_pending',ic:'⚠️',lb:'Pending Receivings'},
+      {id:'report',ic:'📊',lb:'Dispatch Report'},
     ],
   };
 
@@ -460,6 +463,7 @@ function Router({page,locationData,freightMatrix,...p}){
   const pL={...p,locationData,freightMatrix};
   const{user}=p;
   if(page==='home') return <Dashboard {...p}/>;
+  if(page==='report') return <DispatchReport {...pL}/>;
   if(user.role==='dealer'){
     if(page==='place')    return <PlaceOrder {...pL}/>;
     if(page==='pending')  return <DealerOrders {...p} filter={['placed','approved','vehicle_found','dispatched']} title="Pending Orders"/>;
@@ -542,6 +546,8 @@ function SearchDropdown({items,value,onChange,placeholder,labelKey='name',valueK
   const[newName,setNewName]=useState('');
   const[newPhone,setNewPhone]=useState('');
   const ref=React.useRef(null);
+  const inputRef=React.useRef(null);
+  const[dropPos,setDropPos]=useState({});
 
   const selected=items.find(i=>i[valueKey]===value);
   const filtered=items.filter(i=>{
@@ -572,13 +578,14 @@ function SearchDropdown({items,value,onChange,placeholder,labelKey='name',valueK
     <div className="search-dd" ref={ref}>
       <span className="search-icon">&#128269;</span>
       <input
+        ref={inputRef}
         value={open?query:(selected?selected[labelKey]:'')}
         onChange={e=>{setQuery(e.target.value);setOpen(true);}}
         onFocus={()=>{setOpen(true);setQuery('');}}
         placeholder={placeholder||'Search...'}
       />
       {open&&(
-        <div className="dd-list">
+        <div className="dd-list" style={dropPos}>
           {filtered.map(item=>(
             <div key={item[valueKey]} className={`dd-item${item[valueKey]===value?' selected':''}`} onMouseDown={()=>select(item)}>
               <span style={{fontWeight:500}}>{item[labelKey]}
@@ -926,6 +933,213 @@ function Contacts({user,dealers,setDealers,type,locationData}){
   </>;
 }
 
+
+
+// ══════════════════════════════════════════════
+//  DISPATCH REPORT
+// ══════════════════════════════════════════════
+function DispatchReport({user,myOrders}){
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const yesterday = new Date(today); yesterday.setDate(yesterday.getDate()-1);
+  const lastWeekStart = new Date(today); lastWeekStart.setDate(lastWeekStart.getDate()-6);
+  const lastMonthStart = new Date(today); lastMonthStart.setMonth(lastMonthStart.getMonth()-1);
+  const thisMonthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+
+  const[period,setPeriod]=useState('today');
+  const[dispType,setDispType]=useState('all');
+  const[destType,setDestType]=useState('all');
+  const[search,setSearch]=useState('');
+
+  const periodFilter=(o)=>{
+    const d=new Date(o.dispatchedAt||o.placedAt);
+    d.setHours(0,0,0,0);
+    if(period==='today')     return d.getTime()===today.getTime();
+    if(period==='yesterday') return d.getTime()===yesterday.getTime();
+    if(period==='week')      return d>=lastWeekStart&&d<=today;
+    if(period==='thismonth') return d>=thisMonthStart&&d<=today;
+    if(period==='lastmonth'){
+      const lms=new Date(today.getFullYear(),today.getMonth()-1,1);
+      const lme=new Date(today.getFullYear(),today.getMonth(),0);
+      return d>=lms&&d<=lme;
+    }
+    return true;
+  };
+
+  const dispatched=myOrders.filter(o=>(o.status==='dispatched'||o.status==='closed')&&periodFilter(o));
+
+  const filtered=dispatched.filter(o=>{
+    if(dispType!=='all'&&o.type!==dispType) return false;
+    if(destType!=='all'&&o.destination!==destType) return false;
+    if(search){
+      const q=search.toLowerCase();
+      return o.dealerName.toLowerCase().includes(q)||
+             o.destName.toLowerCase().includes(q)||
+             (o.challanRef||o.challanId||'').toLowerCase().includes(q);
+    }
+    return true;
+  });
+
+  // Summary stats
+  const totalBagsAll=filtered.reduce((s,o)=>s+o.items.reduce((ss,i)=>ss+(parseInt(i.qty)||0),0),0);
+  const byType={FOR:0,EX:0};
+  const byDest={Counter:0,Retailer:0,Site:0};
+  const byCement={};
+  filtered.forEach(o=>{
+    byType[o.type]=(byType[o.type]||0)+1;
+    byDest[o.destination]=(byDest[o.destination]||0)+1;
+    o.items.forEach(i=>{
+      byCement[i.cement]=(byCement[i.cement]||0)+(parseInt(i.qty)||0);
+    });
+  });
+
+  const periods=[
+    {id:'today',lb:'Today'},
+    {id:'yesterday',lb:'Yesterday'},
+    {id:'week',lb:'Last 7 Days'},
+    {id:'thismonth',lb:'This Month'},
+    {id:'lastmonth',lb:'Last Month'},
+    {id:'all',lb:'All Time'},
+  ];
+
+  return <>
+    <div className="ph">
+      <div><div className="pt">Dispatch Report</div>
+        <div className="ps">{filtered.length} orders · {totalBagsAll} bags dispatched</div>
+      </div>
+    </div>
+    <div className="pb">
+      {/* Period selector */}
+      <div style={{display:'flex',gap:6,marginBottom:16,flexWrap:'wrap'}}>
+        {periods.map(p=>(
+          <button key={p.id} className={`btn bsm ${period===p.id?'bam':'bgh'}`} onClick={()=>setPeriod(p.id)}>{p.lb}</button>
+        ))}
+      </div>
+
+      {/* Summary cards */}
+      <div className="sg" style={{gridTemplateColumns:'repeat(4,1fr)',marginBottom:16}}>
+        <div className="sc"><div className="sv">{filtered.length}</div><div className="sl">Total Orders</div></div>
+        <div className="sc"><div className="sv" style={{color:'#16a34a'}}>{totalBagsAll}</div><div className="sl">Total Bags</div></div>
+        <div className="sc"><div className="sv" style={{color:'#2563eb'}}>{byType.FOR||0}</div><div className="sl">FOR Orders</div></div>
+        <div className="sc"><div className="sv" style={{color:'#d97706'}}>{byType.EX||0}</div><div className="sl">EX Orders</div></div>
+      </div>
+
+      {/* Cement-wise summary */}
+      {Object.keys(byCement).length>0&&<div className="card" style={{marginBottom:16}}>
+        <div className="ch"><span className="ct">Cement-wise Dispatch</span></div>
+        <div className="cb">
+          <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+            {Object.entries(byCement).sort((a,b)=>b[1]-a[1]).map(([cement,bags])=>(
+              <div key={cement} style={{background:'#f9fafb',border:'1.5px solid #e5e7eb',borderRadius:8,padding:'8px 14px',textAlign:'center',minWidth:100}}>
+                <div style={{fontSize:18,fontWeight:800,color:'#d97706'}}>{bags}</div>
+                <div style={{fontSize:11,color:'#6b7280',textTransform:'uppercase',letterSpacing:'.04em'}}>{cement}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>}
+
+      {/* Filters */}
+      <div className="card" style={{marginBottom:16}}>
+        <div className="ch"><span className="ct">Filters</span></div>
+        <div className="cb">
+          <div className="r3">
+            <div className="fg"><label>Dispatch Type</label>
+              <select value={dispType} onChange={e=>setDispType(e.target.value)}>
+                <option value="all">All</option>
+                <option value="FOR">FOR only</option>
+                <option value="EX">EX only</option>
+              </select>
+            </div>
+            <div className="fg"><label>Destination Type</label>
+              <select value={destType} onChange={e=>setDestType(e.target.value)}>
+                <option value="all">All</option>
+                <option value="Counter">Counter</option>
+                <option value="Retailer">Retailer</option>
+                <option value="Site">Site</option>
+              </select>
+            </div>
+            <div className="fg"><label>Search dealer / destination</label>
+              <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Type to search..."/>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Orders table */}
+      <div className="card">
+        <div className="ch">
+          <span className="ct">Order Details</span>
+          <span style={{fontSize:12,color:'#6b7280'}}>{filtered.length} orders shown</span>
+        </div>
+        {filtered.length===0
+          ?<div className="empty"><div className="empty-i">📋</div>No dispatched orders for this period</div>
+          :<div className="tw">
+            <table className="tbl">
+              <thead>
+                <tr>
+                  <th>Challan Ref</th>
+                  <th>Date</th>
+                  <th>Dealer</th>
+                  <th>Destination</th>
+                  <th>Type</th>
+                  <th>Champion</th>
+                  <th>Plus</th>
+                  <th>Duratech</th>
+                  <th>All Weather</th>
+                  <th>NFR</th>
+                  <th>OPC</th>
+                  <th>Total Bags</th>
+                  <th>Vehicle</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map(o=>{
+                  const bags={};
+                  o.items.forEach(i=>bags[i.cement]=(parseInt(i.qty)||0));
+                  const total=Object.values(bags).reduce((s,v)=>s+v,0);
+                  return(
+                    <tr key={o.id}>
+                      <td style={{color:'#d97706',fontWeight:600,fontSize:12}}>{o.challanRef||o.challanId||o.id}</td>
+                      <td style={{fontSize:12,whiteSpace:'nowrap'}}>{fmtD(o.dispatchedAt||o.placedAt)}</td>
+                      <td style={{fontSize:12}}>{o.dealerName}</td>
+                      <td style={{fontSize:12}}>{o.destName}</td>
+                      <td><span className="chip" style={{fontSize:10}}>{o.type}</span></td>
+                      <td style={{textAlign:'center',fontWeight:600,color:bags['Champion']?'#d97706':'#d1d5db'}}>{bags['Champion']||'-'}</td>
+                      <td style={{textAlign:'center',fontWeight:600,color:bags['Plus']?'#d97706':'#d1d5db'}}>{bags['Plus']||'-'}</td>
+                      <td style={{textAlign:'center',fontWeight:600,color:bags['Duratech']?'#d97706':'#d1d5db'}}>{bags['Duratech']||'-'}</td>
+                      <td style={{textAlign:'center',fontWeight:600,color:bags['All Weather']?'#d97706':'#d1d5db'}}>{bags['All Weather']||'-'}</td>
+                      <td style={{textAlign:'center',fontWeight:600,color:bags['NFR']?'#d97706':'#d1d5db'}}>{bags['NFR']||'-'}</td>
+                      <td style={{textAlign:'center',fontWeight:600,color:bags['OPC']?'#d97706':'#d1d5db'}}>{bags['OPC']||'-'}</td>
+                      <td style={{textAlign:'center',fontWeight:800,color:'#111827'}}>{total}</td>
+                      <td style={{fontSize:11,color:'#6b7280'}}>{o.vehicle?o.vehicle.number:'-'}</td>
+                      <td><span className={`badge ${o.status==='closed'?'bcl':'bdi'}`} style={{fontSize:10}}>{o.status==='closed'?'Closed':'Dispatched'}</span></td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+              <tfoot>
+                <tr style={{background:'#fffbeb',borderTop:'2px solid #fde68a'}}>
+                  <td colSpan={5} style={{fontWeight:700,color:'#111827',padding:'10px 12px'}}>TOTAL</td>
+                  {['Champion','Plus','Duratech','All Weather','NFR','OPC'].map(cem=>{
+                    const t=filtered.reduce((s,o)=>{
+                      const it=o.items.find(i=>i.cement===cem);
+                      return s+(it?parseInt(it.qty)||0:0);
+                    },0);
+                    return <td key={cem} style={{textAlign:'center',fontWeight:800,color:t?'#d97706':'#9ca3af',padding:'10px 12px'}}>{t||'-'}</td>;
+                  })}
+                  <td style={{textAlign:'center',fontWeight:800,color:'#111827',padding:'10px 12px'}}>{totalBagsAll}</td>
+                  <td colSpan={2}></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        }
+      </div>
+    </div>
+  </>;
+}
 
 // ══════════════════════════════════════════════
 //  TSE PAGES
