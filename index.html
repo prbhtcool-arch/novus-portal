@@ -767,7 +767,7 @@ function PlaceOrder({user,orders,setOrders,dealers}){
         <div className="ch"><span className="ct">Step 2 — Warehouse & Dispatch Type</span></div>
         <div className="cb">
           <div className="r2">
-            <div className="fg"><label>Preferred Warehouse</label><select value={wh} onChange={e=>setWh(e.target.value)}>{getAccessibleWarehouses(user.territory,user.id,warehouses||WHS).map(w=><option key={w.id} value={w.id}>{w.name}</option>)}</select></div>
+            <div className="fg"><label>Preferred Warehouse</label><select value={wh} onChange={e=>setWh(e.target.value)}>{(warehouses||WHS).filter(w=>{const t=(w.allowedTerritories||w.territories||'').split(',').map(x=>x.trim());return !t.length||t[0]===''||t.includes(user.territory);}).map(w=><option key={w.id} value={w.id}>{w.name}</option>)}</select></div>
             <div className="fg"><label>Dispatch Type</label><select value={type} onChange={e=>setType(e.target.value)}><option value="FOR">FOR – Logistics arranges vehicle</option><option value="EX">EX – Own vehicle</option></select></div>
           </div>
         </div>
