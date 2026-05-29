@@ -11,72 +11,53 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',system-ui,sans-serif;background:#f5f6fa;color:#1a1d23;min-height:100vh}
 ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:3px}
-.lw{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#f0f4ff 0%,#fafbff 100%)}
+.lw{display:flex;align-items:center;justify-content:center;min-height:100vh}
 .lc{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:40px;width:440px;max-width:95vw;box-shadow:0 4px 24px rgba(0,0,0,.07)}
 .brand{display:flex;align-items:center;gap:12px;margin-bottom:24px}
-.bi{width:44px;height:44px;background:#f59e0b;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff;flex-shrink:0}
+.bi{width:44px;height:44px;background:#f59e0b;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#0f1117;flex-shrink:0}
 .bn{font-size:18px;font-weight:700;color:#111827}
-.bs{font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em}
+.bs{font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.05em}
 .lc h2{font-size:21px;font-weight:700;color:#111827;margin-bottom:5px}
 .lsub{font-size:13px;color:#6b7280;margin-bottom:20px}
 .field{margin-bottom:13px}
 .field label{display:block;font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
 .field input,.field select{width:100%;background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:7px;padding:10px 12px;color:#111827;font-size:14px;outline:none;font-family:inherit;transition:border .15s}
-.field input:focus,.field select:focus{border-color:#f59e0b;background:#fff}.field select option{background:#fff}
-.btn-login{width:100%;background:#f59e0b;border:none;border-radius:8px;padding:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s;box-shadow:0 2px 8px rgba(245,158,11,.3)}
-.btn-login:hover{background:#d97706}.btn-login:disabled{opacity:.5;cursor:not-allowed}
+.field input:focus{border-color:#f59e0b}.field select option{background:#1a1e2a}
+.btn-login{width:100%;background:#f59e0b;border:none;border-radius:8px;padding:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s}
+.btn-login:hover{opacity:.85}.btn-login:disabled{opacity:.5;cursor:not-allowed}
 .hbox{background:#f9fafb;border:1px solid #e5e7eb;border-radius:9px;padding:13px;margin-top:18px}
-.hbox h4{font-size:11px;color:#d97706;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;font-weight:700}
-.hr{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #f3f4f6;cursor:pointer}
-.hr:last-child{border-bottom:none}.hr:hover .he{color:#f59e0b}
+.hbox h4{font-size:11px;color:#f59e0b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.hr{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid #1e2330;cursor:pointer}
+.hr:last-child{border-bottom:none}.hr:hover .he{color:#d97706}
 .he{font-size:12px;color:#9ca3af;transition:color .12s}
 .hrl{background:#fef3c7;color:#d97706;padding:2px 8px;border-radius:4px;font-size:10px;text-transform:uppercase;font-weight:600}
 .ebox{background:#fef2f2;border:1px solid #fecaca;color:#dc2626;border-radius:7px;padding:10px 14px;font-size:13px;margin-bottom:13px}
 .shell{display:flex;min-height:100vh}
-.sidebar{width:230px;background:#fff;border-right:1.5px solid #e5e7eb;display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto}
+.sidebar{width:226px;background:#fff;border-right:1.5px solid #e5e7eb;display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto}
 .sbb{padding:16px 16px 13px;border-bottom:1.5px solid #e5e7eb}
-.nlbl{font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;padding:12px 16px 4px;font-weight:600}
-.ni{display:flex;align-items:center;gap:9px;padding:9px 12px;margin:1px 8px;border-radius:8px;cursor:pointer;font-size:13px;color:#6b7280;transition:all .12s;user-select:none;font-weight:500}
+.nlbl{font-size:10px;color:#4b5563;text-transform:uppercase;letter-spacing:.06em;padding:10px 16px 3px}
+.ni{display:flex;align-items:center;gap:8px;padding:8px 12px;margin:1px 8px;border-radius:7px;cursor:pointer;font-size:13px;color:#6b7280;transition:all .12s;user-select:none}
 .ni:hover{background:#f9fafb;color:#374151}.ni.active{background:#fef3c7;color:#d97706}
 .nbadge{margin-left:auto;background:#ef4444;color:#fff;font-size:10px;padding:1px 6px;border-radius:10px;font-weight:700}
-.sbf{margin-top:auto;padding:14px;border-top:1.5px solid #e5e7eb}
+.sbf{margin-top:auto;padding:13px 14px;border-top:1.5px solid #e5e7eb}
 .uc{display:flex;align-items:center;gap:8px}
-.uav{width:34px;height:34px;border-radius:50%;background:#f59e0b;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;flex-shrink:0}
-.un{font-size:13px;font-weight:600;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ur{font-size:10px;color:#9ca3af;text-transform:uppercase;font-weight:500}
+.uav{width:32px;height:32px;border-radius:50%;background:#f59e0b;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0}
+.un{font-size:13px;font-weight:500;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ur{font-size:10px;color:#6b7280;text-transform:uppercase}
 .lob{margin-left:auto;background:none;border:none;color:#6b7280;cursor:pointer;font-size:18px;padding:2px 5px}
 .lob:hover{color:#ef4444}
 .main{flex:1;overflow-y:auto;background:#f5f6fa}
-.ph{padding:22px 28px 16px;border-bottom:1.5px solid #e5e7eb;background:#fff;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.ph{padding:20px 26px 14px;border-bottom:1.5px solid #e5e7eb;background:#fff;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px}
 .pt{font-size:20px;font-weight:700;color:#111827;margin-bottom:3px}
 .ps{font-size:13px;color:#6b7280}
-.pb{padding:20px 28px}
+.pb{padding:20px 26px}
 .card{background:#fff;border:1.5px solid #e5e7eb;border-radius:12px;margin-bottom:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.04)}
-.ch{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1.5px solid #e5e7eb;flex-wrap:wrap;gap:8px;background:#fff}
+.ch{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1.5px solid #e5e7eb;background:#fff;flex-wrap:wrap;gap:8px}
 .ct{font-size:14px;font-weight:700;color:#111827}
-.cb{padding:16px 18px}
+.cb{padding:14px 16px}
 .sg{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
 @media(max-width:700px){.sg{grid-template-columns:1fr 1fr}}
-@media(max-width:768px){
-  .sidebar{position:fixed;left:-230px;top:0;height:100vh;z-index:200;transition:left .25s ease;box-shadow:none}
-  .sidebar.open{left:0;box-shadow:4px 0 24px rgba(0,0,0,.15)}
-  .mob-overlay{display:block!important;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:199}
-  .mob-bar{display:flex!important}
-  .main{margin-left:0!important}
-  .shell{display:block}
-  .pg-header{padding:14px 16px 10px}
-  .pb{padding:14px 16px}
-  .pt{font-size:18px}
-  .r2,.r3{grid-template-columns:1fr}
-  .sg{grid-template-columns:1fr 1fr}
-  .tbl th:nth-child(3),.tbl td:nth-child(3),
-  .tbl th:nth-child(4),.tbl td:nth-child(4){display:none}
-  .card{border-radius:10px}
-  .ch{flex-wrap:wrap;gap:8px}
-  .modal{width:100%;border-radius:14px 14px 0 0;position:fixed;bottom:0;left:0;max-height:85vh}
-  .ov{align-items:flex-end;padding:0}
-}
-.sc{background:#fff;border:1.5px solid #e5e7eb;border-radius:10px;padding:14px 16px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.sc{background:#fff;border:1.5px solid #e5e7eb;border-radius:10px;padding:13px 14px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
 .sv{font-size:26px;font-weight:800;color:#f59e0b;margin-bottom:2px}
 .sl{font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:.04em;font-weight:600}
 .badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
@@ -88,8 +69,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#f5f6fa;color:#1a1d2
 .bcl{background:#f9fafb;color:#6b7280;border:1px solid #e5e7eb}
 .tw{overflow-x:auto}
 .tbl{width:100%;border-collapse:collapse;min-width:500px}
-.tbl th{font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:.04em;padding:10px 12px;text-align:left;border-bottom:1.5px solid #e5e7eb;white-space:nowrap;font-weight:600;background:#f9fafb}
-.tbl td{padding:11px 12px;font-size:13px;color:#374151;border-bottom:1px solid #f3f4f6;vertical-align:middle}
+.tbl th{font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:.04em;padding:8px 11px;text-align:left;border-bottom:1.5px solid #e5e7eb;white-space:nowrap;background:#f9fafb}
+.tbl td{padding:10px 11px;font-size:13px;color:#374151;border-bottom:1px solid #f3f4f6;vertical-align:middle}
 .tbl tr:last-child td{border-bottom:none}.tbl tr:hover td{background:#f9fafb}
 .btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:7px;font-size:12px;font-family:inherit;cursor:pointer;border:1px solid;transition:all .12s;font-weight:600;white-space:nowrap}
 .btn:disabled{opacity:.4;cursor:not-allowed}
@@ -109,48 +90,69 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#f5f6fa;color:#1a1d2
 @media(max-width:600px){.r2,.r3{grid-template-columns:1fr}}
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:999;padding:16px}
 .modal{background:#fff;border:1.5px solid #e5e7eb;border-radius:14px;width:520px;max-width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.12)}
-.mh{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1.5px solid #e5e7eb}
+.mh{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1.5px solid #e5e7eb}
 .mt{font-size:16px;font-weight:700;color:#111827}
 .mb{padding:20px}
-.mf{display:flex;gap:8px;justify-content:flex-end;padding:14px 22px;border-top:1.5px solid #e5e7eb;background:#f9fafb}
-.cr{display:flex;align-items:center;gap:8px;padding:9px 12px;background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:8px;margin-bottom:6px}
+.mf{display:flex;gap:8px;justify-content:flex-end;padding:13px 20px;border-top:1.5px solid #e5e7eb;background:#f9fafb}
+.cr{display:flex;align-items:center;gap:7px;padding:8px 11px;background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:8px;margin-bottom:5px}
 .cn{flex:1;font-size:13px;color:#374151;font-weight:500}
-.ci{width:68px;background:#fff;border:1.5px solid #e5e7eb;border-radius:6px;padding:5px 8px;color:#111827;font-size:13px;font-family:inherit;outline:none;text-align:center;transition:border .12s}
-.ci:focus{border-color:#f59e0b}.cs{width:42px;color:#d97706}
+.ci{width:68px;background:#fff;border:1.5px solid #e5e7eb;border-radius:6px;padding:5px 7px;color:#111827;font-size:13px;font-family:inherit;outline:none;text-align:center;transition:border .12s}
+.ci:focus{border-color:#f59e0b}.cs{width:42px;color:#f59e0b}
 .alert{display:flex;align-items:flex-start;gap:8px;padding:10px 13px;border-radius:8px;margin-bottom:13px;font-size:13px;line-height:1.5}
 .aw{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
 .ai{background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8}
 .aok{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534}
 .aer{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
-.uz{border:2px dashed #e5e7eb;border-radius:10px;padding:20px;text-align:center;cursor:pointer;position:relative;transition:border .15s;margin-top:6px;background:#f9fafb}
+.uz{border:2px dashed #e5e7eb;border-radius:10px;padding:18px;text-align:center;cursor:pointer;position:relative;transition:border .15s;margin-top:6px;background:#f9fafb}
 .uz:hover{border-color:#f59e0b;background:#fffbeb}
 .uz input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
-.empty{text-align:center;padding:40px;color:#9ca3af}
+.empty{text-align:center;padding:38px;color:#9ca3af}
 .empty-i{font-size:38px;margin-bottom:8px}
-.chip{display:inline-flex;padding:2px 9px;border-radius:20px;font-size:11px;background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb;font-weight:500}
-.dc{background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:9px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.spin{display:inline-block;width:14px;height:14px;border:2px solid #fde68a;border-top-color:#f59e0b;border-radius:50%;animation:sp .7s linear infinite}
+.chip{display:inline-flex;padding:2px 9px;border-radius:20px;font-size:11px;background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb}
+.dc{background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:9px;padding:11px 14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid #f59e0b40;border-top-color:#f59e0b;border-radius:50%;animation:sp .7s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
-.dopt{border:2px solid #e5e7eb;border-radius:10px;padding:12px;cursor:pointer;background:#f9fafb;transition:all .15s;text-align:center}
-.dopt:hover{border-color:#d1d5db;background:#fff}.dopt.sel{border-color:#f59e0b;background:#fffbeb}
+.dopt{border:2px solid #e5e7eb;border-radius:8px;padding:11px;cursor:pointer;background:#f9fafb;transition:all .15s;text-align:center}
+.dopt:hover{border-color:#2a2d3a}.dopt.sel{border-color:#f59e0b;background:#fffbeb}
 .dopt .di{font-size:20px;margin-bottom:3px}
 .dopt .dl{font-size:12px;font-weight:600;color:#9ca3af}.dopt.sel .dl{color:#d97706}
-.search-dd{position:relative}
-.search-dd input{width:100%;background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:8px;padding:9px 12px 9px 34px;color:#111827;font-size:13px;font-family:inherit;outline:none;transition:border .12s}
-.search-dd input:focus{border-color:#f59e0b;background:#fff}
-.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:14px;pointer-events:none}
-.dd-list{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1.5px solid #e5e7eb;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.1);z-index:100;max-height:220px;overflow-y:auto}
-.dd-item{padding:9px 12px;font-size:13px;color:#374151;cursor:pointer;border-bottom:1px solid #f3f4f6;transition:background .1s}
-.dd-item:last-child{border-bottom:none}
-.dd-item:hover{background:#fef3c7;color:#d97706}
-.dd-item.selected{background:#fffbeb;color:#d97706;font-weight:600}
-.dd-empty{padding:10px 12px;font-size:13px;color:#9ca3af;text-align:center}
 .dmb{background:#111520;border-radius:8px;padding:2px 0}
 .dmbr{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;border-bottom:1px solid #1e2330;font-size:13px}
 .dmbr:last-child{border-bottom:none}
 .kv{display:flex;flex-direction:column;gap:12px}
 .kvi{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #1a1d28;font-size:13px}
 .kvi:last-child{border-bottom:none}
+
+@media(max-width:768px){
+  .sidebar{position:fixed;left:-226px;top:0;height:100vh;z-index:200;transition:left .25s ease}
+  .sidebar.open{left:0;box-shadow:4px 0 24px rgba(0,0,0,.15)}
+  .mob-overlay{display:block!important;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:199}
+  .mob-bar{display:flex!important}
+  .main{margin-left:0!important}
+  .shell{display:block}
+  .ph{padding:14px 16px 10px;background:#fff}
+  .pb{padding:14px 16px}
+  .pt{font-size:18px}
+  .r2,.r3{grid-template-columns:1fr}
+  .sg{grid-template-columns:1fr 1fr}
+  .tbl th:nth-child(3),.tbl td:nth-child(3),
+  .tbl th:nth-child(4),.tbl td:nth-child(4){display:none}
+  .card{border-radius:10px}
+  .ch{flex-wrap:wrap;gap:8px}
+  .modal{width:100%;border-radius:14px 14px 0 0;position:fixed;bottom:0;left:0;max-height:85vh}
+  .ov{align-items:flex-end;padding:0}
+}
+/* Search dropdown */
+.search-dd{position:relative}
+.search-dd input{width:100%;background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:8px;padding:9px 12px 9px 34px;color:#111827;font-size:13px;font-family:inherit;outline:none;transition:border .12s}
+.search-dd input:focus{border-color:#f59e0b;background:#fff}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:14px;pointer-events:none}
+.dd-list{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1.5px solid #e5e7eb;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.1);z-index:100;max-height:300px;overflow-y:auto}
+.dd-item{padding:10px 14px;font-size:13px;color:#374151;cursor:pointer;border-bottom:1px solid #f3f4f6;transition:background .1s;display:flex;flex-direction:column;gap:2px;min-height:44px;justify-content:center}
+.dd-item:last-child{border-bottom:none}
+.dd-item:hover,.dd-item.selected{background:#fef3c7;color:#d97706}
+.dd-empty{padding:10px 12px;font-size:13px;color:#9ca3af;text-align:center}
+
 </style>
 </head>
 <body>
@@ -162,34 +164,18 @@ const {useState,useEffect,useCallback}=React;
 //  ⚙️ CONFIG — edit these after deployment
 // ══════════════════════════════════════════════
 const CFG={
-  SCRIPT_URL:"https://script.google.com/macros/s/AKfycbzTjWs2rRQa5dgLHiV9CcyN4_X83Cky05rMfA5vK9P3MAXDo69BRTkST735OnN7Sm23/exec",
+  SCRIPT_URL:"https://script.google.com/macros/s/AKfycby_7XKUpDC2z4b5DSlCESMmJvANj0ESdY8Z8M01i21bVIGRoorS5oJbyuW0TxkzzLWx/exec",
   DEMO_MODE:false, // set false after pasting your URL above
 };
 
 // ── Static data ────────────────────────────────
 const CEMENTS=['Champion','Plus','Duratech','All Weather','NFR','OPC'];
 const WHS=[
-  {id:'WH1',name:'Indara Warehouse',territories:'Ballia 1,Ballia 2,Mau'},
-  {id:'WH2',name:'Indara Rake Siding',territories:'Ballia 2,Mau'},
-  {id:'WH3',name:'Badhua Godam',territories:'Mau'},
-  {id:'WH4',name:'Gadwar Godam',territories:'Ballia 1,Ballia 2,Mau'},
-  {id:'WH5',name:'Sobaibandh Godam',territories:'Ballia 1,Ballia 2'},
-  {id:'WH6',name:'Phephna Rake Siding',territories:'Ballia 1,Ballia 2,Mau'},
+  {id:'WH1',name:'Ballia Central Warehouse'},
+  {id:'WH2',name:'Ballia East Warehouse'},
+  {id:'WH3',name:'Mau Main Warehouse'},
+  {id:'WH4',name:'Mau North Warehouse'},
 ];
-
-// Get warehouses accessible to a dealer based on territory + overrides
-function getAccessibleWarehouses(territory, dealerId, overrides=[]){
-  return WHS.filter(wh=>{
-    const territories = wh.territories.split(',').map(t=>t.trim());
-    const defaultAccess = territories.includes(territory);
-    // Check dealer-level override
-    const override = overrides.find(o=>o.DealerID===dealerId && o.WarehouseID===wh.id);
-    if(override){
-      return override.Access === 'Allow';
-    }
-    return defaultAccess;
-  });
-}
 const DEMO_USERS={
   'tse1@novus.in':{role:'tse',name:'Ramesh Gupta',territory:'Ballia 1',email:'tse1@novus.in'},
   'tse2@novus.in':{role:'tse',name:'Sunita Verma',territory:'Ballia 2',email:'tse2@novus.in'},
@@ -229,27 +215,25 @@ function fmtD(d){try{return new Date(d).toLocaleDateString('en-IN',{day:'2-digit
 function fmtDT(d){try{return new Date(d).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});}catch{return d;}}
 function totalBags(items){return items.reduce((s,i)=>s+(parseInt(i.qty)||0),0);}
 
-// ── API ────────────────────────────────────────
-function api(action, payload={}) {
+// ── API (JSONP) ─────────────────────────────────
+function api(action,payload={}){
   if(CFG.DEMO_MODE) return Promise.reject(new Error('DEMO_MODE'));
-  return new Promise((resolve, reject) => {
-    const cbName = 'cb_' + Date.now();
-    // Serialize all values — keep objects/arrays as JSON strings
-    const flat = {action, callback: cbName};
-    for(const key in payload){
-      const val = payload[key];
-      flat[key] = (val !== null && typeof val === 'object') ? JSON.stringify(val) : val;
+  return new Promise((resolve,reject)=>{
+    const cb='cb_'+Date.now()+'_'+Math.random().toString(36).slice(2);
+    const flat={action,callback:cb};
+    for(const k in payload){
+      const v=payload[k];
+      flat[k]=(v!==null&&typeof v==='object')?JSON.stringify(v):String(v);
     }
-    const params = new URLSearchParams(flat);
-    const script = document.createElement('script');
-    script.src = CFG.SCRIPT_URL + '?' + params.toString();
-    window[cbName] = (data) => {
-      delete window[cbName];
+    const script=document.createElement('script');
+    script.src=CFG.SCRIPT_URL+'?'+new URLSearchParams(flat).toString();
+    window[cb]=(data)=>{
+      delete window[cb];
       if(document.body.contains(script)) document.body.removeChild(script);
       if(data.error) reject(new Error(data.error));
       else resolve(data);
     };
-    script.onerror = () => reject(new Error('Network error'));
+    script.onerror=()=>{delete window[cb];reject(new Error('Network error'));};
     document.body.appendChild(script);
   });
 }
@@ -264,74 +248,59 @@ function App(){
       const raw=localStorage.getItem('novus_user');
       if(!raw) return null;
       const{user:u,loginTime}=JSON.parse(raw);
-      if(Date.now()-loginTime > 24*60*60*1000){
-        localStorage.removeItem('novus_user');
-        return null;
-      }
+      if(Date.now()-loginTime>24*60*60*1000){localStorage.removeItem('novus_user');return null;}
       return u;
     }catch{return null;}
   });
   const[orders,setOrders]=useState(CFG.DEMO_MODE?DEMO_ORDERS:[]);
   const[dealers,setDealers]=useState(CFG.DEMO_MODE?DEMO_DEALERS:{});
+  const[locationData,setLocationData]=useState([]);
+  const[freightMatrix,setFreightMatrix]=useState([]);
   const[appLoaded,setAppLoaded]=useState(CFG.DEMO_MODE);
 
-  // Reload app data when user is restored from localStorage (e.g. page refresh)
-  useEffect(()=>{
-    if(!user||CFG.DEMO_MODE||appLoaded) return;
-    setAppLoaded(true); // prevent double-load
-    api('getAppData',{email:user.email}).then(data=>{
-      if(data.orders) setOrders(data.orders);
-      let nd={};
-      if(data.dealers&&data.dealers.length>0)
-        nd=Object.fromEntries(data.dealers.map(d=>[d.id,d]));
-      if(data.dealerData&&user.role==='dealer')
-        nd[user.id]={
-          name:user.name,territory:user.territory,
-          retailers:data.dealerData.retailers||[],
-          sites:data.dealerData.sites||[],
-        };
-      if(Object.keys(nd).length>0) setDealers(nd);
-    }).catch(()=>{});
-  },[user]);
-
   const handleSetUser=(u)=>{
-    if(u){
-      const session={user:u, loginTime:Date.now()};
-      localStorage.setItem('novus_user',JSON.stringify(session));
-    } else {
-      localStorage.removeItem('novus_user');
-    }
+    if(u) localStorage.setItem('novus_user',JSON.stringify({user:u,loginTime:Date.now()}));
+    else localStorage.removeItem('novus_user');
     setUser(u);
   };
 
-  // Auto logout after 24 hours
+  useEffect(()=>{
+    if(!user||CFG.DEMO_MODE||appLoaded) return;
+    setAppLoaded(true);
+    api('getAppData',{email:user.email}).then(appData=>{
+      if(appData.orders) setOrders(appData.orders);
+      let nd={};
+      if(appData.dealers&&appData.dealers.length>0) nd=Object.fromEntries(appData.dealers.map(d=>[d.id,d]));
+      if(appData.dealerData&&user.role==='dealer') nd[user.id]={name:user.name,territory:user.territory,retailers:appData.dealerData.retailers||[],sites:appData.dealerData.sites||[]};
+      if(Object.keys(nd).length>0) setDealers(nd);
+      if(appData.locationData) setLocationData(appData.locationData);
+      if(appData.freightMatrix) setFreightMatrix(appData.freightMatrix);
+    }).catch(()=>{});
+  },[user]);
+
   useEffect(()=>{
     if(!user) return;
-    const check=()=>{
+    const t=setInterval(()=>{
       try{
         const raw=localStorage.getItem('novus_user');
         if(!raw){setUser(null);return;}
-        const{loginTime}=JSON.parse(raw);
-        if(Date.now()-loginTime > 24*60*60*1000){
-          localStorage.removeItem('novus_user');
-          setUser(null);
-          alert('Your session has expired. Please log in again.');
+        if(Date.now()-JSON.parse(raw).loginTime>24*60*60*1000){
+          localStorage.removeItem('novus_user');setUser(null);
+          alert('Session expired. Please log in again.');
         }
       }catch{setUser(null);}
-    };
-    check();
-    const timer=setInterval(check, 60*1000); // check every minute
-    return()=>clearInterval(timer);
+    },60*1000);
+    return()=>clearInterval(t);
   },[user]);
 
   if(!user)return <Login setUser={handleSetUser} setOrders={setOrders} setDealers={setDealers}/>;
   if(!appLoaded)return(
     <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',background:'#f5f6fa',flexDirection:'column',gap:12}}>
-      <div style={{width:40,height:40,border:'3px solid #fde68a',borderTopColor:'#f59e0b',borderRadius:'50%',animation:'sp .7s linear infinite'}}/>
-      <div style={{fontSize:14,color:'#6b7280',fontWeight:500}}>Loading your portal…</div>
+      <div className="spin" style={{width:36,height:36,borderWidth:3}}/>
+      <div style={{fontSize:14,color:'#6b7280',fontWeight:500}}>Loading your portal...</div>
     </div>
   );
-  return <Shell user={user} setUser={handleSetUser} orders={orders} setOrders={setOrders} dealers={dealers} setDealers={setDealers}/>;
+  return <Shell user={user} setUser={handleSetUser} orders={orders} setOrders={setOrders} dealers={dealers} setDealers={setDealers} locationData={locationData} freightMatrix={freightMatrix}/>;
 }
 
 // ══════════════════════════════════════════════
@@ -351,27 +320,15 @@ function Login({setUser,setOrders,setDealers}){
         if(!u||pw!=='novus123'){setErr('Invalid credentials. Demo password: novus123');setLoading(false);return;}
         setUser({...u});
       } else {
-        const loginRes=await api('login',{email:email.toLowerCase().trim(),password:pw});
-        const u=loginRes.user;
-        // Load all app data
+        const lr=await api('login',{email:email.toLowerCase().trim(),password:pw});
+        const u=lr.user;
         const appData=await api('getAppData',{email:email.toLowerCase().trim()});
         if(appData.orders) setOrders(appData.orders);
-        // Build dealers map for TSE/admin
-        let newDealers={};
-        if(appData.dealers&&appData.dealers.length>0)
-          newDealers=Object.fromEntries(appData.dealers.map(dd=>[dd.id,dd]));
-        // For dealer: set their own retailers and sites
-        if(u.role==='dealer'&&appData.dealerData){
-          newDealers[u.id]={
-            name:u.name, territory:u.territory,
-            retailers:appData.dealerData.retailers||[],
-            sites:appData.dealerData.sites||[],
-          };
-        }
-        // Set appLoaded true first to block useEffect from overwriting
-        setDealers(newDealers);
+        let nd={};
+        if(appData.dealers&&appData.dealers.length>0) nd=Object.fromEntries(appData.dealers.map(dd=>[dd.id,dd]));
+        if(u.role==='dealer'&&appData.dealerData) nd[u.id]={name:u.name,territory:u.territory,retailers:appData.dealerData.retailers||[],sites:appData.dealerData.sites||[]};
+        setDealers(nd);
         setUser(u);
-        setAppLoaded(true);
       }
     }catch(e){if(e.message!=='DEMO_MODE')setErr('Login failed: '+e.message);}
     setLoading(false);
@@ -408,7 +365,7 @@ function Login({setUser,setOrders,setDealers}){
 // ══════════════════════════════════════════════
 //  SHELL
 // ══════════════════════════════════════════════
-function Shell({user,setUser,orders,setOrders,dealers,setDealers}){
+function Shell({user,setUser,orders,setOrders,dealers,setDealers,locationData,freightMatrix}){
   const[page,setPage]=useState('home');
 
   const myOrders=orders.filter(o=>{
@@ -455,17 +412,14 @@ function Shell({user,setUser,orders,setOrders,dealers,setDealers}){
 
   const[sideOpen,setSideOpen]=useState(false);
   const closeSide=()=>setSideOpen(false);
-
   return(
     <div className="shell">
-      {/* Mobile top bar */}
-      <div className="mob-bar" style={{display:'none',alignItems:'center',gap:12,padding:'12px 16px',background:'#fff',borderBottom:'1.5px solid #e5e7eb',position:'sticky',top:0,zIndex:100}}>
-        <button onClick={()=>setSideOpen(true)} style={{background:'none',border:'none',color:'#374151',fontSize:22,cursor:'pointer',padding:'2px 6px',lineHeight:1}}>☰</button>
+      <div className="mob-bar" style={{display:'none',alignItems:'center',gap:10,padding:'11px 16px',background:'#fff',borderBottom:'1.5px solid #e5e7eb',position:'sticky',top:0,zIndex:100}}>
+        <button onClick={()=>setSideOpen(true)} style={{background:'none',border:'none',color:'#374151',fontSize:22,cursor:'pointer',lineHeight:1}}>&#9776;</button>
         <div className="bi" style={{width:30,height:30,fontSize:14,borderRadius:7,flexShrink:0}}>N</div>
-        <div style={{flex:1}}><div className="bn" style={{fontSize:13}}>Novus Solutions</div></div>
+        <div className="bn" style={{fontSize:13,flex:1}}>Novus Solutions</div>
         <div className="uav" style={{width:28,height:28,fontSize:12}}>{user.name[0]}</div>
       </div>
-      {/* Sidebar overlay */}
       {sideOpen&&<div className="mob-overlay" style={{display:'none'}} onClick={closeSide}/>}
       <div className={`sidebar${sideOpen?' open':''}`}>
         <div className="sbb">
@@ -493,24 +447,25 @@ function Shell({user,setUser,orders,setOrders,dealers,setDealers}){
         </div>
       </div>
       <div className="main">
-        {CFG.DEMO_MODE&&<div className="alert aw" style={{margin:0,borderRadius:0,borderLeft:'none',borderRight:'none',borderTop:'none',borderBottom:'1.5px solid #fde68a'}}>
+        {CFG.DEMO_MODE&&<div className="alert aw" style={{margin:0,borderRadius:0,borderLeft:'none',borderRight:'none',borderTop:'none'}}>
           <span>🔧</span><strong>Demo Mode</strong> — changes are not saved. Paste your Apps Script URL and set DEMO_MODE: false to go live.
         </div>}
-        <Router page={page} user={user} orders={orders} setOrders={setOrders} dealers={dealers} setDealers={setDealers} myOrders={myOrders} setPage={setPage}/>
+        <Router page={page} user={user} orders={orders} setOrders={setOrders} dealers={dealers} setDealers={setDealers} myOrders={myOrders} setPage={setPage} locationData={locationData} freightMatrix={freightMatrix}/>
       </div>
     </div>
   );
 }
 
-function Router({page,...p}){
+function Router({page,locationData,freightMatrix,...p}){
+  const pL={...p,locationData,freightMatrix};
   const{user}=p;
   if(page==='home') return <Dashboard {...p}/>;
   if(user.role==='dealer'){
-    if(page==='place')    return <PlaceOrder {...p}/>;
+    if(page==='place')    return <PlaceOrder {...pL}/>;
     if(page==='pending')  return <DealerOrders {...p} filter={['placed','approved','vehicle_found','dispatched']} title="Pending Orders"/>;
     if(page==='closed')   return <DealerOrders {...p} filter={['closed']} title="Closed Orders"/>;
-    if(page==='retailers')return <Contacts {...p} type="retailers"/>;
-    if(page==='sites')    return <Contacts {...p} type="sites"/>;
+    if(page==='retailers')return <Contacts {...pL} type="retailers"/>;
+    if(page==='sites')    return <Contacts {...pL} type="sites"/>;
   }
   if(user.role==='tse'){
     if(page==='dealers')  return <TSEDealers {...p}/>;
@@ -576,40 +531,46 @@ function Dashboard({user,myOrders,setPage}){
 }
 
 
+
 // ══════════════════════════════════════════════
-//  SEARCHABLE DROPDOWN
+//  SEARCHABLE DROPDOWN WITH ALIAS + LOCATION
 // ══════════════════════════════════════════════
-function SearchDropdown({items,value,onChange,placeholder,labelKey='name',valueKey='id',onAddNew,addNewLabel}){
+function SearchDropdown({items,value,onChange,placeholder,labelKey='name',valueKey='id',addNewLabel,onAddNew}){
   const[query,setQuery]=useState('');
   const[open,setOpen]=useState(false);
   const[addModal,setAddModal]=useState(false);
   const[newName,setNewName]=useState('');
   const[newPhone,setNewPhone]=useState('');
-  const[newAddr,setNewAddr]=useState('');
   const ref=React.useRef(null);
 
   const selected=items.find(i=>i[valueKey]===value);
-  const filtered=items.filter(i=>(i[labelKey]||'').toLowerCase().includes(query.toLowerCase()));
-  const showAdd=onAddNew&&query.trim().length>0&&!filtered.find(i=>(i[labelKey]||'').toLowerCase()===query.toLowerCase());
+  const filtered=items.filter(i=>{
+    const q=query.toLowerCase();
+    return (i[labelKey]||'').toLowerCase().includes(q)||
+           (i.alias||'').toLowerCase().includes(q)||
+           (i.village||'').toLowerCase().includes(q)||
+           (i.block||'').toLowerCase().includes(q);
+  });
+  const showAdd=onAddNew&&query.trim().length>1&&!filtered.find(i=>(i[labelKey]||'').toLowerCase()===query.toLowerCase());
 
   useEffect(()=>{
-    const handler=(e)=>{ if(ref.current&&!ref.current.contains(e.target)) setOpen(false); };
-    document.addEventListener('mousedown',handler);
-    return()=>document.removeEventListener('mousedown',handler);
+    const h=(e)=>{ if(ref.current&&!ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown',h);
+    return()=>document.removeEventListener('mousedown',h);
   },[]);
 
   const select=(item)=>{ onChange(item[valueKey]); setQuery(''); setOpen(false); };
 
   const handleAdd=()=>{
     if(!newName.trim()) return;
-    onAddNew({name:newName.trim(),phone:newPhone.trim(),address:newAddr.trim()},
-      (newItem)=>{ onChange(newItem[valueKey]); setAddModal(false); setNewName(''); setNewPhone(''); setNewAddr(''); setOpen(false); }
+    onAddNew({name:newName.trim(),phone:newPhone.trim()},
+      (newItem)=>{ onChange(newItem[valueKey]); setAddModal(false); setNewName(''); setNewPhone(''); setOpen(false); }
     );
   };
 
   return(
     <div className="search-dd" ref={ref}>
-      <span className="search-icon">🔍</span>
+      <span className="search-icon">&#128269;</span>
       <input
         value={open?query:(selected?selected[labelKey]:'')}
         onChange={e=>{setQuery(e.target.value);setOpen(true);}}
@@ -620,41 +581,38 @@ function SearchDropdown({items,value,onChange,placeholder,labelKey='name',valueK
         <div className="dd-list">
           {filtered.map(item=>(
             <div key={item[valueKey]} className={`dd-item${item[valueKey]===value?' selected':''}`} onMouseDown={()=>select(item)}>
-              {item[labelKey]}
+              <span style={{fontWeight:500}}>{item[labelKey]}
+                {item.alias&&<span style={{color:'#9ca3af',fontWeight:400,fontSize:11}}> ({item.alias})</span>}
+              </span>
+              {(item.village||item.block)&&<span style={{fontSize:11,color:'#9ca3af'}}>{[item.village,item.block,item.tehsil].filter(Boolean).join(' - ')}</span>}
             </div>
           ))}
           {showAdd&&(
             <div className="dd-item" style={{color:'#16a34a',fontWeight:600,borderTop:'1.5px solid #e5e7eb'}}
-              onMouseDown={(e)=>{e.preventDefault();setNewName(query);setAddModal(true);setOpen(false);}}>
-              ＋ Add "{query}" as new {addNewLabel||'entry'}
+              onMouseDown={e=>{e.preventDefault();setNewName(query);setAddModal(true);setOpen(false);}}>
+              + Add "{query}" as new {addNewLabel||'entry'}
             </div>
           )}
-          {filtered.length===0&&!showAdd&&(
-            <div className="dd-empty">No results found</div>
-          )}
+          {filtered.length===0&&!showAdd&&<div className="dd-empty">No results found</div>}
         </div>
       )}
       {addModal&&(
         <div className="ov" onClick={e=>e.target===e.currentTarget&&setAddModal(false)}>
           <div className="modal">
-            <div className="mh">
-              <span className="mt">Add New {addNewLabel||'Entry'}</span>
-              <button className="btn bgh bsm" onClick={()=>setAddModal(false)}>✕</button>
+            <div className="mh"><span className="mt">Add New {addNewLabel||'Entry'}</span>
+              <button className="btn bgh bsm" onClick={()=>setAddModal(false)}>X</button>
             </div>
             <div className="mb">
               <div className="fg"><label>Name</label>
-                <input value={newName} onChange={e=>setNewName(e.target.value)} placeholder="Full name"/>
+                <input value={newName} onChange={e=>setNewName(e.target.value)} placeholder="Shop name"/>
               </div>
-              {addNewLabel==='Retailer'&&<div className="fg"><label>Phone (optional)</label>
+              <div className="fg"><label>Phone (optional)</label>
                 <input value={newPhone} onChange={e=>setNewPhone(e.target.value)} placeholder="Mobile number"/>
-              </div>}
-              {addNewLabel==='Site'&&<div className="fg"><label>Address (optional)</label>
-                <input value={newAddr} onChange={e=>setNewAddr(e.target.value)} placeholder="Full address"/>
-              </div>}
+              </div>
             </div>
             <div className="mf">
               <button className="btn bgh" onClick={()=>setAddModal(false)}>Cancel</button>
-              <button className="btn bgr" onClick={handleAdd}>✓ Save & Select</button>
+              <button className="btn bgr" onClick={handleAdd}>Save & Select</button>
             </div>
           </div>
         </div>
@@ -664,10 +622,69 @@ function SearchDropdown({items,value,onChange,placeholder,labelKey='name',valueK
 }
 
 // ══════════════════════════════════════════════
+//  LOCATION & RETAILER HELPERS
+// ══════════════════════════════════════════════
+function shortDealerId(id){ return id?id.replace('090',''):id; }
+function nextConsigneeCode(dealerId,retailers){
+  const prefix='C-'+shortDealerId(dealerId)+'-';
+  const nums=(retailers||[]).filter(r=>r.id&&r.id.startsWith(prefix)).map(r=>parseInt(r.id.replace(prefix,''))||0);
+  return prefix+String((nums.length>0?Math.max(...nums):0)+1).padStart(3,'0');
+}
+function LocationPicker({locationData,value,onChange}){
+  const v=value||{};
+  const ld=locationData||[];
+  const districts=[...new Set(ld.map(l=>l.district))].sort();
+  const tehsils=v.district?[...new Set(ld.filter(l=>l.district===v.district).map(l=>l.tehsil))].sort():[];
+  const blocks=v.tehsil?[...new Set(ld.filter(l=>l.district===v.district&&l.tehsil===v.tehsil).map(l=>l.block))].sort():[];
+  const villages=v.block?[...new Set(ld.filter(l=>l.district===v.district&&l.tehsil===v.tehsil&&l.block===v.block).map(l=>l.village))].sort():[];
+  const set=(f,val)=>{
+    const u={[f]:val};
+    if(f==='district'){u.tehsil='';u.block='';u.village='';}
+    if(f==='tehsil'){u.block='';u.village='';}
+    if(f==='block') u.village='';
+    onChange({...v,...u});
+  };
+  if(!ld.length) return <div className="alert ai" style={{marginBottom:0}}><span>Info</span>Location list loading...</div>;
+  return <div>
+    <div className="r2">
+      <div className="fg"><label>District</label>
+        <select value={v.district||''} onChange={e=>set('district',e.target.value)}>
+          <option value="">-- District --</option>
+          {districts.map(d=><option key={d} value={d}>{d}</option>)}
+        </select>
+      </div>
+      <div className="fg"><label>Tehsil</label>
+        <select value={v.tehsil||''} onChange={e=>set('tehsil',e.target.value)} disabled={!v.district}>
+          <option value="">-- Tehsil --</option>
+          {tehsils.map(t=><option key={t} value={t}>{t}</option>)}
+        </select>
+      </div>
+    </div>
+    <div className="r2">
+      <div className="fg"><label>Block</label>
+        <select value={v.block||''} onChange={e=>set('block',e.target.value)} disabled={!v.tehsil}>
+          <option value="">-- Block --</option>
+          {blocks.map(b=><option key={b} value={b}>{b}</option>)}
+        </select>
+      </div>
+      <div className="fg"><label>Village / Market</label>
+        <select value={v.village||''} onChange={e=>set('village',e.target.value)} disabled={!v.block}>
+          <option value="">-- Village --</option>
+          {villages.map(vl=><option key={vl} value={vl}>{vl}</option>)}
+        </select>
+      </div>
+    </div>
+    {v.village&&<div className="alert aok" style={{padding:'5px 10px',marginTop:4,marginBottom:0}}>
+      <span>Location:</span> <span style={{fontSize:12}}>{v.village} - {v.block} - {v.tehsil} - {v.district}</span>
+    </div>}
+  </div>;
+}
+
+// ══════════════════════════════════════════════
 //  PLACE ORDER
 // ══════════════════════════════════════════════
 function PlaceOrder({user,orders,setOrders,dealers}){
-  const d=dealers[user.id]||{name:user.name,retailers:[],sites:[]};
+  const d=dealers[user.id];
   const[dest,setDest]=useState('counter');
   const[destId,setDestId]=useState('');
   const[wh,setWh]=useState('WH1');
@@ -675,14 +692,18 @@ function PlaceOrder({user,orders,setOrders,dealers}){
   const[items,setItems]=useState(CEMENTS.map(c=>({cement:c,qty:'',seq:''})));
   const[done,setDone]=useState(false);
   const[saving,setSaving]=useState(false);
-  const blocked=orders.some(o=>o.dealer===user.id&&o.status==='dispatched'&&!o.receivingUploaded);
+  const blocked=orders.some(o=>{
+    if(o.dealer!==user.id||o.status!=='dispatched'||o.receivingUploaded) return false;
+    if(!o.dispatchedAt) return false;
+    return (Date.now()-new Date(o.dispatchedAt))/(1000*60*60)>24;
+  });
   const total=totalBags(items);
 
   const submit=async()=>{
     const sel=items.filter(i=>parseInt(i.qty)>0).map(i=>({cement:i.cement,qty:parseInt(i.qty),seq:parseInt(i.seq)||1}));
     if(!sel.length){alert('Add at least one cement item');return;}
     if((dest==='retailer'||dest==='site')&&!destId){alert('Please select a destination');return;}
-    const destName=dest==='counter'?(d.name||user.name):dest==='retailer'?d.retailers.find(r=>r.id===destId)?.name:d.sites.find(s=>s.id===destId)?.name;
+    const destName=dest==='counter'?d.name:dest==='retailer'?d.retailers.find(r=>r.id===destId)?.name:d.sites.find(s=>s.id===destId)?.name;
     const o={id:'ORD'+Date.now().toString().slice(-6),dealer:user.id,dealerName:user.name,territory:user.territory,warehouse:wh,type,destination:dest==='counter'?'Counter':dest==='retailer'?'Retailer':'Site',destName,items:sel,status:'placed',placedAt:new Date().toISOString(),challanId:null,vehicle:null,receivingUploaded:false,remarks:''};
     setSaving(true);
     try{await api('addOrder',{order:o,items:sel});}catch(e){if(!demoFallback(e,()=>{})){alert('Error: '+e.message);setSaving(false);return;}}
@@ -706,48 +727,48 @@ function PlaceOrder({user,orders,setOrders,dealers}){
               </div>
             ))}
           </div>
-          {dest==='retailer'&&<div className="fg"><label>Select Retailer</label><SearchDropdown
-            items={d.retailers} value={destId} onChange={setDestId}
-            placeholder="Search retailer name..." labelKey="name" valueKey="id"
-            addNewLabel="Retailer"
-            onAddNew={(data,cb)=>{
-              const newR={id:'R'+Date.now(),name:data.name,phone:data.phone||''};
-              setDealers(prev=>({...prev,[user.id]:{...d,retailers:[...d.retailers,newR]}}));
-              api('addRetailer',{dealerId:user.id,name:data.name,phone:data.phone||''}).catch(()=>{});
-              cb(newR);
-            }}
-          /></div>}
-          {dest==='site'&&<div className="fg"><label>Select Site</label><SearchDropdown
-            items={d.sites} value={destId} onChange={setDestId}
-            placeholder="Search site name..." labelKey="name" valueKey="id"
-            addNewLabel="Site"
-            onAddNew={(data,cb)=>{
-              const newS={id:'S'+Date.now(),name:data.name,address:data.address||''};
-              setDealers(prev=>({...prev,[user.id]:{...d,sites:[...d.sites,newS]}}));
-              api('addSite',{dealerId:user.id,name:data.name,address:data.address||''}).catch(()=>{});
-              cb(newS);
-            }}
-          /></div>}
+          {dest==='retailer'&&<div className="fg"><label>Select Retailer</label>
+            <SearchDropdown items={d.retailers} value={destId} onChange={setDestId}
+              placeholder="Search retailer name or alias..." labelKey="name" valueKey="id"
+              addNewLabel="Retailer"
+              onAddNew={(data,cb)=>{
+                const newR={id:'R'+Date.now(),name:data.name,alias:'',phone:data.phone||'',type:'Consignee',village:'',block:'',tehsil:'',district:''};
+                setDealers(prev=>({...prev,[user.id]:{...d,retailers:[...d.retailers,newR]}}));
+                api('addRetailer',{dealerId:user.id,...newR}).catch(()=>{});
+                cb(newR);
+              }}/>
+          </div>}
+          {dest==='site'&&<div className="fg"><label>Select Site</label>
+            <SearchDropdown items={d.sites} value={destId} onChange={setDestId}
+              placeholder="Search site name..." labelKey="name" valueKey="id"
+              addNewLabel="Site"
+              onAddNew={(data,cb)=>{
+                const newS={id:'S'+Date.now(),name:data.name,village:'',block:'',tehsil:'',district:''};
+                setDealers(prev=>({...prev,[user.id]:{...d,sites:[...d.sites,newS]}}));
+                api('addSite',{dealerId:user.id,...newS}).catch(()=>{});
+                cb(newS);
+              }}/>
+          </div>}
         </div>
       </div>
       <div className="card">
         <div className="ch"><span className="ct">Step 2 — Warehouse & Dispatch Type</span></div>
         <div className="cb">
           <div className="r2">
-            <div className="fg"><label>Preferred Warehouse</label><select value={wh} onChange={e=>setWh(e.target.value)}>{getAccessibleWarehouses(user.territory, user.id).map(w=><option key={w.id} value={w.id}>{w.name}</option>)}</select></div>
+            <div className="fg"><label>Preferred Warehouse</label><select value={wh} onChange={e=>setWh(e.target.value)}>{WHS.map(w=><option key={w.id} value={w.id}>{w.name}</option>)}</select></div>
             <div className="fg"><label>Dispatch Type</label><select value={type} onChange={e=>setType(e.target.value)}><option value="FOR">FOR – Logistics arranges vehicle</option><option value="EX">EX – Own vehicle</option></select></div>
           </div>
         </div>
       </div>
       <div className="card">
-        <div className="ch"><span className="ct">Step 3 — Items & Loading Sequence</span><span style={{fontSize:11,color:'#9ca3af'}}>Seq = loading order</span></div>
+        <div className="ch"><span className="ct">Step 3 — Items & Loading Sequence</span><span style={{fontSize:11,color:'#6b7280'}}>Seq = loading order</span></div>
         <div className="cb">
           {items.map((item,i)=>(
             <div key={item.cement} className="cr">
               <span className="cn">{item.cement}</span>
-              <span style={{fontSize:11,color:'#9ca3af'}}>Bags</span>
+              <span style={{fontSize:11,color:'#6b7280'}}>Bags</span>
               <input className="ci" type="number" min="0" value={item.qty} placeholder="0" onChange={e=>setItems(items.map((it,j)=>j===i?{...it,qty:e.target.value}:it))}/>
-              <span style={{fontSize:11,color:'#9ca3af'}}>Seq</span>
+              <span style={{fontSize:11,color:'#6b7280'}}>Seq</span>
               <input className="ci cs" type="number" min="1" value={item.seq} placeholder="#" onChange={e=>setItems(items.map((it,j)=>j===i?{...it,seq:e.target.value}:it))}/>
             </div>
           ))}
@@ -785,7 +806,7 @@ function DealerOrders({user,orders,setOrders,myOrders,filter,title}){
               <strong style={{color:'#d97706'}}>{o.id}</strong>
               <span className={`badge ${sCls(o.status)}`}>{sLabel(o.status)}</span>
             </div>
-            <span style={{fontSize:12,color:'#9ca3af'}}>{fmtD(o.placedAt)}</span>
+            <span style={{fontSize:12,color:'#6b7280'}}>{fmtD(o.placedAt)}</span>
           </div>
           <div className="cb">
             <OInfo o={o}/>
@@ -809,12 +830,106 @@ function DealerOrders({user,orders,setOrders,myOrders,filter,title}){
 // ══════════════════════════════════════════════
 //  CONTACTS (Retailers / Sites)
 // ══════════════════════════════════════════════
-function Contacts({user,dealers,setDealers,type}){
+function Contacts({user,dealers,setDealers,type,locationData}){
   const d=dealers[user.id]||{name:user.name,retailers:[],sites:[]};
   const[modal,setModal]=useState(false);
   const[name,setName]=useState('');
-  const[extra,setExtra]=useState('');
+  const[alias,setAlias]=useState('');
+  const[rtype,setRtype]=useState('Consignee');
+  const[phone,setPhone]=useState('');
+  const[loc,setLoc]=useState({});
   const items=type==='retailers'?(d.retailers||[]):(d.sites||[]);
+  const locStr=(it)=>[it.village,it.block,it.tehsil,it.district].filter(Boolean).join(' - ');
+
+  const save=async()=>{
+    if(!name.trim())return;
+    const newId=type==='retailers'
+      ?(rtype==='Authorized'?('R'+Date.now()):nextConsigneeCode(user.id,d.retailers||[]))
+      :('S'+Date.now());
+    const newItem=type==='retailers'
+      ?{id:newId,name:name.trim(),alias:alias.trim(),type:rtype,
+        village:loc.village||'',block:loc.block||'',tehsil:loc.tehsil||'',district:loc.district||'',phone:phone.trim()}
+      :{id:newId,name:name.trim(),
+        village:loc.village||'',block:loc.block||'',tehsil:loc.tehsil||'',district:loc.district||''};
+    try{
+      if(type==='retailers') await api('addRetailer',{dealerId:user.id,...newItem});
+      else await api('addSite',{dealerId:user.id,...newItem});
+    }catch(e){demoFallback(e,()=>{});}
+    setDealers({...dealers,[user.id]:{...d,[type]:[...items,newItem]}});
+    setModal(false);setName('');setAlias('');setPhone('');setLoc({});setRtype('Consignee');
+  };
+
+  return <>
+    <div className="ph">
+      <div><div className="pt">{type==='retailers'?'My Retailers':'My Sites'}</div><div className="ps">{items.length} registered</div></div>
+      <button className="btn bam" onClick={()=>setModal(true)}>+ Add {type==='retailers'?'Retailer':'Site'}</button>
+    </div>
+    <div className="pb">
+      {items.length===0&&<div className="card"><div className="empty"><div className="empty-i">{type==='retailers'?'[shop]':'[site]'}</div>None added yet</div></div>}
+      {items.map(it=>(
+        <div key={it.id} className="dc">
+          <div style={{flex:1}}>
+            <div style={{fontWeight:600,color:'#111827'}}>{it.name}
+              {it.alias&&<span style={{color:'#9ca3af',fontWeight:400,fontSize:12}}> ({it.alias})</span>}
+            </div>
+            <div style={{fontSize:12,color:'#6b7280',marginTop:1}}>{locStr(it)||it.phone||''}</div>
+            <div style={{fontSize:11,color:'#9ca3af',marginTop:1}}>{it.id}</div>
+          </div>
+          <span className="chip" style={{fontSize:10,flexShrink:0,
+            background:it.type==='Authorized'?'#f0fdf4':'#fffbeb',
+            color:it.type==='Authorized'?'#16a34a':'#d97706',
+            border:it.type==='Authorized'?'1px solid #bbf7d0':'1px solid #fde68a'}}>
+            {it.type||'Consignee'}
+          </span>
+        </div>
+      ))}
+    </div>
+    {modal&&<div className="ov"><div className="modal">
+      <div className="mh"><span className="mt">Add {type==='retailers'?'Retailer':'Site'}</span>
+        <button className="btn bgh bsm" onClick={()=>setModal(false)}>X</button>
+      </div>
+      <div className="mb">
+        {type==='retailers'&&<div className="r2" style={{marginBottom:4}}>
+          <div className="fg"><label>Type</label>
+            <select value={rtype} onChange={e=>setRtype(e.target.value)}>
+              <option value="Consignee">Consignee (unregistered)</option>
+              <option value="Authorized">Authorized Retailer</option>
+            </select>
+          </div>
+          <div className="fg"><label>{rtype==='Consignee'?'Auto Code':'Retailer Code'}</label>
+            <input value={rtype==='Consignee'?nextConsigneeCode(user.id,d.retailers||[]):''}
+              readOnly={rtype==='Consignee'}
+              placeholder={rtype==='Authorized'?'09060R0284':''}
+              style={{color:rtype==='Consignee'?'#9ca3af':undefined}}
+              onChange={()=>{}}/>
+          </div>
+        </div>}
+        <div className="r2">
+          <div className="fg"><label>{type==='retailers'?'Shop Name':'Site Name'}</label>
+            <input value={name} onChange={e=>setName(e.target.value)} placeholder="Full registered name"/>
+          </div>
+          {type==='retailers'&&<div className="fg"><label>Alias / Known As</label>
+            <input value={alias} onChange={e=>setAlias(e.target.value)} placeholder="e.g. Shyamu ji"/>
+          </div>}
+        </div>
+        {type==='retailers'&&<div className="fg"><label>Phone</label>
+          <input value={phone} onChange={e=>setPhone(e.target.value)} placeholder="Mobile number"/>
+        </div>}
+        <div style={{fontSize:11,fontWeight:600,color:'#6b7280',textTransform:'uppercase',letterSpacing:'.04em',marginBottom:6,marginTop:4}}>Delivery Location</div>
+        <LocationPicker locationData={locationData||[]} value={loc} onChange={setLoc}/>
+      </div>
+      <div className="mf">
+        <button className="btn bgh" onClick={()=>setModal(false)}>Cancel</button>
+        <button className="btn bam" onClick={save}>Save</button>
+      </div>
+    </div></div>}
+  </>;
+}){
+  const d=dealers[user.id];
+  const[modal,setModal]=useState(false);
+  const[name,setName]=useState('');
+  const[extra,setExtra]=useState('');
+  const items=type==='retailers'?d.retailers:d.sites;
   const save=async()=>{
     if(!name.trim())return;
     const newItem=type==='retailers'?{id:'R'+Date.now(),name:name.trim(),phone:extra}:{id:'S'+Date.now(),name:name.trim(),address:extra};
@@ -834,7 +949,7 @@ function Contacts({user,dealers,setDealers,type}){
       {items.length===0&&<div className="card"><div className="empty"><div className="empty-i">{type==='retailers'?'🏪':'🏗️'}</div>None added yet</div></div>}
       {items.map(it=>(
         <div key={it.id} className="dc">
-          <div><div style={{fontWeight:600,color:'#111827',marginBottom:2}}>{it.name}</div><div style={{fontSize:12,color:'#9ca3af'}}>{type==='retailers'?it.phone:it.address}</div></div>
+          <div><div style={{fontWeight:600,color:'#374151',marginBottom:2}}>{it.name}</div><div style={{fontSize:12,color:'#6b7280'}}>{type==='retailers'?it.phone:it.address}</div></div>
           <span className="chip">{type==='retailers'?'Retailer':'Site'}</span>
         </div>
       ))}
@@ -921,10 +1036,10 @@ function OList({myOrders,filter,title}){
           <div className="ch">
             <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
               <strong style={{color:'#d97706'}}>{o.id}</strong>
-              {o.challanId&&<span className="chip">Challan: {o.challanId}</span>}
+              {(o.challanRef||o.challanId)&&<span className="chip">Challan: {o.challanRef||o.challanId}</span>}
               <span className={`badge ${sCls(o.status)}`}>{sLabel(o.status)}</span>
             </div>
-            <span style={{fontSize:12,color:'#9ca3af'}}>{fmtD(o.placedAt)}</span>
+            <span style={{fontSize:12,color:'#6b7280'}}>{fmtD(o.placedAt)}</span>
           </div>
           <div className="cb"><OInfo o={o}/></div>
         </div>
@@ -939,20 +1054,24 @@ function OList({myOrders,filter,title}){
 function WHVehicle({user,orders,setOrders,myOrders}){
   const list=myOrders.filter(o=>o.status==='approved');
   const[sel,setSel]=useState(null);
+  const[manualNo,setManualNo]=useState('');
   const[vNum,setVNum]=useState('');
   const[driver,setDriver]=useState('');
   const[dPhone,setDPhone]=useState('');
   const[saving,setSaving]=useState(false);
 
   const assign=async()=>{
+    if(!manualNo.trim()){alert('Enter the physical challan number from bilty');return;}
     if(!vNum.trim()||!driver.trim()){alert('Fill vehicle number and driver name');return;}
     const challanId='CH'+Date.now().toString().slice(-5);
-    const upd={status:'vehicle_found',vehicleAt:new Date().toISOString(),challanId,vehicle:{number:vNum.trim(),driver:driver.trim(),phone:dPhone.trim()}};
+    const selOrd=orders.find(o=>o.id===sel);
+    const challanRef=manualNo.trim()+'/'+whName(selOrd?.warehouse||'')+'/'+new Date().toLocaleDateString('en-IN');
+    const upd={status:'vehicle_found',vehicleAt:new Date().toISOString(),challanId,challanRef,manualChallanNo:manualNo.trim(),vehicle:{number:vNum.trim(),driver:driver.trim(),phone:dPhone.trim()}};
     setSaving(true);
-    try{await api('assignVehicle',{orderId:sel,vehicle:{number:vNum.trim(),driver:driver.trim(),phone:dPhone.trim()},assignedBy:user.email});}
+    try{await api('assignVehicle',{orderId:sel,vehicle:{number:vNum.trim(),driver:driver.trim(),phone:dPhone.trim()},assignedBy:user.email,manualChallanNo:manualNo.trim(),challanRef});}
     catch(e){if(!demoFallback(e,()=>{})){setSaving(false);return;}}
     setOrders(orders.map(o=>o.id===sel?{...o,...upd}:o));
-    setSaving(false);setSel(null);setVNum('');setDriver('');setDPhone('');
+    setSaving(false);setSel(null);setManualNo('');setVNum('');setDriver('');setDPhone('');
   };
 
   return <>
@@ -975,12 +1094,15 @@ function WHVehicle({user,orders,setOrders,myOrders}){
     {sel&&<div className="ov"><div className="modal">
       <div className="mh"><span className="mt">Assign Vehicle & Create Challan</span><button className="btn bgh bsm" onClick={()=>setSel(null)}>✕</button></div>
       <div className="mb">
+        <div className="fg"><label>Physical Challan Number (from bilty book) *</label>
+          <input value={manualNo} onChange={e=>setManualNo(e.target.value)} placeholder="e.g. 2827"/>
+        </div>
         <div className="fg"><label>Vehicle Number</label><input value={vNum} onChange={e=>setVNum(e.target.value)} placeholder="UP65AB1234"/></div>
         <div className="r2">
           <div className="fg"><label>Driver Name</label><input value={driver} onChange={e=>setDriver(e.target.value)} placeholder="Full name"/></div>
           <div className="fg"><label>Driver Phone</label><input value={dPhone} onChange={e=>setDPhone(e.target.value)} placeholder="Mobile number"/></div>
         </div>
-        <div className="alert ai"><span>ℹ️</span>A Delivery Challan ID will be auto-generated. Status will change to "Vehicle Found – Loading Started".</div>
+        {manualNo&&<div className="alert ai"><span>Challan Ref:</span> <strong>{manualNo}/{whName(orders.find(o=>o.id===sel)?.warehouse||'')}/{new Date().toLocaleDateString('en-IN')}</strong></div>}
       </div>
       <div className="mf"><button className="btn bgh" onClick={()=>setSel(null)}>Cancel</button><button className="btn bam" onClick={assign} disabled={saving}>{saving?<><span className="spin"/> Saving…</>:'Save & Create Challan'}</button></div>
     </div></div>}
@@ -1005,7 +1127,7 @@ function WHLoading({user,orders,setOrders,myOrders}){
           <div className="ch">
             <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
               <strong style={{color:'#d97706'}}>{o.id}</strong>
-              {o.challanId&&<span className="chip">Challan: {o.challanId}</span>}
+              {(o.challanRef||o.challanId)&&<span className="chip">Challan: {o.challanRef||o.challanId}</span>}
               <span className={`badge ${sCls(o.status)}`}>{sLabel(o.status)}</span>
             </div>
             <button className="btn bam bsm" onClick={()=>setDispId(o.id)}>📷 Upload Challan & Dispatch</button>
@@ -1037,13 +1159,13 @@ function WHReceiving({user,orders,setOrders,myOrders}){
           <div className="ch">
             <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
               <strong style={{color:'#d97706'}}>{o.id}</strong>
-              {o.challanId&&<span className="chip">Challan: {o.challanId}</span>}
+              {(o.challanRef||o.challanId)&&<span className="chip">Challan: {o.challanRef||o.challanId}</span>}
             </div>
             <button className="btn bbl bsm" onClick={()=>setUpId(o.id)}>📷 Upload Receiving</button>
           </div>
           <div className="cb">
-            <div style={{fontSize:13,color:'#374151',marginBottom:4}}>Dealer: <strong style={{color:'#111827'}}>{o.dealerName}</strong> · {o.destination}: {o.destName}</div>
-            {o.vehicle&&<div style={{fontSize:12,color:'#9ca3af'}}>🚛 {o.vehicle.number} · {o.vehicle.driver} · {o.vehicle.phone}</div>}
+            <div style={{fontSize:13,color:'#374151',marginBottom:4}}>Dealer: <strong style={{color:'#374151'}}>{o.dealerName}</strong> · {o.destination}: {o.destName}</div>
+            {o.vehicle&&<div style={{fontSize:12,color:'#6b7280'}}>🚛 {o.vehicle.number} · {o.vehicle.driver} · {o.vehicle.phone}</div>}
             <div style={{fontSize:12,color:'#dc2626',marginTop:7}}>⚠ Must upload within 24 hours of dispatch</div>
           </div>
         </div>
@@ -1091,10 +1213,10 @@ function AdminOrders({myOrders}){
             <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
               <strong style={{color:'#d97706'}}>{o.id}</strong>
               <span className="chip">{o.territory}</span>
-              {o.challanId&&<span className="chip">Challan: {o.challanId}</span>}
+              {(o.challanRef||o.challanId)&&<span className="chip">Challan: {o.challanRef||o.challanId}</span>}
               <span className={`badge ${sCls(o.status)}`}>{sLabel(o.status)}</span>
             </div>
-            <span style={{fontSize:12,color:'#9ca3af'}}>{fmtD(o.placedAt)}</span>
+            <span style={{fontSize:12,color:'#6b7280'}}>{fmtD(o.placedAt)}</span>
           </div>
           <div className="cb"><OInfo o={o}/></div>
         </div>
@@ -1104,7 +1226,7 @@ function AdminOrders({myOrders}){
 }
 
 function AdminDealers({dealers}){
-  const all=Object.values(dealers);
+  const all=Object.values(DEMO_DEALERS);
   return <>
     <div className="ph"><div className="pt">All Dealers</div><div className="ps">{all.length} dealers across all territories</div></div>
     <div className="pb">
@@ -1139,14 +1261,14 @@ function AdminPending({myOrders}){
             <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
               <strong style={{color:'#d97706'}}>{o.id}</strong>
               <span className="chip">{o.territory}</span>
-              {o.challanId&&<span className="chip">Challan: {o.challanId}</span>}
+              {(o.challanRef||o.challanId)&&<span className="chip">Challan: {o.challanRef||o.challanId}</span>}
             </div>
             <span style={{fontSize:12,color:'#dc2626'}}>Receiving overdue</span>
           </div>
           <div className="cb">
-            <div style={{fontSize:13,color:'#374151',marginBottom:4}}>Dealer: <strong style={{color:'#111827'}}>{o.dealerName}</strong> · {o.destination}: {o.destName}</div>
+            <div style={{fontSize:13,color:'#374151',marginBottom:4}}>Dealer: <strong style={{color:'#374151'}}>{o.dealerName}</strong> · {o.destination}: {o.destName}</div>
             {o.vehicle&&<div style={{fontSize:12,color:'#6b7280',marginBottom:4}}>🚛 {o.vehicle.number} · {o.vehicle.driver} · {o.vehicle.phone}</div>}
-            <div style={{fontSize:12,color:'#9ca3af'}}>Dispatched: {fmtDT(o.dispatchedAt||o.placedAt)}</div>
+            <div style={{fontSize:12,color:'#6b7280'}}>Dispatched: {fmtDT(o.dispatchedAt||o.placedAt)}</div>
           </div>
         </div>
       ))}
@@ -1162,10 +1284,10 @@ function OInfo({o}){
     <div className="r2">
       <div>
         <div style={{fontSize:11,color:'#6b7280',marginBottom:5,textTransform:'uppercase',letterSpacing:'.04em'}}>Details</div>
-        <div style={{fontWeight:600,color:'#111827',fontSize:14,marginBottom:2}}>{o.dealerName}</div>
+        <div style={{fontWeight:600,color:'#374151',fontSize:14,marginBottom:2}}>{o.dealerName}</div>
         <div style={{fontSize:12,color:'#6b7280',marginBottom:2}}>📍 {o.destination}: {o.destName}</div>
         <div style={{fontSize:12,color:'#6b7280',marginBottom:2}}>🏭 {whName(o.warehouse)}</div>
-        <div style={{fontSize:12,color:'#9ca3af'}}>🚚 <span className="chip">{o.type}</span></div>
+        <div style={{fontSize:12,color:'#6b7280'}}>🚚 <span className="chip">{o.type}</span></div>
         {o.vehicle&&<div style={{fontSize:12,color:'#6b7280',marginTop:5}}>🚛 {o.vehicle.number} · {o.vehicle.driver} · {o.vehicle.phone}</div>}
         {o.remarks&&<div style={{fontSize:12,color:'#d97706',marginTop:5}}>📝 {o.remarks}</div>}
       </div>
@@ -1177,7 +1299,7 @@ function OInfo({o}){
           </div>
         ))}
         <div style={{display:'flex',justifyContent:'space-between',fontSize:13,marginTop:4,paddingTop:4,borderTop:'1px solid #e5e7eb'}}>
-          <span style={{color:'#9ca3af'}}>Total</span>
+          <span style={{color:'#6b7280'}}>Total</span>
           <span style={{color:'#d97706',fontWeight:700}}>{totalBags(o.items)} bags</span>
         </div>
       </div>
@@ -1196,8 +1318,8 @@ function UploadModal({title,subtitle,onClose,onSave,showRemarks,remarks,setRemar
           <div className="uz">
             <input type="file" accept="image/*,.pdf" onChange={e=>setFile(e.target.files[0])}/>
             <div style={{fontSize:28,marginBottom:6}}>📎</div>
-            {file?<div style={{fontSize:13}}><strong style={{color:'#d97706'}}>{file.name}</strong><br/><span style={{color:'#9ca3af',fontSize:12}}>{(file.size/1024).toFixed(1)} KB</span></div>
-            :<div style={{fontSize:13,color:'#9ca3af'}}><strong style={{color:'#d97706'}}>Tap to choose file</strong> or drag & drop<br/>JPG, PNG, or PDF</div>}
+            {file?<div style={{fontSize:13}}><strong style={{color:'#d97706'}}>{file.name}</strong><br/><span style={{color:'#6b7280',fontSize:12}}>{(file.size/1024).toFixed(1)} KB</span></div>
+            :<div style={{fontSize:13,color:'#6b7280'}}><strong style={{color:'#d97706'}}>Tap to choose file</strong> or drag & drop<br/>JPG, PNG, or PDF</div>}
           </div>
           {showRemarks&&<div className="fg" style={{marginTop:12}}>
             <label>Remarks (damaged / short goods? note here)</label>
