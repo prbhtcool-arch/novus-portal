@@ -466,7 +466,6 @@ function Shell({user,setUser,orders,setOrders,dealers,setDealers,locationData,fr
 
 function Router({page,locationData,freightMatrix,warehouses,...p}){
   const pL={...p,locationData,freightMatrix,warehouses};
-  const pL={...p,locationData,freightMatrix};
   const{user}=p;
   if(page==='home') return <Dashboard {...p}/>;
   if(page==='report') return <DispatchReport {...pL}/>;
