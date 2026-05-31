@@ -531,6 +531,7 @@ function Shell({user,setUser,orders,setOrders,dealers,setDealers,locationData,fr
       {id:'home',ic:'🏠',lb:'Dashboard'},
       {id:'place',ic:'➕',lb:'Place Order'},
       {id:'pending',ic:'⏳',lb:'Pending Orders'},
+      {id:'dealer_receivings',ic:'↩️',lb:'Receivings & Returns',badge:myOrders.filter(o=>(o.status==='dispatched'&&!o.dealerReceivingUploaded)||o.status==='receiving_disputed'||o.status==='return_pending').length},
       {id:'closed',ic:'✅',lb:'Closed Orders'},
       {id:'retailers',ic:'🏪',lb:'My Retailers'},
       {id:'sites',ic:'🏗️',lb:'My Sites'},
@@ -619,7 +620,8 @@ function Router({page,locationData,freightMatrix,warehouses,vehicles,setVehicles
   if(page==='report') return <DispatchReport {...pL}/>;
   if(user.role==='dealer'){
     if(page==='place')    return <PlaceOrder {...pL}/>;
-    if(page==='pending')  return <DealerOrders {...pL} filter={['placed','approved','vehicle_found','dispatched']} title="Pending Orders"/>;
+    if(page==='pending')  return <DealerOrders {...pL} filter={['placed','approved','vehicle_found']} title="Pending Orders"/>;
+    if(page==='dealer_receivings') return <DealerOrders {...pL} filter={['dispatched','receiving_disputed','return_pending']} title="Receivings & Returns"/>;
     if(page==='closed')   return <DealerOrders {...pL} filter={['closed']} title="Closed Orders"/>;
     if(page==='retailers')return <Contacts {...pL} type="retailers"/>;
     if(page==='sites')    return <Contacts {...pL} type="sites"/>;
@@ -994,13 +996,19 @@ function DealerOrders({user,orders,setOrders,myOrders,filter,title,warehouses}){
                 <button className="btn bam bsm" style={{marginLeft:10}} onClick={()=>setUploadId(o.id)}>📷 Upload Receiving</button></div>
               </div>
             )}
-            {o.dealerReceivingUploaded&&<div className="alert aok" style={{marginTop:10}}><span>✅</span> Receiving uploaded — Order closed{o.remarks?` · Remarks: ${o.remarks}`:''}</div>}
+            {o.dealerReceivingUploaded&&<div className={`alert ${o.status==='receiving_disputed'?'aw':'aok'}`} style={{marginTop:10}}><span>{o.status==='receiving_disputed'?'⚠️':'✅'}</span> {o.status==='receiving_disputed'?'Receiving uploaded — claim sent for logistics approval':'Receiving uploaded'}{o.remarks?` · Remarks: ${o.remarks}`:''}</div>}
           </div>
         </div>
       ))}
     </div>
     {uploadId&&(
-      <UploadModal title="Upload Receiving" subtitle="Upload the signed delivery challan received from driver" onClose={()=>{setUploadId(null);setRemarks('');}} onSave={(file)=>markReceived(uploadId,file)} showRemarks={true} remarks={remarks} setRemarks={setRemarks}/>
+      <ItemReceivingModal
+        order={orders.find(o=>o.id===uploadId)||{}}
+        title="Upload Item-wise Receiving"
+        subtitle="Enter actual received quantity item-wise. Short/damaged/returned bags will go to logistics approval; no credit is created automatically."
+        onClose={()=>{setUploadId(null);setRemarks('');}}
+        onSave={(file,receivingItems,remarksText)=>markReceived(uploadId,file,receivingItems,remarksText)}
+      />
     )}
   </>;
 }
