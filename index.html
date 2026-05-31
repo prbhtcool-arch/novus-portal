@@ -152,6 +152,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#f5f6fa;color:#1a1d2
 .dd-item:last-child{border-bottom:none}
 .dd-item:hover,.dd-item.selected{background:#fef3c7;color:#d97706}
 .dd-empty{padding:10px 12px;font-size:13px;color:#9ca3af;text-align:center}
+.mobile-report{display:none}
+@media(max-width:768px){.desktop-report{display:none!important}.mobile-report{display:block}.report-card{background:#fff;border:1.5px solid #e5e7eb;border-radius:12px;padding:12px;margin-bottom:10px}.report-line{display:flex;justify-content:space-between;gap:8px;font-size:12px;padding:4px 0;border-bottom:1px solid #f3f4f6}.report-line:last-child{border-bottom:none}.claim-grid{display:grid;grid-template-columns:1.2fr repeat(4,.8fr);gap:6px;align-items:center}.claim-grid input{width:100%;padding:6px;border:1px solid #e5e7eb;border-radius:6px}.dd-list{max-height:320px!important}.dd-item{min-height:46px}}
 
 </style>
 </head>
@@ -164,7 +166,7 @@ const {useState,useEffect,useCallback}=React;
 //  ⚙️ CONFIG — edit these after deployment
 // ══════════════════════════════════════════════
 const CFG={
-  SCRIPT_URL:"https://script.google.com/macros/s/AKfycby_7XKUpDC2z4b5DSlCESMmJvANj0ESdY8Z8M01i21bVIGRoorS5oJbyuW0TxkzzLWx/exec",
+  SCRIPT_URL:"https://script.google.com/macros/s/AKfycbwGdjMpulJvryzGqjBrlLTVfsZAYkTUtqgOj4Sjw2CTB-v3sOO_AN2m1eF0fw0Q4YXafg/exec",
   DEMO_MODE:false, // set false after pasting your URL above
 };
 
@@ -210,8 +212,8 @@ const DEMO_ORDERS=[
 ];
 
 // ── Helpers ────────────────────────────────────
-function sLabel(s){return{placed:'Order Placed – Waiting for Approval',approved:'Order Approved – Looking for Vehicle',vehicle_found:'Vehicle Found – Loading Started',dispatched:'Loading Complete – Vehicle Dispatched',closed:'Order Closed'}[s]||s;}
-function sCls(s){return{placed:'bp',approved:'ba',vehicle_found:'bv',dispatched:'bd',closed:'bcl'}[s]||'bp';}
+function sLabel(s){return{placed:'Order Placed – Waiting for Approval',approved:'Order Approved – Looking for Vehicle',vehicle_found:'Vehicle Found – Loading Started',dispatched:'Loading Complete – Vehicle Dispatched',receiving_disputed:'Receiving Disputed – Logistics Approval Pending',return_pending:'Return Pending – Warehouse Confirmation',closed:'Order Closed'}[s]||s;}
+function sCls(s){return{placed:'bp',approved:'ba',vehicle_found:'bv',dispatched:'bd',receiving_disputed:'bdi',return_pending:'bd',closed:'bcl'}[s]||'bp';}
 function whName(id,whs){
   const list=whs||(typeof warehouses!=='undefined'?warehouses:WHS);
   return (list||WHS).find(w=>w.id===id)?.name||id;
@@ -400,6 +402,8 @@ function App(){
   const[locationData,setLocationData]=useState([]);
   const[freightMatrix,setFreightMatrix]=useState([]);
   const[warehouses,setWarehouses]=useState(WHS);
+  const[vehicles,setVehicles]=useState([]);
+  const[drivers,setDrivers]=useState([]);
   const[appLoaded,setAppLoaded]=useState(CFG.DEMO_MODE);
 
   const handleSetUser=(u)=>{
@@ -420,6 +424,8 @@ function App(){
       if(appData.locationData) setLocationData(appData.locationData);
       if(appData.freightMatrix) setFreightMatrix(appData.freightMatrix);
       if(appData.warehouses&&appData.warehouses.length>0) setWarehouses(appData.warehouses);
+      if(appData.vehicles) setVehicles(appData.vehicles);
+      if(appData.drivers) setDrivers(appData.drivers);
     }).catch(()=>{});
   },[user]);
 
@@ -445,7 +451,7 @@ function App(){
       <div style={{fontSize:14,color:'#6b7280',fontWeight:500}}>Loading your portal...</div>
     </div>
   );
-  return <Shell user={user} setUser={handleSetUser} orders={orders} setOrders={setOrders} dealers={dealers} setDealers={setDealers} locationData={locationData} freightMatrix={freightMatrix} warehouses={warehouses}/>;
+  return <Shell user={user} setUser={handleSetUser} orders={orders} setOrders={setOrders} dealers={dealers} setDealers={setDealers} locationData={locationData} freightMatrix={freightMatrix} warehouses={warehouses} vehicles={vehicles} setVehicles={setVehicles} drivers={drivers} setDrivers={setDrivers}/>;
 }
 
 // ══════════════════════════════════════════════
@@ -510,7 +516,7 @@ function Login({setUser,setOrders,setDealers}){
 // ══════════════════════════════════════════════
 //  SHELL
 // ══════════════════════════════════════════════
-function Shell({user,setUser,orders,setOrders,dealers,setDealers,locationData,freightMatrix,warehouses}){
+function Shell({user,setUser,orders,setOrders,dealers,setDealers,locationData,freightMatrix,warehouses,vehicles,setVehicles,drivers,setDrivers}){
   const[page,setPage]=useState('home');
 
   const myOrders=orders.filter(o=>{
@@ -545,6 +551,8 @@ function Shell({user,setUser,orders,setOrders,dealers,setDealers,locationData,fr
       {id:'wh_loading',ic:'📦',lb:'Currently Loading'},
       {id:'wh_dispatched',ic:'📍',lb:'Dispatched'},
       {id:'wh_receiving',ic:'📷',lb:'Upload Receiving',badge:myOrders.filter(o=>o.status==='dispatched'&&!o.logisticsReceivingUploaded).length},
+      {id:'wh_returns',ic:'↩️',lb:'Return / Credit Approval',badge:myOrders.filter(o=>o.status==='receiving_disputed'||o.status==='return_pending').length},
+      {id:'wh_fleet',ic:'🚚',lb:'Drivers & Vehicles'},
     ],
     admin:[
       {id:'home',ic:'🏠',lb:'Dashboard'},
@@ -598,14 +606,14 @@ function Shell({user,setUser,orders,setOrders,dealers,setDealers,locationData,fr
         {CFG.DEMO_MODE&&<div className="alert aw" style={{margin:0,borderRadius:0,borderLeft:'none',borderRight:'none',borderTop:'none'}}>
           <span>🔧</span><strong>Demo Mode</strong> — changes are not saved. Paste your Apps Script URL and set DEMO_MODE: false to go live.
         </div>}
-        <Router page={page} user={user} orders={orders} setOrders={setOrders} dealers={dealers} setDealers={setDealers} myOrders={myOrders} setPage={setPage} locationData={locationData} freightMatrix={freightMatrix} warehouses={warehouses}/>
+        <Router page={page} user={user} orders={orders} setOrders={setOrders} dealers={dealers} setDealers={setDealers} myOrders={myOrders} setPage={setPage} locationData={locationData} freightMatrix={freightMatrix} warehouses={warehouses} vehicles={vehicles} setVehicles={setVehicles} drivers={drivers} setDrivers={setDrivers}/>
       </div>
     </div>
   );
 }
 
-function Router({page,locationData,freightMatrix,warehouses,...p}){
-  const pL={...p,locationData,freightMatrix,warehouses};
+function Router({page,locationData,freightMatrix,warehouses,vehicles,setVehicles,drivers,setDrivers,...p}){
+  const pL={...p,locationData,freightMatrix,warehouses,vehicles,setVehicles,drivers,setDrivers};
   const{user}=p;
   if(page==='home') return <Dashboard {...pL}/>;
   if(page==='report') return <DispatchReport {...pL}/>;
@@ -628,6 +636,8 @@ function Router({page,locationData,freightMatrix,warehouses,...p}){
     if(page==='wh_loading')   return <WHLoading {...pL}/>;
     if(page==='wh_dispatched')return <OList {...pL} filter={['dispatched','closed']} title="Dispatched Orders"/>;
     if(page==='wh_receiving') return <WHReceiving {...pL}/>;
+    if(page==='wh_returns') return <WHReturnApproval {...pL}/>;
+    if(page==='wh_fleet') return <FleetManager {...pL}/>;
   }
   if(user.role==='admin'){
     if(page==='admin_orders')  return <AdminOrders {...pL}/>;
@@ -948,15 +958,16 @@ function DealerOrders({user,orders,setOrders,myOrders,filter,title,warehouses}){
   const[uploadId,setUploadId]=useState(null);
   const[remarks,setRemarks]=useState('');
 
-  const markReceived=async(id,file)=>{
+  const markReceived=async(id,file,receivingItems=[],remarksText='')=>{
     if(!file){alert('Please choose the receiving photo/PDF first');return;}
     const ord=orders.find(o=>o.id===id);
     try{
       const photoData=await fileToDataUrl(file);
-      const res0=await api('uploadReceivingPhoto',{orderId:id,challanId:ord?.challanId||'',manualChallanNo:ord?.manualChallanNo||ord?.challanId||id,warehouseName:whName(ord?.warehouse||'',warehouses),uploadedBy:user.email,uploaderRole:'dealer',remarks,fileExt:safeFileExt(file),photoData});
+      const res0=await api('uploadReceivingPhoto',{orderId:id,challanId:ord?.challanId||'',manualChallanNo:ord?.manualChallanNo||ord?.challanId||id,warehouseName:whName(ord?.warehouse||'',warehouses),uploadedBy:user.email,uploaderRole:'dealer',remarks:remarksText||remarks,fileExt:safeFileExt(file),photoData,receivingItems});
       const res=await verifyUploadAfterResponse(res0,user,id,o=>!!(o.receivingDealerUrl||o.dealerReceivingUploaded),setOrders);
       if(res.verified){ setUploadId(null); setRemarks(''); return; }
-      const upd={dealerReceivingUploaded:true,receivingDealerUrl:res.url||ord?.receivingDealerUrl||'',receivingUploaded:true,status:(ord?.logisticsReceivingUploaded?'closed':ord?.status),remarks:remarks||ord?.remarks};
+      const hasClaim=(receivingItems||[]).some(i=>(parseInt(i.shortQty)||0)+(parseInt(i.damagedQty)||0)+(parseInt(i.returnedQty)||0)>0);
+      const upd={dealerReceivingUploaded:true,receivingDealerUrl:res.url||ord?.receivingDealerUrl||'',receivingUploaded:true,status:hasClaim?'receiving_disputed':(ord?.logisticsReceivingUploaded?'closed':ord?.status),remarks:remarksText||remarks||ord?.remarks,receivingItems};
       setOrders(orders.map(o=>o.id===id?{...o,...upd}:o));
     }catch(e){if(!demoFallback(e,()=>{})){alert('Upload failed: '+e.message);return;}}
     setUploadId(null);setRemarks('');
@@ -1126,7 +1137,7 @@ function DispatchReport({user,myOrders}){
     return true;
   };
 
-  const dispatched=myOrders.filter(o=>(o.status==='dispatched'||o.status==='closed')&&periodFilter(o));
+  const dispatched=myOrders.filter(o=>(o.status==='dispatched'||o.status==='closed'||o.status==='receiving_disputed'||o.status==='return_pending')&&periodFilter(o));
 
   const filtered=dispatched.filter(o=>{
     if(dispType!=='all'&&o.type!==dispType) return false;
@@ -1234,7 +1245,9 @@ function DispatchReport({user,myOrders}){
         </div>
         {filtered.length===0
           ?<div className="empty"><div className="empty-i">📋</div>No dispatched orders for this period. Try All Time, or dispatch an order by uploading the signed challan first.</div>
-          :<div className="tw">
+          :<>
+          <div className="mobile-report">{filtered.map(o=>{const bags={};o.items.forEach(i=>bags[i.cement]=(parseInt(i.qty)||0));const total=Object.values(bags).reduce((s,v)=>s+v,0);return <div key={o.id} className="report-card"><div style={{display:'flex',justifyContent:'space-between',gap:8,marginBottom:6}}><strong style={{color:'#d97706'}}>{o.challanRef||o.challanId||o.id}</strong><span className={`badge ${sCls(o.status)}`}>{sLabel(o.status).split('–')[0]}</span></div><div style={{fontSize:12,color:'#374151',marginBottom:5}}>{o.dealerName} → {o.destName}</div><div style={{fontSize:12,color:'#6b7280',marginBottom:7}}>{o.type} · {fmtD(o.dispatchedAt||o.placedAt)} · {o.vehicle?o.vehicle.number:'-'}</div>{['Champion','Plus','Duratech','All Weather','NFR','OPC'].filter(c=>bags[c]).map(c=><div key={c} className="report-line"><span>{c}</span><strong>{bags[c]} bags</strong></div>)}<div className="report-line" style={{borderTop:'1.5px solid #e5e7eb',marginTop:4}}><span>Total</span><strong style={{color:'#111827'}}>{total} bags</strong></div>{(o.challanPhotoUrl||o.receivingDealerUrl||o.receivingLogisticsUrl)&&<div style={{display:'flex',gap:6,flexWrap:'wrap',marginTop:8}}>{o.challanPhotoUrl&&<a className="btn bbl bsm" href={o.challanPhotoUrl} target="_blank">Challan</a>}{o.receivingDealerUrl&&<a className="btn bgr bsm" href={o.receivingDealerUrl} target="_blank">Dealer RCV</a>}{o.receivingLogisticsUrl&&<a className="btn bam bsm" href={o.receivingLogisticsUrl} target="_blank">WH RCV</a>}</div>}</div>})}</div>
+          <div className="tw desktop-report">
             <table className="tbl">
               <thead>
                 <tr>
@@ -1294,7 +1307,7 @@ function DispatchReport({user,myOrders}){
                 </tr>
               </tfoot>
             </table>
-          </div>
+          </div></>
         }
       </div>
     </div>
@@ -1387,12 +1400,14 @@ function OList({myOrders,filter,title,warehouses}){
 // ══════════════════════════════════════════════
 //  WAREHOUSE PAGES
 // ══════════════════════════════════════════════
-function WHVehicle({user,orders,setOrders,myOrders,warehouses}){
+function WHVehicle({user,orders,setOrders,myOrders,warehouses,vehicles,drivers}){
   const list=myOrders.filter(o=>o.status==='approved');
   const[sel,setSel]=useState(null);
   const[manualNo,setManualNo]=useState('');
   const[vNum,setVNum]=useState('');
   const[driver,setDriver]=useState('');
+  const[vehicleId,setVehicleId]=useState('');
+  const[driverId,setDriverId]=useState('');
   const[dPhone,setDPhone]=useState('');
   const[saving,setSaving]=useState(false);
 
@@ -1404,7 +1419,7 @@ function WHVehicle({user,orders,setOrders,myOrders,warehouses}){
     const challanRef=manualNo.trim()+'/'+whName(selOrd?.warehouse||'',warehouses)+'/'+new Date().toLocaleDateString('en-IN');
     const upd={status:'vehicle_found',vehicleAt:new Date().toISOString(),challanId,challanRef,manualChallanNo:manualNo.trim(),vehicle:{number:vNum.trim(),driver:driver.trim(),phone:dPhone.trim()}};
     setSaving(true);
-    try{await api('assignVehicle',{orderId:sel,vehicle:{number:vNum.trim(),driver:driver.trim(),phone:dPhone.trim()},assignedBy:user.email,manualChallanNo:manualNo.trim(),challanRef});}
+    try{await api('assignVehicle',{orderId:sel,vehicle:{number:vNum.trim(),driver:driver.trim(),phone:dPhone.trim(),vehicleId,driverId},assignedBy:user.email,manualChallanNo:manualNo.trim(),challanRef});}
     catch(e){if(!demoFallback(e,()=>{})){setSaving(false);return;}}
     setOrders(orders.map(o=>o.id===sel?{...o,...upd}:o));
     setSaving(false);setSel(null);setManualNo('');setVNum('');setDriver('');setDPhone('');
@@ -1430,6 +1445,7 @@ function WHVehicle({user,orders,setOrders,myOrders,warehouses}){
     {sel&&<div className="ov"><div className="modal">
       <div className="mh"><span className="mt">Assign Vehicle & Create Challan</span><button className="btn bgh bsm" onClick={()=>setSel(null)}>✕</button></div>
       <div className="mb">
+        <div className="r2"><div className="fg"><label>Select Saved Vehicle</label><select value={vehicleId} onChange={e=>{const id=e.target.value;setVehicleId(id);const v=(vehicles||[]).find(x=>x.VehicleID===id);if(v){setVNum(v.VehicleNumber||'');setDriver(v.DriverName||'');setDPhone(v.DriverPhone||v.Mobile||'');}}}><option value="">Manual / New Vehicle</option>{(vehicles||[]).filter(v=>(v.IsActive||'TRUE')==='TRUE').map(v=><option key={v.VehicleID} value={v.VehicleID}>{v.VehicleNumber} · {v.DriverName||''}</option>)}</select></div><div className="fg"><label>Select Saved Driver</label><select value={driverId} onChange={e=>{const id=e.target.value;setDriverId(id);const d=(drivers||[]).find(x=>x.DriverID===id);if(d){setDriver(d.DriverName||'');setDPhone(d.Mobile||'');}}}><option value="">Manual / New Driver</option>{(drivers||[]).filter(d=>(d.IsActive||'TRUE')==='TRUE').map(d=><option key={d.DriverID} value={d.DriverID}>{d.DriverName} · {d.Mobile||''}</option>)}</select></div></div>
         <div className="fg"><label>Physical Challan Number (from bilty book) *</label>
           <input value={manualNo} onChange={e=>setManualNo(e.target.value)} placeholder="e.g. 2827"/>
         </div>
@@ -1623,6 +1639,56 @@ function AdminPending({myOrders,warehouses}){
       ))}
     </div>
   </>;
+}
+
+
+function ItemReceivingModal({order,title,subtitle,onClose,onSave}){
+  const[file,setFile]=useState(null);
+  const[remarks,setRemarks]=useState('');
+  const[busy,setBusy]=useState(false);
+  const[rows,setRows]=useState((order.items||[]).map(i=>({cement:i.cement,dispatchedQty:parseInt(i.qty)||0,goodQty:parseInt(i.qty)||0,shortQty:0,damagedQty:0,returnedQty:0,reason:''})));
+  const setVal=(idx,k,v)=>setRows(rows.map((r,i)=>i===idx?{...r,[k]:v}:r));
+  const claimTotal=rows.reduce((s,r)=>s+(parseInt(r.shortQty)||0)+(parseInt(r.damagedQty)||0)+(parseInt(r.returnedQty)||0),0);
+  const save=async()=>{setBusy(true);try{await onSave(file,rows,remarks);}finally{setBusy(false);}};
+  return <div className="ov"><div className="modal" style={{width:720}}>
+    <div className="mh"><span className="mt">{title}</span><button className="btn bgh bsm" onClick={onClose}>✕</button></div>
+    <div className="mb">
+      {subtitle&&<div style={{fontSize:13,color:'#6b7280',marginBottom:12}}>{subtitle}</div>}
+      <div className="uz"><input type="file" accept="image/*,.pdf" onChange={e=>setFile(e.target.files[0])}/><div style={{fontSize:28,marginBottom:6}}>📎</div>{file?<div style={{fontSize:13}}><strong style={{color:'#d97706'}}>{file.name}</strong><br/><span style={{color:'#6b7280',fontSize:12}}>{(file.size/1024).toFixed(1)} KB</span></div>:<div style={{fontSize:13,color:'#6b7280'}}><strong style={{color:'#d97706'}}>Tap to choose receiving photo</strong><br/>JPG, PNG, or PDF</div>}</div>
+      <div style={{fontSize:11,fontWeight:700,color:'#6b7280',textTransform:'uppercase',letterSpacing:'.04em',margin:'12px 0 6px'}}>Item-wise Receiving</div>
+      <div className="claim-grid" style={{fontSize:11,color:'#6b7280',fontWeight:700,marginBottom:4}}><div>Item</div><div>Good</div><div>Short</div><div>Damaged</div><div>Returned</div></div>
+      {rows.map((r,idx)=><div key={r.cement} className="claim-grid" style={{marginBottom:6}}><div style={{fontSize:12}}><strong>{r.cement}</strong><br/><span style={{color:'#6b7280'}}>Dispatched {r.dispatchedQty}</span></div><input type="number" min="0" value={r.goodQty} onChange={e=>setVal(idx,'goodQty',e.target.value)}/><input type="number" min="0" value={r.shortQty} onChange={e=>setVal(idx,'shortQty',e.target.value)}/><input type="number" min="0" value={r.damagedQty} onChange={e=>setVal(idx,'damagedQty',e.target.value)}/><input type="number" min="0" value={r.returnedQty} onChange={e=>setVal(idx,'returnedQty',e.target.value)}/></div>)}
+      {claimTotal>0&&<div className="alert aw"><span>⚠️</span><div>Claimed shortage/return: <strong>{claimTotal} bags</strong>. This will go to logistics for approval. Credit will not be created automatically.</div></div>}
+      <div className="fg" style={{marginTop:10}}><label>Remarks / reason</label><textarea value={remarks} onChange={e=>setRemarks(e.target.value)} placeholder="Example: 5 bags damaged, 2 bags short delivered..."/></div>
+    </div>
+    <div className="mf"><button className="btn bgh" onClick={onClose}>Cancel</button><button className="btn bam" onClick={save} disabled={busy}>{busy?<><span className="spin"/> Uploading…</>:'Submit Receiving ✓'}</button></div>
+  </div></div>;
+}
+
+function WHReturnApproval({user,orders,setOrders,myOrders,warehouses}){
+  const list=myOrders.filter(o=>o.status==='receiving_disputed'||o.status==='return_pending');
+  const[sel,setSel]=useState(null);
+  const[decisions,setDecisions]=useState({});
+  const[remarks,setRemarks]=useState('');
+  const selected=orders.find(o=>o.id===sel);
+  const claimItems=(selected?.receivingItems||[]).filter(i=>i.claimQty>0);
+  const approve=async()=>{
+    if(!selected)return;
+    const ds=claimItems.map(i=>({cement:i.cement,approvedQty:parseInt(decisions[i.cement]??i.claimQty)||0,remarks}));
+    try{await api('approveReceivingClaim',{orderId:selected.id,challanId:selected.challanId||'',approvedBy:user.email,remarks,decisions:ds});}
+    catch(e){alert('Approval failed: '+e.message);return;}
+    setOrders(orders.map(o=>o.id===selected.id?{...o,status:ds.some(d=>d.approvedQty>0)?'return_pending':'closed',creditStatus:'Approved'}:o));
+    setSel(null);setDecisions({});setRemarks('');
+  };
+  const closeReturn=async(o)=>{try{await api('confirmReturnReceived',{orderId:o.id,challanId:o.challanId||'',receivedBy:user.email,remarks:'Returned bags received at warehouse'});}catch(e){alert('Return close failed: '+e.message);return;}setOrders(orders.map(x=>x.id===o.id?{...x,status:'closed',returnStatus:'Return Received'}:x));};
+  return <><div className="ph"><div className="pt">Return / Credit Approval</div><div className="ps">Credit is created only after logistics approval</div></div><div className="pb">{list.length===0&&<div className="card"><div className="empty"><div className="empty-i">✅</div>No disputed receivings or pending returns</div></div>}{list.map(o=><div key={o.id} className="card"><div className="ch"><div><strong style={{color:'#d97706'}}>{o.id}</strong> <span className={`badge ${sCls(o.status)}`}>{sLabel(o.status)}</span></div><div style={{display:'flex',gap:6}}>{o.status==='receiving_disputed'&&<button className="btn bam bsm" onClick={()=>setSel(o.id)}>Review Claim</button>}{o.status==='return_pending'&&<button className="btn bgr bsm" onClick={()=>closeReturn(o)}>Confirm Return Received</button>}</div></div><div className="cb"><OInfo o={o} warehouses={warehouses}/>{(o.receivingItems||[]).filter(i=>i.claimQty>0).map(i=><div key={i.id||i.cement} className="alert aw" style={{marginTop:8}}><span>Claim</span><span>{i.cement}: Short {i.shortQty}, Damaged {i.damagedQty}, Returned {i.returnedQty} · Status: {i.claimStatus}</span></div>)}</div></div>)}</div>{sel&&selected&&<div className="ov"><div className="modal" style={{width:680}}><div className="mh"><span className="mt">Approve Receiving Claim</span><button className="btn bgh bsm" onClick={()=>setSel(null)}>✕</button></div><div className="mb"><OInfo o={selected} warehouses={warehouses}/><div style={{marginTop:12}}>{claimItems.map(i=><div key={i.cement} className="cr"><span className="cn">{i.cement}<br/><span style={{fontSize:11,color:'#6b7280'}}>Claim {i.claimQty} bags</span></span><span style={{fontSize:11,color:'#6b7280'}}>Approved Qty</span><input className="ci" type="number" min="0" max={i.claimQty} value={decisions[i.cement]??i.claimQty} onChange={e=>setDecisions({...decisions,[i.cement]:e.target.value})}/></div>)}</div><div className="fg"><label>Logistics remarks</label><textarea value={remarks} onChange={e=>setRemarks(e.target.value)} placeholder="Reason for approval/rejection"/></div></div><div className="mf"><button className="btn bgh" onClick={()=>setSel(null)}>Cancel</button><button className="btn bam" onClick={approve}>Approve Selected Qty</button></div></div></div>}</>;
+}
+
+function FleetManager({user,vehicles,setVehicles,drivers,setDrivers,warehouses}){
+  const[mode,setMode]=useState('driver');
+  const[name,setName]=useState('');const[phone,setPhone]=useState('');const[vnum,setVnum]=useState('');const[owner,setOwner]=useState('');const[cap,setCap]=useState('');const[wh,setWh]=useState(user.warehouse||'');
+  const save=async()=>{try{if(mode==='driver'){const r=await api('addDriver',{driverName:name,mobile:phone,preferredWarehouse:wh,createdBy:user.email});setDrivers([...(drivers||[]),{DriverID:r.driverId,DriverName:name,Mobile:phone,PreferredWarehouse:wh,IsActive:'TRUE'}]);}else{const r=await api('addVehicle',{vehicleNumber:vnum,ownerName:owner,driverName:name,driverPhone:phone,capacityBags:cap,preferredWarehouse:wh,createdBy:user.email});setVehicles([...(vehicles||[]),{VehicleID:r.vehicleId,VehicleNumber:vnum,OwnerName:owner,DriverName:name,DriverPhone:phone,CapacityBags:cap,PreferredWarehouse:wh,IsActive:'TRUE'}]);}setName('');setPhone('');setVnum('');setOwner('');setCap('');}catch(e){alert('Save failed: '+e.message);}};
+  return <><div className="ph"><div><div className="pt">Drivers & Vehicles</div><div className="ps">Onboard regular drivers and vehicles for faster challan creation</div></div></div><div className="pb"><div style={{display:'flex',gap:6,marginBottom:12}}><button className={`btn ${mode==='driver'?'bam':'bgh'}`} onClick={()=>setMode('driver')}>Add Driver</button><button className={`btn ${mode==='vehicle'?'bam':'bgh'}`} onClick={()=>setMode('vehicle')}>Add Vehicle</button></div><div className="card"><div className="ch"><span className="ct">{mode==='driver'?'New Driver':'New Vehicle'}</span></div><div className="cb">{mode==='vehicle'&&<div className="r2"><div className="fg"><label>Vehicle Number</label><input value={vnum} onChange={e=>setVnum(e.target.value.toUpperCase())}/></div><div className="fg"><label>Owner Name</label><input value={owner} onChange={e=>setOwner(e.target.value)}/></div></div>}<div className="r2"><div className="fg"><label>Driver Name</label><input value={name} onChange={e=>setName(e.target.value)}/></div><div className="fg"><label>Mobile</label><input value={phone} onChange={e=>setPhone(e.target.value)}/></div></div>{mode==='vehicle'&&<div className="fg"><label>Capacity Bags</label><input value={cap} onChange={e=>setCap(e.target.value)} type="number"/></div>}<div className="fg"><label>Preferred Warehouse</label><select value={wh} onChange={e=>setWh(e.target.value)}><option value="">All</option>{(warehouses||WHS).map(w=><option key={w.id} value={w.id}>{w.name}</option>)}</select></div><button className="btn bam" onClick={save}>Save</button></div></div><div className="r2"><div className="card"><div className="ch"><span className="ct">Drivers</span></div><div className="cb">{(drivers||[]).map(d=><div className="dc" key={d.DriverID}><div><strong>{d.DriverName}</strong><div style={{fontSize:12,color:'#6b7280'}}>{d.Mobile}</div></div><span className="chip">{d.PreferredWarehouse||'All'}</span></div>)}</div></div><div className="card"><div className="ch"><span className="ct">Vehicles</span></div><div className="cb">{(vehicles||[]).map(v=><div className="dc" key={v.VehicleID}><div><strong>{v.VehicleNumber}</strong><div style={{fontSize:12,color:'#6b7280'}}>{v.DriverName} · {v.DriverPhone}</div></div><span className="chip">{v.CapacityBags||'-'} bags</span></div>)}</div></div></div></div></>;
 }
 
 // ══════════════════════════════════════════════
