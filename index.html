@@ -231,6 +231,7 @@ function whName(id,whs){
 function fmtD(d){try{return new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});}catch{return d;}}
 function fmtDT(d){try{return new Date(d).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});}catch{return d;}}
 function totalBags(items){return items.reduce((s,i)=>s+(parseInt(i.qty)||0),0);}
+function normId(v){return String(v||'').trim().toUpperCase();}
 
 // ── API (JSONP) ─────────────────────────────────
 function apiJSONP(action,payload={}){
@@ -532,7 +533,7 @@ function Shell({user,setUser,orders,setOrders,dealers,setDealers,locationData,fr
   const myOrders=orders.filter(o=>{
     if(user.role==='dealer') return o.dealer===user.id;
     if(user.role==='tse')    return o.territory===user.territory;
-    if(user.role==='logistics') return o.warehouse===user.warehouse;
+    if(user.role==='logistics') return normId(o.warehouse)===normId(user.warehouse);
     return true; // admin sees all
   });
 
