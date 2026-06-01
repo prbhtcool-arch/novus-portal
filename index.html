@@ -154,7 +154,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#f5f6fa;color:#1a1d2
 .dd-empty{padding:10px 12px;font-size:13px;color:#9ca3af;text-align:center}
 .mobile-report{display:none}
 /* Item-wise receiving grid */
-.claim-grid{display:grid;grid-template-columns:1.35fr .8fr repeat(4,.9fr);gap:7px;align-items:center}
+.claim-grid{display:grid;grid-template-columns:1.35fr .8fr repeat(3,.9fr);gap:7px;align-items:center}
 .claim-grid input{width:100%;padding:7px 8px;border:1.5px solid #e5e7eb;border-radius:7px;font-size:13px;background:#fff;color:#111827}
 .claim-grid input:focus{border-color:#f59e0b;outline:none}
 .recv-head{font-size:11px;color:#6b7280;font-weight:700;margin-bottom:6px;text-transform:uppercase;letter-spacing:.03em}
@@ -1670,22 +1670,25 @@ function ItemReceivingModal({order,title,subtitle,onClose,onSave}){
     goodQty:parseInt(i.qty)||0,
     shortQty:0,
     damagedQty:0,
-    returnedQty:0,
+    returnedQty:0, // kept for backend record; set equal to damagedQty at save time
     reason:''
   })));
   const n=v=>Math.max(0,parseInt(v)||0);
   const setVal=(idx,k,v)=>setRows(rows.map((r,i)=>i===idx?{...r,[k]:v}:r));
-  const rowSum=r=>n(r.goodQty)+n(r.shortQty)+n(r.damagedQty)+n(r.returnedQty);
-  const claimTotal=rows.reduce((s,r)=>s+n(r.shortQty)+n(r.damagedQty)+n(r.returnedQty),0);
+  // Returned is not a separate quantity. Damaged/Returned is one bucket.
+  const rowSum=r=>n(r.goodQty)+n(r.shortQty)+n(r.damagedQty);
+  const claimTotal=rows.reduce((s,r)=>s+n(r.shortQty)+n(r.damagedQty),0);
   const imbalance=rows.filter(r=>rowSum(r)!==n(r.dispatchedQty));
   const save=async()=>{
     if(!file){alert('Please choose the receiving photo/PDF first');return;}
     if(imbalance.length){
-      alert('Please correct item-wise quantities. For every item: Good + Short + Damaged + Returned must equal Dispatched Qty.\n\nMismatch: '+imbalance.map(r=>r.cement+' (Dispatched '+r.dispatchedQty+', entered '+rowSum(r)+')').join(', '));
+      alert('Please correct item-wise quantities. For every item: Good + Short + Damaged/Returned must equal Dispatched Qty.\n\nMismatch: '+imbalance.map(r=>r.cement+' (Dispatched '+r.dispatchedQty+', entered '+rowSum(r)+')').join(', '));
       return;
     }
     setBusy(true);
-    try{await onSave(file,rows,remarks);}finally{setBusy(false);}
+    // For records, returnedQty is kept equal to damagedQty. It is NOT added separately in totals.
+    const cleanRows=rows.map(r=>({...r,returnedQty:n(r.damagedQty)}));
+    try{await onSave(file,cleanRows,remarks);}finally{setBusy(false);}
   };
   return <div className="ov"><div className="modal" style={{width:820}}>
     <div className="mh"><span className="mt">{title}</span><button className="btn bgh bsm" onClick={onClose}>✕</button></div>
@@ -1693,8 +1696,8 @@ function ItemReceivingModal({order,title,subtitle,onClose,onSave}){
       {subtitle&&<div style={{fontSize:13,color:'#6b7280',marginBottom:12}}>{subtitle}</div>}
       <div className="uz"><input type="file" accept="image/*,.pdf" onChange={e=>setFile(e.target.files[0])}/><div style={{fontSize:28,marginBottom:6}}>📎</div>{file?<div style={{fontSize:13}}><strong style={{color:'#d97706'}}>{file.name}</strong><br/><span style={{color:'#6b7280',fontSize:12}}>{(file.size/1024).toFixed(1)} KB</span></div>:<div style={{fontSize:13,color:'#6b7280'}}><strong style={{color:'#d97706'}}>Tap to choose receiving photo</strong><br/>JPG, PNG, or PDF</div>}</div>
       <div style={{fontSize:11,fontWeight:700,color:'#6b7280',textTransform:'uppercase',letterSpacing:'.04em',margin:'12px 0 6px'}}>Item-wise Receiving</div>
-      <div className="recv-note"><strong>Dispatched Qty is locked.</strong> Dealer can edit only actual receiving quantities. For each item: <strong>Good + Short + Damaged + Returned = Dispatched</strong>.</div>
-      <div className="claim-grid recv-head"><div>Item</div><div>Dispatched</div><div>Good Received</div><div>Short</div><div>Damaged</div><div>Returned</div></div>
+      <div className="recv-note"><strong>Dispatched Qty is locked.</strong> Dealer can edit only actual receiving quantities. For each item: <strong>Good + Short + Damaged/Returned = Dispatched</strong>.</div>
+      <div className="claim-grid recv-head"><div>Item</div><div>Dispatched</div><div>Good Received</div><div>Short</div><div>Damaged/Returned</div></div>
       {rows.map((r,idx)=>{
         const sum=rowSum(r), bal=n(r.dispatchedQty)-sum;
         return <div key={r.cement} className="claim-grid recv-row">
@@ -1702,11 +1705,10 @@ function ItemReceivingModal({order,title,subtitle,onClose,onSave}){
           <div><span className="recv-cell-label" style={{display:'none'}}>Dispatched</span><div className="recv-lock">{r.dispatchedQty}</div></div>
           <div><span className="recv-cell-label" style={{display:'none'}}>Good</span><input type="number" min="0" value={r.goodQty} onChange={e=>setVal(idx,'goodQty',e.target.value)}/></div>
           <div><span className="recv-cell-label" style={{display:'none'}}>Short</span><input type="number" min="0" value={r.shortQty} onChange={e=>setVal(idx,'shortQty',e.target.value)}/></div>
-          <div><span className="recv-cell-label" style={{display:'none'}}>Damaged</span><input type="number" min="0" value={r.damagedQty} onChange={e=>setVal(idx,'damagedQty',e.target.value)}/></div>
-          <div><span className="recv-cell-label" style={{display:'none'}}>Returned</span><input type="number" min="0" value={r.returnedQty} onChange={e=>setVal(idx,'returnedQty',e.target.value)}/></div>
+          <div><span className="recv-cell-label" style={{display:'none'}}>Damaged/Returned</span><input type="number" min="0" value={r.damagedQty} onChange={e=>setVal(idx,'damagedQty',e.target.value)}/></div>
         </div>;
       })}
-      {claimTotal>0&&<div className="alert aw"><span>⚠️</span><div>Claimed shortage/damage/return: <strong>{claimTotal} bags</strong>. This will go to logistics for approval. Credit will not be created automatically.</div></div>}
+      {claimTotal>0&&<div className="alert aw"><span>⚠️</span><div>Claimed shortage or damaged/returned: <strong>{claimTotal} bags</strong>. This will go to logistics for approval. Credit will not be created automatically.</div></div>}
       <div className="fg" style={{marginTop:10}}><label>Remarks / reason</label><textarea value={remarks} onChange={e=>setRemarks(e.target.value)} placeholder="Example: 5 bags damaged, 2 bags short delivered..."/></div>
     </div>
     <div className="mf"><button className="btn bgh" onClick={onClose}>Cancel</button><button className="btn bam" onClick={save} disabled={busy}>{busy?<><span className="spin"/> Uploading…</>:'Submit Receiving ✓'}</button></div>
@@ -1729,7 +1731,7 @@ function WHReturnApproval({user,orders,setOrders,myOrders,warehouses}){
     setSel(null);setDecisions({});setRemarks('');
   };
   const closeReturn=async(o)=>{try{await api('confirmReturnReceived',{orderId:o.id,challanId:o.challanId||'',receivedBy:user.email,remarks:'Returned bags received at warehouse'});}catch(e){alert('Return close failed: '+e.message);return;}setOrders(orders.map(x=>x.id===o.id?{...x,status:'closed',returnStatus:'Return Received'}:x));};
-  return <><div className="ph"><div className="pt">Return / Credit Approval</div><div className="ps">Credit is created only after logistics approval</div></div><div className="pb">{list.length===0&&<div className="card"><div className="empty"><div className="empty-i">✅</div>No disputed receivings or pending returns</div></div>}{list.map(o=><div key={o.id} className="card"><div className="ch"><div><strong style={{color:'#d97706'}}>{o.id}</strong> <span className={`badge ${sCls(o.status)}`}>{sLabel(o.status)}</span></div><div style={{display:'flex',gap:6}}>{o.status==='receiving_disputed'&&<button className="btn bam bsm" onClick={()=>setSel(o.id)}>Review Claim</button>}{o.status==='return_pending'&&<button className="btn bgr bsm" onClick={()=>closeReturn(o)}>Confirm Return Received</button>}</div></div><div className="cb"><OInfo o={o} warehouses={warehouses}/>{(o.receivingItems||[]).filter(i=>i.claimQty>0).map(i=><div key={i.id||i.cement} className="alert aw" style={{marginTop:8}}><span>Claim</span><span>{i.cement}: Short {i.shortQty}, Damaged {i.damagedQty}, Returned {i.returnedQty} · Status: {i.claimStatus}</span></div>)}</div></div>)}</div>{sel&&selected&&<div className="ov"><div className="modal" style={{width:680}}><div className="mh"><span className="mt">Approve Receiving Claim</span><button className="btn bgh bsm" onClick={()=>setSel(null)}>✕</button></div><div className="mb"><OInfo o={selected} warehouses={warehouses}/><div style={{marginTop:12}}>{claimItems.map(i=><div key={i.cement} className="cr"><span className="cn">{i.cement}<br/><span style={{fontSize:11,color:'#6b7280'}}>Claim {i.claimQty} bags</span></span><span style={{fontSize:11,color:'#6b7280'}}>Approved Qty</span><input className="ci" type="number" min="0" max={i.claimQty} value={decisions[i.cement]??i.claimQty} onChange={e=>setDecisions({...decisions,[i.cement]:e.target.value})}/></div>)}</div><div className="fg"><label>Logistics remarks</label><textarea value={remarks} onChange={e=>setRemarks(e.target.value)} placeholder="Reason for approval/rejection"/></div></div><div className="mf"><button className="btn bgh" onClick={()=>setSel(null)}>Cancel</button><button className="btn bam" onClick={approve}>Approve Selected Qty</button></div></div></div>}</>;
+  return <><div className="ph"><div className="pt">Return / Credit Approval</div><div className="ps">Credit is created only after logistics approval</div></div><div className="pb">{list.length===0&&<div className="card"><div className="empty"><div className="empty-i">✅</div>No disputed receivings or pending returns</div></div>}{list.map(o=><div key={o.id} className="card"><div className="ch"><div><strong style={{color:'#d97706'}}>{o.id}</strong> <span className={`badge ${sCls(o.status)}`}>{sLabel(o.status)}</span></div><div style={{display:'flex',gap:6}}>{o.status==='receiving_disputed'&&<button className="btn bam bsm" onClick={()=>setSel(o.id)}>Review Claim</button>}{o.status==='return_pending'&&<button className="btn bgr bsm" onClick={()=>closeReturn(o)}>Confirm Return Received</button>}</div></div><div className="cb"><OInfo o={o} warehouses={warehouses}/>{(o.receivingItems||[]).filter(i=>i.claimQty>0).map(i=><div key={i.id||i.cement} className="alert aw" style={{marginTop:8}}><span>Claim</span><span>{i.cement}: Short {i.shortQty}, Damaged/Returned {i.damagedQty} · Status: {i.claimStatus}</span></div>)}</div></div>)}</div>{sel&&selected&&<div className="ov"><div className="modal" style={{width:680}}><div className="mh"><span className="mt">Approve Receiving Claim</span><button className="btn bgh bsm" onClick={()=>setSel(null)}>✕</button></div><div className="mb"><OInfo o={selected} warehouses={warehouses}/><div style={{marginTop:12}}>{claimItems.map(i=><div key={i.cement} className="cr"><span className="cn">{i.cement}<br/><span style={{fontSize:11,color:'#6b7280'}}>Claim {i.claimQty} bags</span></span><span style={{fontSize:11,color:'#6b7280'}}>Approved Qty</span><input className="ci" type="number" min="0" max={i.claimQty} value={decisions[i.cement]??i.claimQty} onChange={e=>setDecisions({...decisions,[i.cement]:e.target.value})}/></div>)}</div><div className="fg"><label>Logistics remarks</label><textarea value={remarks} onChange={e=>setRemarks(e.target.value)} placeholder="Reason for approval/rejection"/></div></div><div className="mf"><button className="btn bgh" onClick={()=>setSel(null)}>Cancel</button><button className="btn bam" onClick={approve}>Approve Selected Qty</button></div></div></div>}</>;
 }
 
 function FleetManager({user,vehicles,setVehicles,drivers,setDrivers,warehouses}){
