@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Novus Solutions – Cement Order Portal</title>
+<title>Novus Solutions – Cement Order & Material Portal</title>
 <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -165,6 +165,28 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#f5f6fa;color:#1a1d2
 @media(max-width:768px){.desktop-report{display:none!important}.mobile-report{display:block}.report-card{background:#fff;border:1.5px solid #e5e7eb;border-radius:12px;padding:12px;margin-bottom:10px}.report-line{display:flex;justify-content:space-between;gap:8px;font-size:12px;padding:4px 0;border-bottom:1px solid #f3f4f6}.report-line:last-child{border-bottom:none}.dd-list{max-height:320px!important}.dd-item{min-height:46px}}
 @media(max-width:600px){.claim-grid{grid-template-columns:1fr 1fr 1fr;gap:6px}.recv-head{display:none}.recv-row{background:#f9fafb;border:1px solid #e5e7eb;border-radius:9px;padding:10px;margin-bottom:8px}.recv-row .item-cell{grid-column:1/-1}.recv-cell-label{display:block!important;font-size:10px;color:#9ca3af;text-transform:uppercase;margin-bottom:2px}}
 
+
+/* Material Account */
+.mat-summary{display:grid;grid-template-columns:repeat(5,minmax(135px,1fr));gap:10px;margin-bottom:14px}
+.mat-stat{background:#fff;border:1.5px solid #e5e7eb;border-radius:12px;padding:14px;min-height:94px}
+.mat-stat .k{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:#9ca3af;font-weight:700;margin-bottom:8px}
+.mat-stat .v{font-size:24px;font-weight:800;color:#111827;line-height:1.1}
+.mat-stat .s{font-size:11px;color:#6b7280;margin-top:6px;line-height:1.35}
+.mat-balance-positive{color:#b45309!important}.mat-balance-negative{color:#047857!important}.mat-balance-zero{color:#374151!important}
+.mat-toolbar{display:flex;gap:9px;align-items:flex-end;flex-wrap:wrap;padding:12px;border-bottom:1px solid #e5e7eb;background:#f9fafb}
+.mat-toolbar .fg{min-width:135px;margin:0}.mat-toolbar .fg.grow{flex:1;min-width:210px}
+.mat-toolbar input,.mat-toolbar select{width:100%;background:#fff;border:1.5px solid #e5e7eb;border-radius:7px;padding:8px 10px;color:#111827;font-size:12px;font-family:inherit;outline:none}
+.mat-toolbar input:focus,.mat-toolbar select:focus{border-color:#f59e0b}
+.mat-effect{font-weight:800;white-space:nowrap}.mat-effect.pos{color:#b45309}.mat-effect.neg{color:#047857}.mat-effect.zero{color:#9ca3af}
+.mat-type{font-size:11px;font-weight:700;border-radius:20px;padding:3px 8px;display:inline-block;white-space:nowrap}
+.mat-dispatch{background:#fff7ed;color:#c2410c}.mat-invoice{background:#ecfdf5;color:#047857}.mat-return{background:#eff6ff;color:#1d4ed8}.mat-direct{background:#f3f4f6;color:#4b5563}
+.mat-empty{text-align:center;padding:36px 16px;color:#6b7280;font-size:13px}
+.mat-history{font-size:12px;color:#6b7280;line-height:1.5}
+.mat-load{display:flex;justify-content:center;padding:14px;border-top:1px solid #f3f4f6}
+.mat-table-wrap{overflow:auto;max-width:100%}.mat-table{min-width:960px}
+@media(max-width:980px){.mat-summary{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){.mat-summary{grid-template-columns:1fr 1fr}.mat-stat .v{font-size:20px}.mat-toolbar{align-items:stretch}.mat-toolbar .fg,.mat-toolbar .fg.grow{min-width:calc(50% - 6px);flex:1}.mat-table th,.mat-table td{display:table-cell!important}}
+
 </style>
 </head>
 <body>
@@ -176,7 +198,7 @@ const {useState,useEffect,useCallback}=React;
 //  ⚙️ CONFIG — edit these after deployment
 // ══════════════════════════════════════════════
 const CFG={
-  SCRIPT_URL:"https://script.google.com/macros/s/AKfycbwGdjMpulJvryzGqjBrlLTVfsZAYkTUtqgOj4Sjw2CTB-v3sOO_AN2m1eF0fw0Q4YXafg/exec",
+  SCRIPT_URL:"https://script.google.com/macros/s/AKfycbzr-LGN6gGP2kL3SZLquS0Sw0uOibRE7iQXbHOjsVdOEGv3ZJR5LGq-2udWLFBskKJ_/exec",
   DEMO_MODE:false, // set false after pasting your URL above
 };
 
@@ -531,8 +553,8 @@ function Shell({user,setUser,orders,setOrders,dealers,setDealers,locationData,fr
   const[page,setPage]=useState('home');
 
   const myOrders=orders.filter(o=>{
-    if(user.role==='dealer') return o.dealer===user.id;
-    if(user.role==='tse')    return o.territory===user.territory;
+    if(user.role==='dealer') return normId(o.dealer)===normId(user.id);
+    if(user.role==='tse')    return normId(o.territory)===normId(user.territory);
     if(user.role==='logistics') return normId(o.warehouse)===normId(user.warehouse);
     return true; // admin sees all
   });
@@ -547,6 +569,7 @@ function Shell({user,setUser,orders,setOrders,dealers,setDealers,locationData,fr
       {id:'retailers',ic:'🏪',lb:'My Retailers'},
       {id:'sites',ic:'🏗️',lb:'My Sites'},
       {id:'report',ic:'📊',lb:'Dispatch Report'},
+      {id:'material',ic:'📒',lb:'Material Account'},
     ],
     tse:[
       {id:'home',ic:'🏠',lb:'Dashboard'},
@@ -636,18 +659,19 @@ function Router({page,locationData,freightMatrix,warehouses,vehicles,setVehicles
     if(page==='closed')   return <DealerOrders {...pL} filter={['closed']} title="Closed Orders"/>;
     if(page==='retailers')return <Contacts {...pL} type="retailers"/>;
     if(page==='sites')    return <Contacts {...pL} type="sites"/>;
+    if(page==='material') return <MaterialAccount user={user}/>;
   }
   if(user.role==='tse'){
     if(page==='dealers')  return <TSEDealers {...pL}/>;
     if(page==='approve')  return <TSEApprove {...pL}/>;
     if(page==='approved') return <OList {...pL} filter={['approved']} title="Approved – Awaiting Dispatch"/>;
-    if(page==='dispatched')return <OList {...pL} filter={['dispatched','closed']} title="Dispatched Orders"/>;
+    if(page==='dispatched')return <OList {...pL} filter={['dispatched','receiving_disputed','return_pending','closed']} title="Dispatched / Receiving Orders"/>;
   }
   if(user.role==='logistics'){
     if(page==='wh_pending')   return <OList {...pL} filter={['placed']} title="Waiting for TSE Approval"/>;
     if(page==='wh_vehicle')   return <WHVehicle {...pL}/>;
     if(page==='wh_loading')   return <WHLoading {...pL}/>;
-    if(page==='wh_dispatched')return <OList {...pL} filter={['dispatched','closed']} title="Dispatched Orders"/>;
+    if(page==='wh_dispatched')return <OList {...pL} filter={['dispatched','receiving_disputed','return_pending','closed']} title="Dispatched / Receiving Orders"/>;
     if(page==='wh_receiving') return <WHReceiving {...pL}/>;
     if(page==='wh_returns') return <WHReturnApproval {...pL}/>;
     if(page==='wh_fleet') return <FleetManager {...pL}/>;
@@ -1124,6 +1148,157 @@ function Contacts({user,dealers,setDealers,type,locationData}){
 }
 
 
+
+
+// ══════════════════════════════════════════════
+//  DEALER MATERIAL ACCOUNT — TALLY HISTORY
+// ══════════════════════════════════════════════
+function MaterialAccount({user}){
+  const[data,setData]=useState(null);
+  const[transactions,setTransactions]=useState([]);
+  const[nextOffset,setNextOffset]=useState(null);
+  const[loading,setLoading]=useState(true);
+  const[loadingMore,setLoadingMore]=useState(false);
+  const[err,setErr]=useState('');
+  const[itemFilter,setItemFilter]=useState('all');
+  const[typeFilter,setTypeFilter]=useState('all');
+  const[dateFrom,setDateFrom]=useState('');
+  const[dateTo,setDateTo]=useState('');
+  const[search,setSearch]=useState('');
+
+  const n=v=>Number(v)||0;
+  const fmtN=v=>n(v).toLocaleString('en-IN',{maximumFractionDigits:2});
+  const fmtDate=v=>{
+    if(!v)return'-';
+    const s=String(v).slice(0,10);
+    const d=new Date(s+'T00:00:00');
+    return isNaN(d)?String(v):d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+  };
+  const eventLabel=t=>({
+    physical_dispatch:'Warehouse Dispatch',
+    company_invoice:'Company Invoice',
+    material_return:'Return / Credit Note',
+    direct_company_purchase:'Direct Plant Purchase'
+  }[t]||t||'-');
+  const eventClass=t=>({
+    physical_dispatch:'mat-dispatch',
+    company_invoice:'mat-invoice',
+    material_return:'mat-return',
+    direct_company_purchase:'mat-direct'
+  }[t]||'mat-direct');
+
+  const fetchPage=async(reset=true)=>{
+    reset?setLoading(true):setLoadingMore(true);
+    setErr('');
+    try{
+      const offset=reset?0:(nextOffset||0);
+      const r=await api('getDealerMaterialAccount',{email:user.email,limit:100,offset});
+      if(!r||r.error)throw new Error(r&&r.error?r.error:'Material account could not be loaded');
+      setData(r);
+      setTransactions(prev=>reset?(r.transactions||[]):[...prev,...(r.transactions||[])]);
+      setNextOffset(r.nextOffset===undefined?null:r.nextOffset);
+    }catch(e){setErr(e.message||String(e));}
+    reset?setLoading(false):setLoadingMore(false);
+  };
+
+  useEffect(()=>{fetchPage(true);},[user.email]);
+
+  const overall=data&&data.overall;
+  const balance=overall?n(overall.CalculatedBalance):0;
+  const balanceCls=balance>0?'mat-balance-positive':balance<0?'mat-balance-negative':'mat-balance-zero';
+  const items=(data&&data.itemBalances)||[];
+  const itemCodes=[...new Set(items.map(x=>x.ItemCode).filter(Boolean))].sort();
+  const filtered=transactions.filter(t=>{
+    if(itemFilter!=='all'&&String(t.ItemCode)!==itemFilter)return false;
+    if(typeFilter!=='all'&&String(t.EventType)!==typeFilter)return false;
+    const d=String(t.VoucherDate||'').slice(0,10);
+    if(dateFrom&&d<dateFrom)return false;
+    if(dateTo&&d>dateTo)return false;
+    if(search){
+      const hay=[t.VoucherNumber,t.OriginalVoucherNumber,t.ChallanNumber,t.WarehouseLocation,t.ItemName,t.ItemCode].join(' ').toLowerCase();
+      if(!hay.includes(search.toLowerCase().trim()))return false;
+    }
+    return true;
+  });
+
+  if(loading)return <><div className="ph"><div className="pt">Material Account</div></div><div className="pb"><div style={{display:'flex',alignItems:'center',justifyContent:'center',minHeight:260,gap:10,color:'#6b7280'}}><span className="spin"/> Loading material account…</div></div></>;
+
+  return <>
+    <div className="ph">
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap'}}>
+        <div><div className="pt">Material Account</div><div className="mat-history">Dealer code: <strong>{data&&data.dealerCode||'-'}</strong></div></div>
+        <button className="btn bgh" onClick={()=>fetchPage(true)} disabled={loading}>↻ Refresh</button>
+      </div>
+    </div>
+    <div className="pb">
+      {err&&<div className="alert aw"><span>⚠️</span><div><strong>Could not load material account.</strong><br/>{err}</div></div>}
+      {!err&&(!overall)&&<div className="alert ai"><span>ℹ️</span><div>No synced Tally balance is available for this dealer yet. Confirm the dealer's <strong>TallyDealerCode</strong> mapping and sync data from the connector.</div></div>}
+      {data&&<div className="alert ai"><span>ℹ️</span><div>
+        Balance is based on opening balance plus currently synced transactions. Synced history: <strong>{fmtDate(data.history&&data.history.oldestDate)}</strong> to <strong>{fmtDate(data.history&&data.history.latestDate)}</strong>.
+        Positive balance means warehouse lifting exceeds company invoicing; negative balance means company invoicing exceeds warehouse lifting.
+      </div></div>}
+
+      <div className="mat-summary">
+        <div className="mat-stat"><div className="k">Overall Balance</div><div className={`v ${balanceCls}`}>{balance>0?'+':''}{fmtN(balance)}</div><div className="s">bags · opening + movement</div></div>
+        <div className="mat-stat"><div className="k">Warehouse Dispatch</div><div className="v">{fmtN(overall&&overall.PhysicalDispatch)}</div><div className="s">material issued from warehouse</div></div>
+        <div className="mat-stat"><div className="k">Company Invoice</div><div className="v">{fmtN(overall&&overall.CompanyInvoice)}</div><div className="s">quantity invoiced by company</div></div>
+        <div className="mat-stat"><div className="k">Returns</div><div className="v">{fmtN(overall&&overall.MaterialReturn)}</div><div className="s">approved credit-note quantity</div></div>
+        <div className="mat-stat"><div className="k">Direct Plant Purchase</div><div className="v">{fmtN(overall&&overall.DirectCompanyPurchase)}</div><div className="s">shown in history · zero balance effect</div></div>
+      </div>
+
+      <div className="card">
+        <div className="ch"><div><div className="ct">Item-wise Balance</div><div className="cs">Opening balance + synced item movement</div></div></div>
+        <div className="mat-table-wrap">
+          <table className="tbl mat-table" style={{minWidth:850}}>
+            <thead><tr><th>Item</th><th>Dispatch</th><th>Invoice</th><th>Return</th><th>Direct Plant</th><th>Opening</th><th>Balance</th></tr></thead>
+            <tbody>
+              {items.length===0?<tr><td colSpan="7"><div className="mat-empty">No item balance found.</div></td></tr>:items.map((x,i)=>{
+                const b=n(x.CalculatedBalance);
+                return <tr key={(x.ItemCode||'item')+'_'+i}>
+                  <td><strong>{x.ItemName||x.ItemCode}</strong><div style={{fontSize:10,color:'#9ca3af'}}>{x.ItemCode}</div></td>
+                  <td>{fmtN(x.PhysicalDispatch)}</td><td>{fmtN(x.CompanyInvoice)}</td><td>{fmtN(x.MaterialReturn)}</td><td>{fmtN(x.DirectCompanyPurchase)}</td><td>{fmtN(x.OpeningBalance)}</td>
+                  <td><span className={`mat-effect ${b>0?'pos':b<0?'neg':'zero'}`}>{b>0?'+':''}{fmtN(b)}</span></td>
+                </tr>;
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="ch"><div><div className="ct">Transaction History</div><div className="cs">Showing {filtered.length} of {transactions.length} loaded · {data&&data.totalTransactions||0} total</div></div></div>
+        <div className="mat-toolbar">
+          <div className="fg"><label>Item</label><select value={itemFilter} onChange={e=>setItemFilter(e.target.value)}><option value="all">All items</option>{itemCodes.map(c=><option key={c} value={c}>{c}</option>)}</select></div>
+          <div className="fg"><label>Transaction</label><select value={typeFilter} onChange={e=>setTypeFilter(e.target.value)}><option value="all">All types</option><option value="physical_dispatch">Warehouse Dispatch</option><option value="company_invoice">Company Invoice</option><option value="material_return">Return / Credit Note</option><option value="direct_company_purchase">Direct Plant Purchase</option></select></div>
+          <div className="fg"><label>From</label><input type="date" value={dateFrom} onChange={e=>setDateFrom(e.target.value)}/></div>
+          <div className="fg"><label>To</label><input type="date" value={dateTo} onChange={e=>setDateTo(e.target.value)}/></div>
+          <div className="fg grow"><label>Voucher / challan / location</label><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search…"/></div>
+        </div>
+        <div className="mat-table-wrap">
+          <table className="tbl mat-table">
+            <thead><tr><th>Date</th><th>Transaction</th><th>Voucher</th><th>Challan</th><th>Item</th><th>Qty</th><th>Balance Effect</th><th>Location</th></tr></thead>
+            <tbody>
+              {filtered.length===0?<tr><td colSpan="8"><div className="mat-empty">No transactions match the selected filters.</div></td></tr>:filtered.map((t,i)=>{
+                const effect=n(t.BalanceEffect);
+                return <tr key={(t.TransactionKey||'tx')+'_'+i}>
+                  <td style={{whiteSpace:'nowrap'}}>{fmtDate(t.VoucherDate)}</td>
+                  <td><span className={`mat-type ${eventClass(t.EventType)}`}>{eventLabel(t.EventType)}</span></td>
+                  <td><strong>{t.VoucherNumber||'-'}</strong></td>
+                  <td>{t.ChallanNumber||'-'}</td>
+                  <td><strong>{t.ItemName||t.ItemCode}</strong><div style={{fontSize:10,color:'#9ca3af'}}>{t.ItemCode}</div></td>
+                  <td style={{fontWeight:700}}>{fmtN(t.Quantity)}</td>
+                  <td><span className={`mat-effect ${effect>0?'pos':effect<0?'neg':'zero'}`}>{effect>0?'+':''}{fmtN(effect)}</span></td>
+                  <td style={{maxWidth:230}}>{t.WarehouseLocation||'-'}</td>
+                </tr>;
+              })}
+            </tbody>
+          </table>
+        </div>
+        {nextOffset!==null&&<div className="mat-load"><button className="btn bgh" onClick={()=>fetchPage(false)} disabled={loadingMore}>{loadingMore?<><span className="spin"/> Loading…</>:`Load more (${transactions.length}/${data.totalTransactions})`}</button></div>}
+      </div>
+    </div>
+  </>;
+}
 
 // ══════════════════════════════════════════════
 //  DISPATCH REPORT
@@ -1717,7 +1892,7 @@ function ItemReceivingModal({order,title,subtitle,onClose,onSave}){
 }
 
 function WHReturnApproval({user,orders,setOrders,myOrders,warehouses}){
-  const list=myOrders.filter(o=>o.status==='receiving_disputed'||o.status==='return_pending');
+  const list=myOrders.filter(o=>o.status==='receiving_disputed'||o.status==='return_pending'||((o.receivingItems||[]).some(i=>(parseInt(i.claimQty)||0)>0)&&o.status!=='closed'));
   const[sel,setSel]=useState(null);
   const[decisions,setDecisions]=useState({});
   const[remarks,setRemarks]=useState('');
