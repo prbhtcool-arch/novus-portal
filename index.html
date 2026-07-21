@@ -1174,6 +1174,14 @@ function MaterialAccount({user}){
     const d=new Date(s+'T00:00:00');
     return isNaN(d)?String(v):d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
   };
+  const balanceParts=row=>{
+    if(!row||!row.SnapshotDate)return {available:false,signed:0,abs:0,side:'-'};
+    const signed=n(row.TallyClosingBalance);
+    const side=row.TallyBalanceSide||(signed<0?'Cr':signed>0?'Dr':'-');
+    const abs=row.TallyBalanceAbs!==''&&row.TallyBalanceAbs!==undefined?n(row.TallyBalanceAbs):Math.abs(signed);
+    return {available:true,signed,abs,side};
+  };
+  const balanceText=row=>{const b=balanceParts(row);return b.available?`${fmtN(b.abs)} ${b.side}`:'—';};
   const eventLabel=t=>({
     physical_dispatch:'Warehouse Dispatch',
     company_invoice:'Company Invoice',
@@ -1204,8 +1212,8 @@ function MaterialAccount({user}){
   useEffect(()=>{fetchPage(true);},[user.email]);
 
   const overall=data&&data.overall;
-  const balance=overall?n(overall.CalculatedBalance):0;
-  const balanceCls=balance>0?'mat-balance-positive':balance<0?'mat-balance-negative':'mat-balance-zero';
+  const overallBalance=balanceParts(overall);
+  const balanceCls=overallBalance.side==='Dr'?'mat-balance-positive':overallBalance.side==='Cr'?'mat-balance-negative':'mat-balance-zero';
   const items=(data&&data.itemBalances)||[];
   const itemCodes=[...new Set(items.map(x=>x.ItemCode).filter(Boolean))].sort();
   const filtered=transactions.filter(t=>{
@@ -1232,32 +1240,36 @@ function MaterialAccount({user}){
     </div>
     <div className="pb">
       {err&&<div className="alert aw"><span>⚠️</span><div><strong>Could not load material account.</strong><br/>{err}</div></div>}
-      {!err&&(!overall)&&<div className="alert ai"><span>ℹ️</span><div>No synced Tally balance is available for this dealer yet. Confirm the dealer's <strong>TallyDealerCode</strong> mapping and sync data from the connector.</div></div>}
-      {data&&<div className="alert ai"><span>ℹ️</span><div>
-        Balance is based on opening balance plus currently synced transactions. Synced history: <strong>{fmtDate(data.history&&data.history.oldestDate)}</strong> to <strong>{fmtDate(data.history&&data.history.latestDate)}</strong>.
-        Positive balance means warehouse lifting exceeds company invoicing; negative balance means company invoicing exceeds warehouse lifting.
+      {!err&&!overallBalance.available&&<div className="alert aw"><span>⚠️</span><div>
+        Transaction history may be available, but the actual Tally closing balance has not been synced. In the connector, pull the <strong>Closing Balance Snapshot</strong> for the latest date and sync it to the portal.
+      </div></div>}
+      {data&&overallBalance.available&&<div className="alert ai"><span>ℹ️</span><div>
+        The displayed balance is the closing balance directly captured from Tally as on <strong>{fmtDate(overall.SnapshotDate)}</strong>. Synced transaction history ({fmtDate(data.history&&data.history.oldestDate)} to {fmtDate(data.history&&data.history.latestDate)}) is shown separately and does not recalculate this balance.
       </div></div>}
 
       <div className="mat-summary">
-        <div className="mat-stat"><div className="k">Overall Balance</div><div className={`v ${balanceCls}`}>{balance>0?'+':''}{fmtN(balance)}</div><div className="s">bags · opening + movement</div></div>
-        <div className="mat-stat"><div className="k">Warehouse Dispatch</div><div className="v">{fmtN(overall&&overall.PhysicalDispatch)}</div><div className="s">material issued from warehouse</div></div>
-        <div className="mat-stat"><div className="k">Company Invoice</div><div className="v">{fmtN(overall&&overall.CompanyInvoice)}</div><div className="s">quantity invoiced by company</div></div>
-        <div className="mat-stat"><div className="k">Returns</div><div className="v">{fmtN(overall&&overall.MaterialReturn)}</div><div className="s">approved credit-note quantity</div></div>
-        <div className="mat-stat"><div className="k">Direct Plant Purchase</div><div className="v">{fmtN(overall&&overall.DirectCompanyPurchase)}</div><div className="s">shown in history · zero balance effect</div></div>
+        <div className="mat-stat"><div className="k">Tally Closing Balance</div><div className={`v ${balanceCls}`}>{overallBalance.available?`${fmtN(overallBalance.abs)} ${overallBalance.side}`:'—'}</div><div className="s">{overallBalance.available?`as on ${fmtDate(overall.SnapshotDate)}`:'snapshot not synced'}</div></div>
+        <div className="mat-stat"><div className="k">Period Movement</div><div className="v">{overall?`${n(overall.TransactionMovement)>0?'+':''}${fmtN(overall.TransactionMovement)}`:'—'}</div><div className="s">effect of currently synced transaction history</div></div>
+        <div className="mat-stat"><div className="k">Warehouse Dispatch</div><div className="v">{fmtN(overall&&overall.PhysicalDispatch)}</div><div className="s">material issued from warehouse in synced history</div></div>
+        <div className="mat-stat"><div className="k">Company Invoice</div><div className="v">{fmtN(overall&&overall.CompanyInvoice)}</div><div className="s">quantity invoiced by company in synced history</div></div>
+        <div className="mat-stat"><div className="k">Returns</div><div className="v">{fmtN(overall&&overall.MaterialReturn)}</div><div className="s">credit-note quantity in synced history</div></div>
+        <div className="mat-stat"><div className="k">Direct Plant Purchase</div><div className="v">{fmtN(overall&&overall.DirectCompanyPurchase)}</div><div className="s">history only · zero balance effect</div></div>
       </div>
 
       <div className="card">
-        <div className="ch"><div><div className="ct">Item-wise Balance</div><div className="cs">Opening balance + synced item movement</div></div></div>
+        <div className="ch"><div><div className="ct">Item-wise Tally Balance</div><div className="cs">Latest closing balance of each dealer-item ledger</div></div></div>
         <div className="mat-table-wrap">
-          <table className="tbl mat-table" style={{minWidth:850}}>
-            <thead><tr><th>Item</th><th>Dispatch</th><th>Invoice</th><th>Return</th><th>Direct Plant</th><th>Opening</th><th>Balance</th></tr></thead>
+          <table className="tbl mat-table" style={{minWidth:950}}>
+            <thead><tr><th>Item</th><th>Tally Balance</th><th>As on</th><th>Dispatch</th><th>Invoice</th><th>Return</th><th>Direct Plant</th><th>Period Movement</th></tr></thead>
             <tbody>
-              {items.length===0?<tr><td colSpan="7"><div className="mat-empty">No item balance found.</div></td></tr>:items.map((x,i)=>{
-                const b=n(x.CalculatedBalance);
+              {items.length===0?<tr><td colSpan="8"><div className="mat-empty">No item balance found.</div></td></tr>:items.map((x,i)=>{
+                const b=balanceParts(x);
                 return <tr key={(x.ItemCode||'item')+'_'+i}>
                   <td><strong>{x.ItemName||x.ItemCode}</strong><div style={{fontSize:10,color:'#9ca3af'}}>{x.ItemCode}</div></td>
-                  <td>{fmtN(x.PhysicalDispatch)}</td><td>{fmtN(x.CompanyInvoice)}</td><td>{fmtN(x.MaterialReturn)}</td><td>{fmtN(x.DirectCompanyPurchase)}</td><td>{fmtN(x.OpeningBalance)}</td>
-                  <td><span className={`mat-effect ${b>0?'pos':b<0?'neg':'zero'}`}>{b>0?'+':''}{fmtN(b)}</span></td>
+                  <td><span className={`mat-effect ${b.side==='Dr'?'pos':b.side==='Cr'?'neg':'zero'}`}>{balanceText(x)}</span></td>
+                  <td>{b.available?fmtDate(x.SnapshotDate):'—'}</td>
+                  <td>{fmtN(x.PhysicalDispatch)}</td><td>{fmtN(x.CompanyInvoice)}</td><td>{fmtN(x.MaterialReturn)}</td><td>{fmtN(x.DirectCompanyPurchase)}</td>
+                  <td><span className={`mat-effect ${n(x.TransactionMovement)>0?'pos':n(x.TransactionMovement)<0?'neg':'zero'}`}>{n(x.TransactionMovement)>0?'+':''}{fmtN(x.TransactionMovement)}</span></td>
                 </tr>;
               })}
             </tbody>
@@ -1283,8 +1295,7 @@ function MaterialAccount({user}){
                 return <tr key={(t.TransactionKey||'tx')+'_'+i}>
                   <td style={{whiteSpace:'nowrap'}}>{fmtDate(t.VoucherDate)}</td>
                   <td><span className={`mat-type ${eventClass(t.EventType)}`}>{eventLabel(t.EventType)}</span></td>
-                  <td><strong>{t.VoucherNumber||'-'}</strong></td>
-                  <td>{t.ChallanNumber||'-'}</td>
+                  <td><strong>{t.VoucherNumber||'-'}</strong></td><td>{t.ChallanNumber||'-'}</td>
                   <td><strong>{t.ItemName||t.ItemCode}</strong><div style={{fontSize:10,color:'#9ca3af'}}>{t.ItemCode}</div></td>
                   <td style={{fontWeight:700}}>{fmtN(t.Quantity)}</td>
                   <td><span className={`mat-effect ${effect>0?'pos':effect<0?'neg':'zero'}`}>{effect>0?'+':''}{fmtN(effect)}</span></td>
