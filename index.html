@@ -96,7 +96,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#f5f6fa;color:#1a1d2
 .cr{display:flex;align-items:center;gap:7px;padding:8px 11px;background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:8px;margin-bottom:5px}
 .cn{flex:1;font-size:13px;color:#374151;font-weight:500}
 .ci{width:68px;background:#fff;border:1.5px solid #e5e7eb;border-radius:6px;padding:5px 7px;color:#111827;font-size:13px;font-family:inherit;outline:none;text-align:center;transition:border .12s}
-.ci:focus{border-color:#f59e0b}.cs{width:42px;color:#f59e0b}
+.ci:focus{border-color:#f59e0b}.cs{width:42px;color:#f59e0b}.ch .cs{width:auto;max-width:100%;color:#6b7280;line-height:1.35}
 .alert{display:flex;align-items:flex-start;gap:8px;padding:10px 13px;border-radius:8px;margin-bottom:13px;font-size:13px;line-height:1.5}
 .aw{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
 .ai{background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8}
@@ -1313,9 +1313,14 @@ function MaterialAccount({ user }) {
     const fmtDate = v => {
         if (!v)
             return '-';
-        const s = String(v).slice(0, 10);
-        const d = new Date(s + 'T00:00:00');
-        return isNaN(d) ? String(v) : d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+        const raw = String(v).trim();
+        const iso = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if (iso) {
+            const d = new Date(`${iso[1]}-${iso[2]}-${iso[3]}T00:00:00`);
+            return isNaN(d) ? raw : d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+        const d2 = new Date(raw);
+        return isNaN(d2) ? raw : d2.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
     };
     const balanceParts = row => {
         if (!row || !row.SnapshotDate)
