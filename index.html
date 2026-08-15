@@ -2330,56 +2330,145 @@ function WHVehicle({ user, orders, setOrders, myOrders, warehouses, vehicles, dr
                         React.createElement("span", { className: "spin" }),
                         " Saving\u2026") : 'Save & Create Challan')))));
 }
+
+function DispatchDMSUploadModal({ user, order, warehouses, onClose, onSaved }) {
+    const todayYMD = () => {
+        const d = new Date();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return d.getFullYear() + '-' + m + '-' + day;
+    };
+    const tallyDealerCode = (v) => {
+        const s = String(v || '').trim().toUpperCase();
+        const m = s.match(/\d{3}D\d{4}/);
+        return m ? m[0] : s;
+    };
+    const defaultVoucherType = (() => {
+        const txt = ((order && order.territory) || '') + ' ' + whName((order && order.warehouse) || '', warehouses);
+        return /ballia|phephna|gadwar/i.test(txt) ? 'Ballia Sales' : 'Mau Sales';
+    })();
+    const defaultNo = (order && (order.manualChallanNo || order.challanId || order.id)) || '';
+    const [companyCode, setCompanyCode] = useState('NSOP');
+    const [voucherDate, setVoucherDate] = useState(todayYMD());
+    const [voucherType, setVoucherType] = useState(defaultVoucherType);
+    const [voucherNumber, setVoucherNumber] = useState(defaultNo);
+    const [challanNumber, setChallanNumber] = useState(defaultNo);
+    const [dealerCode, setDealerCode] = useState(tallyDealerCode(order && order.dealer));
+    const [dealerName, setDealerName] = useState((order && order.dealerName) || '');
+    const [isTest, setIsTest] = useState(false);
+    const [notes, setNotes] = useState('');
+    const [file, setFile] = useState(null);
+    const [busy, setBusy] = useState(false);
+    const [err, setErr] = useState('');
+    const openUrl = url => { if (url) window.open(url, '_blank', 'noopener,noreferrer'); };
+    const save = async () => {
+        setErr('');
+        if (!file) { setErr('Please choose signed challan photo/PDF first.'); return; }
+        if (!dealerCode) { setErr('Dealer code is required.'); return; }
+        if (!voucherNumber && !challanNumber) { setErr('Voucher/challan number is required.'); return; }
+        setBusy(true);
+        try {
+            const photoData = await fileToDataUrl(file);
+            const r = await api('uploadChallanAndPortalDocument', {
+                email: user.email,
+                uploadedBy: user.email,
+                orderId: order.id,
+                challanId: order.challanId || '',
+                manualChallanNo: order.manualChallanNo || '',
+                warehouseName: whName(order.warehouse || '', warehouses),
+                fileExt: safeFileExt(file),
+                photoData,
+                companyCode,
+                voucherDate,
+                voucherType,
+                voucherNumber,
+                challanNumber: challanNumber || voucherNumber,
+                dealerCode,
+                dealerName,
+                documentType: 'Challan Photo',
+                isTest: isTest ? 'TRUE' : 'FALSE',
+                notes: notes || ('Uploaded from Currently Loading · Order ' + order.id)
+            });
+            if (!r || r.error) throw new Error((r && r.error) || 'Upload failed');
+            if (r.warning) alert('Uploaded and dispatched, but document link warning: ' + r.warning);
+            onSaved(r);
+        } catch (e) {
+            setErr(e.message || String(e));
+        }
+        setBusy(false);
+    };
+    return React.createElement("div", { className: "ov" },
+        React.createElement("div", { className: "modal", style: { width: 760 } },
+            React.createElement("div", { className: "mh" },
+                React.createElement("span", { className: "mt" }, "Upload Challan, Link Document & Dispatch"),
+                React.createElement("button", { className: "btn bgh bsm", onClick: onClose }, "✕")),
+            React.createElement("div", { className: "mb" },
+                React.createElement("div", { className: "alert ai" },
+                    React.createElement("span", null, "ℹ️"),
+                    React.createElement("div", null,
+                        React.createElement("strong", null, "One upload only."),
+                        React.createElement("br", null),
+                        "This will save the challan to Drive, create a Tally_Document_Links row, and mark the order as dispatched.")),
+                order && React.createElement("div", { className: "doc-query", style: { marginBottom: 12 } },
+                    "Order: ", order.id, " · Dealer: ", order.dealerName || order.dealer, " · Warehouse: ", whName(order.warehouse || '', warehouses), " · Qty: ", totalBags(order.items || []), " bags"),
+                React.createElement("div", { className: "r3" },
+                    React.createElement("div", { className: "fg" }, React.createElement("label", null, "Company"), React.createElement("input", { value: companyCode, onChange: e => setCompanyCode(e.target.value) })),
+                    React.createElement("div", { className: "fg" }, React.createElement("label", null, "Voucher Date"), React.createElement("input", { type: "date", value: voucherDate, onChange: e => setVoucherDate(e.target.value) })),
+                    React.createElement("div", { className: "fg" }, React.createElement("label", null, "Voucher Type"), React.createElement("input", { value: voucherType, onChange: e => setVoucherType(e.target.value), placeholder: "Mau Sales / Ballia Sales" }))),
+                React.createElement("div", { className: "r3" },
+                    React.createElement("div", { className: "fg" }, React.createElement("label", null, "Voucher Number"), React.createElement("input", { value: voucherNumber, onChange: e => setVoucherNumber(e.target.value), placeholder: "e.g. 851 / physical challan" })),
+                    React.createElement("div", { className: "fg" }, React.createElement("label", null, "Challan Number"), React.createElement("input", { value: challanNumber, onChange: e => setChallanNumber(e.target.value), placeholder: "same as challan" })),
+                    React.createElement("div", { className: "fg" }, React.createElement("label", null, "Document Type"), React.createElement("input", { value: "Challan Photo", readOnly: true }))),
+                React.createElement("div", { className: "r2" },
+                    React.createElement("div", { className: "fg" }, React.createElement("label", null, "Dealer Code"), React.createElement("input", { value: dealerCode, onChange: e => setDealerCode(e.target.value), placeholder: "054D0001" })),
+                    React.createElement("div", { className: "fg" }, React.createElement("label", null, "Dealer Name"), React.createElement("input", { value: dealerName, onChange: e => setDealerName(e.target.value), placeholder: "Dealer name" }))),
+                React.createElement("div", { className: "uz", style: { marginBottom: 12 } },
+                    React.createElement("input", { type: "file", accept: "image/*,.pdf", onChange: e => setFile(e.target.files[0]) }),
+                    React.createElement("div", { style: { fontSize: 28, marginBottom: 6 } }, "📎"),
+                    file ? React.createElement("div", { style: { fontSize: 13 } },
+                        React.createElement("strong", { style: { color: '#d97706' } }, file.name),
+                        React.createElement("br", null),
+                        React.createElement("span", { style: { color: '#6b7280', fontSize: 12 } }, (file.size / 1024).toFixed(1), " KB"))
+                    : React.createElement("div", { style: { fontSize: 13, color: '#6b7280' } },
+                        React.createElement("strong", { style: { color: '#d97706' } }, "Tap to choose signed challan photo/PDF"),
+                        React.createElement("br", null), "JPG, PNG, or PDF")),
+                React.createElement("div", { className: "fg" }, React.createElement("label", null, "Notes"), React.createElement("textarea", { value: notes, onChange: e => setNotes(e.target.value), placeholder: "Optional remarks" })),
+                React.createElement("label", { style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#374151', marginBottom: 12 } },
+                    React.createElement("input", { type: "checkbox", checked: isTest, onChange: e => setIsTest(e.target.checked) }),
+                    "Mark as test document (hidden from dealer views)"),
+                err && React.createElement("div", { className: "alert aw" }, React.createElement("span", null, "⚠️"), React.createElement("div", null, err))),
+            React.createElement("div", { className: "mf" },
+                React.createElement("button", { className: "btn bgh", onClick: onClose, disabled: busy }, "Cancel"),
+                React.createElement("button", { className: "btn bam", onClick: save, disabled: busy }, busy ? React.createElement(React.Fragment, null, React.createElement("span", { className: "spin" }), " Uploading…") : "Upload, Link & Dispatch"))));
+}
+
 function WHLoading({ user, orders, setOrders, myOrders, warehouses }) {
     const list = myOrders.filter(o => o.status === 'vehicle_found');
     const [dispId, setDispId] = useState(null);
-    const dispatch = async (file) => {
-        if (!file) {
-            alert('Please choose the signed challan photo/PDF first');
-            return;
-        }
-        const ord = orders.find(o => o.id === dispId);
-        try {
-            const photoData = await fileToDataUrl(file);
-            const res0 = await api('uploadChallanPhoto', { orderId: dispId, challanId: (ord === null || ord === void 0 ? void 0 : ord.challanId) || '', manualChallanNo: (ord === null || ord === void 0 ? void 0 : ord.manualChallanNo) || (ord === null || ord === void 0 ? void 0 : ord.challanId) || dispId, warehouseName: whName((ord === null || ord === void 0 ? void 0 : ord.warehouse) || '', warehouses), uploadedBy: user.email, fileExt: safeFileExt(file), photoData });
-            const res = await verifyUploadAfterResponse(res0, user, dispId, o => !!(o.challanPhotoUrl || o.status === 'dispatched'), setOrders);
-            if (res.verified) {
-                setDispId(null);
-                return;
-            }
-            setOrders(orders.map(o => o.id === dispId ? { ...o, status: 'dispatched', dispatchedAt: new Date().toISOString(), challanPhotoUrl: res.url || o.challanPhotoUrl } : o));
-        }
-        catch (e) {
-            if (!demoFallback(e, () => { })) {
-                alert('Upload failed: ' + e.message);
-                return;
-            }
-        }
+    const selectedOrder = dispId ? orders.find(o => o.id === dispId) : null;
+    const done = (res) => {
+        setOrders(orders.map(o => o.id === dispId ? { ...o, status: 'dispatched', dispatchedAt: new Date().toISOString(), challanPhotoUrl: (res && res.url) || o.challanPhotoUrl } : o));
         setDispId(null);
     };
+    const body = list.length === 0
+        ? React.createElement("div", { className: "card" },
+            React.createElement("div", { className: "empty" },
+                React.createElement("div", { className: "empty-i" }, "📦"),
+                "No loading in progress"))
+        : list.map(o => React.createElement("div", { key: o.id, className: "card" },
+            React.createElement("div", { className: "ch" },
+                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
+                    React.createElement("strong", { style: { color: '#d97706' } }, o.id),
+                    (o.challanRef || o.challanId) && React.createElement("span", { className: "chip" }, "Challan: ", o.challanRef || o.challanId),
+                    React.createElement("span", { className: `badge ${sCls(o.status)}` }, sLabel(o.status))),
+                React.createElement("button", { className: "btn bam bsm", onClick: () => setDispId(o.id) }, "📷 Upload Challan & Dispatch")),
+            React.createElement("div", { className: "cb" }, React.createElement(OInfo, { o: o, warehouses: warehouses }))));
     return React.createElement(React.Fragment, null,
         React.createElement("div", { className: "ph" },
             React.createElement("div", { className: "pt" }, "Currently Loading"),
-            React.createElement("div", { className: "ps" },
-                list.length,
-                " vehicle(s) being loaded")),
-        React.createElement("div", { className: "pb" },
-            list.length === 0 && React.createElement("div", { className: "card" },
-                React.createElement("div", { className: "empty" },
-                    React.createElement("div", { className: "empty-i" }, "\uD83D\uDCE6"),
-                    "No loading in progress")),
-            list.map(o => (React.createElement("div", { key: o.id, className: "card" },
-                React.createElement("div", { className: "ch" },
-                    React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
-                        React.createElement("strong", { style: { color: '#d97706' } }, o.id),
-                        (o.challanRef || o.challanId) && React.createElement("span", { className: "chip" },
-                            "Challan: ",
-                            o.challanRef || o.challanId),
-                        React.createElement("span", { className: `badge ${sCls(o.status)}` }, sLabel(o.status))),
-                    React.createElement("button", { className: "btn bam bsm", onClick: () => setDispId(o.id) }, "\uD83D\uDCF7 Upload Challan & Dispatch")),
-                React.createElement("div", { className: "cb" },
-                    React.createElement(OInfo, { o: o, warehouses: warehouses })))))),
-        dispId && React.createElement(UploadModal, { title: "Upload Signed Delivery Challan", subtitle: "Photograph the hand-written challan before dispatching the vehicle. This will be saved in Google Drive under this warehouse.", onClose: () => setDispId(null), onSave: dispatch }));
+            React.createElement("div", { className: "ps" }, list.length, " vehicle(s) being loaded")),
+        React.createElement("div", { className: "pb" }, body),
+        selectedOrder && React.createElement(DispatchDMSUploadModal, { user: user, order: selectedOrder, warehouses: warehouses, onClose: () => setDispId(null), onSaved: done }));
 }
 function WHReceiving({ user, orders, setOrders, myOrders, warehouses }) {
     const list = myOrders.filter(o => o.status === 'dispatched' && !o.logisticsReceivingUploaded);
