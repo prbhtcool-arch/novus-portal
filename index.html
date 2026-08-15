@@ -3,9 +3,10 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Novus Solutions – Cement Order & Material Portal</title>
+<title>Novus Solutions – Cement Order & Document Portal</title>
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',system-ui,sans-serif;background:#f5f6fa;color:#1a1d23;min-height:100vh}
@@ -96,7 +97,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#f5f6fa;color:#1a1d2
 .cr{display:flex;align-items:center;gap:7px;padding:8px 11px;background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:8px;margin-bottom:5px}
 .cn{flex:1;font-size:13px;color:#374151;font-weight:500}
 .ci{width:68px;background:#fff;border:1.5px solid #e5e7eb;border-radius:6px;padding:5px 7px;color:#111827;font-size:13px;font-family:inherit;outline:none;text-align:center;transition:border .12s}
-.ci:focus{border-color:#f59e0b}.cs{width:42px;color:#f59e0b}.ch .cs{width:auto;max-width:100%;color:#6b7280;line-height:1.35}
+.ci:focus{border-color:#f59e0b}.cs{width:42px;color:#f59e0b}
 .alert{display:flex;align-items:flex-start;gap:8px;padding:10px 13px;border-radius:8px;margin-bottom:13px;font-size:13px;line-height:1.5}
 .aw{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
 .ai{background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8}
@@ -164,6 +165,15 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#f5f6fa;color:#1a1d2
 @media(max-width:768px){.desktop-report{display:none!important}.mobile-report{display:block}.report-card{background:#fff;border:1.5px solid #e5e7eb;border-radius:12px;padding:12px;margin-bottom:10px}.report-line{display:flex;justify-content:space-between;gap:8px;font-size:12px;padding:4px 0;border-bottom:1px solid #f3f4f6}.report-line:last-child{border-bottom:none}.dd-list{max-height:320px!important}.dd-item{min-height:46px}}
 @media(max-width:600px){.claim-grid{grid-template-columns:1fr 1fr 1fr;gap:6px}.recv-head{display:none}.recv-row{background:#f9fafb;border:1px solid #e5e7eb;border-radius:9px;padding:10px;margin-bottom:8px}.recv-row .item-cell{grid-column:1/-1}.recv-cell-label{display:block!important;font-size:10px;color:#9ca3af;text-transform:uppercase;margin-bottom:2px}}
 
+/* Document viewer */
+.doc-box{background:#fff;border:1.5px solid #e5e7eb;border-radius:14px;padding:16px;margin-bottom:14px}
+.doc-query{font-size:12px;color:#6b7280;line-height:1.55;background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:10px 12px;margin-bottom:12px}
+.doc-card{border:1.5px solid #e5e7eb;border-radius:12px;padding:14px;margin-bottom:10px;background:#fff}
+.doc-card-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;margin-bottom:10px}
+.doc-title{font-weight:800;color:#111827;font-size:15px}.doc-sub{font-size:11px;color:#6b7280;margin-top:3px;line-height:1.4}
+.doc-empty{padding:26px 16px;text-align:center;color:#6b7280;font-size:13px}
+.doc-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.ch .cs{width:auto;max-width:100%;color:#6b7280;line-height:1.35}
 
 /* Material Account */
 .mat-summary{display:grid;grid-template-columns:repeat(5,minmax(135px,1fr));gap:10px;margin-bottom:14px}
@@ -464,6 +474,47 @@ function safeFileExt(file) {
     const m = file.name.toLowerCase().match(/\.([a-z0-9]+)$/);
     return m ? m[1] : 'jpg';
 }
+function getTallyDocQuery() {
+    try {
+        const sp = new URLSearchParams(window.location.search || '');
+        const hasDoc = sp.has('tallyDoc') || sp.has('docKey') || sp.has('vno') || sp.has('vchNo') || sp.has('voucherNumber');
+        if (!hasDoc)
+            return null;
+        return {
+            tallyDoc: sp.get('tallyDoc') || '',
+            docKey: sp.get('docKey') || '',
+            companyCode: sp.get('company') || sp.get('companyCode') || '',
+            voucherType: sp.get('vtype') || sp.get('voucherType') || '',
+            voucherNumber: sp.get('vno') || sp.get('vchNo') || sp.get('voucherNumber') || '',
+            voucherDate: sp.get('date') || sp.get('voucherDate') || '',
+            challanNumber: sp.get('challan') || sp.get('challanNumber') || '',
+            dealerCode: sp.get('dealerCode') || ''
+        };
+    }
+    catch (_a) {
+        return null;
+    }
+}
+function compactQueryText(q) {
+    if (!q)
+        return '';
+    const parts = [];
+    if (q.docKey)
+        parts.push('Key: ' + q.docKey);
+    if (q.companyCode)
+        parts.push('Company: ' + q.companyCode);
+    if (q.voucherDate)
+        parts.push('Date: ' + q.voucherDate);
+    if (q.voucherType)
+        parts.push('Type: ' + q.voucherType);
+    if (q.voucherNumber)
+        parts.push('Voucher: ' + q.voucherNumber);
+    if (q.challanNumber)
+        parts.push('Challan: ' + q.challanNumber);
+    if (q.dealerCode)
+        parts.push('Dealer: ' + q.dealerCode);
+    return parts.join(' · ');
+}
 // ══════════════════════════════════════════════
 //  APP ROOT
 // ══════════════════════════════════════════════
@@ -492,6 +543,7 @@ function App() {
     const [vehicles, setVehicles] = useState([]);
     const [drivers, setDrivers] = useState([]);
     const [appLoaded, setAppLoaded] = useState(CFG.DEMO_MODE);
+    const [docQuery] = useState(() => getTallyDocQuery());
     const handleSetUser = (u) => {
         if (u)
             localStorage.setItem('novus_user', JSON.stringify({ user: u, loginTime: Date.now() }));
@@ -553,7 +605,7 @@ function App() {
         return (React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#f5f6fa', flexDirection: 'column', gap: 12 } },
             React.createElement("div", { className: "spin", style: { width: 36, height: 36, borderWidth: 3 } }),
             React.createElement("div", { style: { fontSize: 14, color: '#6b7280', fontWeight: 500 } }, "Loading your portal...")));
-    return React.createElement(Shell, { user: user, setUser: handleSetUser, orders: orders, setOrders: setOrders, dealers: dealers, setDealers: setDealers, locationData: locationData, freightMatrix: freightMatrix, warehouses: warehouses, vehicles: vehicles, setVehicles: setVehicles, drivers: drivers, setDrivers: setDrivers });
+    return React.createElement(Shell, { user: user, setUser: handleSetUser, orders: orders, setOrders: setOrders, dealers: dealers, setDealers: setDealers, locationData: locationData, freightMatrix: freightMatrix, warehouses: warehouses, vehicles: vehicles, setVehicles: setVehicles, drivers: drivers, setDrivers: setDrivers, initialDocQuery: docQuery });
 }
 // ══════════════════════════════════════════════
 //  LOGIN
@@ -626,8 +678,8 @@ function Login({ setUser, setOrders, setDealers, setAppLoaded }) {
 // ══════════════════════════════════════════════
 //  SHELL
 // ══════════════════════════════════════════════
-function Shell({ user, setUser, orders, setOrders, dealers, setDealers, locationData, freightMatrix, warehouses, vehicles, setVehicles, drivers, setDrivers }) {
-    const [page, setPage] = useState('home');
+function Shell({ user, setUser, orders, setOrders, dealers, setDealers, locationData, freightMatrix, warehouses, vehicles, setVehicles, drivers, setDrivers, initialDocQuery }) {
+    const [page, setPage] = useState(initialDocQuery ? 'docviewer' : 'home');
     const myOrders = orders.filter(o => {
         if (user.role === 'dealer')
             return normId(o.dealer) === normId(user.id);
@@ -675,7 +727,7 @@ function Shell({ user, setUser, orders, setOrders, dealers, setDealers, location
             { id: 'report', ic: '📊', lb: 'Dispatch Report' },
         ],
     };
-    const navs = navMap[user.role] || [];
+    const navs = initialDocQuery ? [{ id: 'docviewer', ic: '📎', lb: 'Voucher Document' }, ...(navMap[user.role] || [])] : navMap[user.role] || [];
     const sub = user.role === 'tse' ? `Territory: ${user.territory}` : user.role === 'logistics' ? whName(user.warehouse, warehouses) : user.role === 'admin' ? 'All Territories' : user.territory;
     const [sideOpen, setSideOpen] = useState(false);
     const closeSide = () => setSideOpen(false);
@@ -712,11 +764,13 @@ function Shell({ user, setUser, orders, setOrders, dealers, setDealers, location
                 React.createElement("span", null, "\uD83D\uDD27"),
                 React.createElement("strong", null, "Demo Mode"),
                 " \u2014 changes are not saved. Paste your Apps Script URL and set DEMO_MODE: false to go live."),
-            React.createElement(Router, { page: page, user: user, orders: orders, setOrders: setOrders, dealers: dealers, setDealers: setDealers, myOrders: myOrders, setPage: setPage, locationData: locationData, freightMatrix: freightMatrix, warehouses: warehouses, vehicles: vehicles, setVehicles: setVehicles, drivers: drivers, setDrivers: setDrivers }))));
+            React.createElement(Router, { page: page, user: user, orders: orders, setOrders: setOrders, dealers: dealers, setDealers: setDealers, myOrders: myOrders, setPage: setPage, locationData: locationData, freightMatrix: freightMatrix, warehouses: warehouses, vehicles: vehicles, setVehicles: setVehicles, drivers: drivers, setDrivers: setDrivers, initialDocQuery: initialDocQuery }))));
 }
 function Router({ page, locationData, freightMatrix, warehouses, vehicles, setVehicles, drivers, setDrivers, ...p }) {
     const pL = { ...p, locationData, freightMatrix, warehouses, vehicles, setVehicles, drivers, setDrivers };
     const { user } = p;
+    if (page === 'docviewer')
+        return React.createElement(TallyDocumentViewer, { user: user, initialDocQuery: p.initialDocQuery });
     if (page === 'home')
         return React.createElement(Dashboard, { ...pL });
     if (page === 'report')
@@ -1294,6 +1348,88 @@ function Contacts({ user, dealers, setDealers, type, locationData }) {
                     React.createElement("button", { className: "btn bam", onClick: save }, "Save")))));
 }
 // ══════════════════════════════════════════════
+//  TALLY VOUCHER DOCUMENT VIEWER
+// ══════════════════════════════════════════════
+function TallyDocumentViewer({ user, initialDocQuery }) {
+    const query = initialDocQuery || getTallyDocQuery() || {};
+    const [data, setData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [err, setErr] = useState('');
+    const openUrl = url => { if (url)
+        window.open(url, '_blank', 'noopener,noreferrer'); };
+    const load = async () => {
+        setLoading(true);
+        setErr('');
+        try {
+            const r = await api('getVoucherDocuments', { email: user.email, ...query });
+            if (!r || r.error)
+                throw new Error(r && r.error ? r.error : 'Document lookup failed');
+            setData(r);
+        }
+        catch (e) {
+            setErr(e.message || String(e));
+        }
+        setLoading(false);
+    };
+    useEffect(() => { load(); }, [user.email, JSON.stringify(query)]);
+    const docs = (data && data.documents) || [];
+    return React.createElement(React.Fragment, null,
+        React.createElement("div", { className: "ph" },
+            React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' } },
+                React.createElement("div", null,
+                    React.createElement("div", { className: "pt" }, "Voucher Document"),
+                    React.createElement("div", { className: "ps" }, "Opened from Tally voucher button")),
+                React.createElement("button", { className: "btn bgh", onClick: load, disabled: loading }, "\u21BB Refresh"))),
+        React.createElement("div", { className: "pb" },
+            React.createElement("div", { className: "doc-box" },
+                React.createElement("div", { className: "ct", style: { marginBottom: 8 } }, "Tally lookup"),
+                React.createElement("div", { className: "doc-query" }, compactQueryText(query) || 'No voucher parameters found in the URL.'),
+                React.createElement("div", { className: "mat-history" },
+                    "The portal searches ",
+                    React.createElement("strong", null, "Tally_Document_Links"),
+                    " using voucher type/date/number or document key. Dealers will see only their own dealer-code documents.")),
+            loading && React.createElement("div", { className: "doc-box" },
+                React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 140, gap: 10, color: '#6b7280' } },
+                    React.createElement("span", { className: "spin" }),
+                    " Searching document link\u2026")),
+            err && React.createElement("div", { className: "alert aw" },
+                React.createElement("span", null, "\u26A0\uFE0F"),
+                React.createElement("div", null,
+                    React.createElement("strong", null, "Could not load voucher document."),
+                    React.createElement("br", null),
+                    err)),
+            !loading && !err && docs.length === 0 && React.createElement("div", { className: "doc-box" },
+                React.createElement("div", { className: "doc-empty" },
+                    React.createElement("div", { style: { fontSize: 30, marginBottom: 8 } }, "\uD83D\uDCCE"),
+                    React.createElement("strong", null, "No document link found for this voucher yet."),
+                    React.createElement("br", null),
+                    "Add one row in ",
+                    React.createElement("strong", null, "Tally_Document_Links"),
+                    " with matching CompanyCode, VoucherDate, VoucherType and VoucherNumber/ChallanNumber.")),
+            !loading && !err && docs.map((d, i) => React.createElement("div", { className: "doc-card", key: (d.DocumentKey || 'doc') + '_' + i },
+                React.createElement("div", { className: "doc-card-head" },
+                    React.createElement("div", null,
+                        React.createElement("div", { className: "doc-title" },
+                            d.DocumentType || 'Document',
+                            " \u00B7 ",
+                            d.ChallanNumber || d.VoucherNumber || '-'),
+                        React.createElement("div", { className: "doc-sub" },
+                            d.VoucherDate || '-',
+                            " \u00B7 ",
+                            d.VoucherType || '-',
+                            " \u00B7 ",
+                            d.DealerName || d.DealerCode || '-',
+                            " \u00B7 ",
+                            d.DocumentSource || 'Portal/Drive')),
+                    React.createElement("span", { className: "chip" }, d.CompanyCode || 'NSOP')),
+                React.createElement("div", { className: "doc-query" },
+                    d.DocumentKey || 'No key',
+                    d.Notes ? ` · ${d.Notes}` : ''),
+                React.createElement("div", { className: "doc-actions" },
+                    React.createElement("button", { className: "btn bam", onClick: () => openUrl(d.DocumentURL), disabled: !d.DocumentURL }, "Open Document"),
+                    d.DriveFileId && React.createElement("button", { className: "btn bgh", onClick: () => openUrl('https://drive.google.com/file/d/' + d.DriveFileId + '/view') }, "Open Drive File"))))));
+}
+// ══════════════════════════════════════════════
 //  DEALER MATERIAL ACCOUNT — TALLY HISTORY
 // ══════════════════════════════════════════════
 function MaterialAccount({ user }) {
@@ -1314,9 +1450,14 @@ function MaterialAccount({ user }) {
         if (!v)
             return '-';
         const raw = String(v).trim();
-        const iso = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
-        if (iso) {
-            const d = new Date(`${iso[1]}-${iso[2]}-${iso[3]}T00:00:00`);
+        let m = raw.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
+        if (m) {
+            const d = new Date(`${m[1]}-${String(m[2]).padStart(2, '0')}-${String(m[3]).padStart(2, '0')}T00:00:00`);
+            return isNaN(d) ? raw : d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+        m = raw.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})/);
+        if (m) {
+            const d = new Date(`${m[3]}-${String(m[2]).padStart(2, '0')}-${String(m[1]).padStart(2, '0')}T00:00:00`);
             return isNaN(d) ? raw : d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
         }
         const d2 = new Date(raw);
