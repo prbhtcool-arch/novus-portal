@@ -717,6 +717,7 @@ function Shell({ user, setUser, orders, setOrders, dealers, setDealers, location
             { id: 'wh_dispatched', ic: '📍', lb: 'Dispatched' },
             { id: 'wh_receiving', ic: '📷', lb: 'Upload Receiving', badge: myOrders.filter(o => o.status === 'dispatched' && !o.logisticsReceivingUploaded).length },
             { id: 'wh_returns', ic: '↩️', lb: 'Return / Credit Approval', badge: myOrders.filter(o => o.status === 'receiving_disputed' || o.status === 'return_pending').length },
+            { id: 'doc_upload', ic: '📤', lb: 'Upload Documents' },
             { id: 'wh_fleet', ic: '🚚', lb: 'Drivers & Vehicles' },
         ],
         admin: [
@@ -724,6 +725,7 @@ function Shell({ user, setUser, orders, setOrders, dealers, setDealers, location
             { id: 'admin_orders', ic: '📋', lb: 'All Orders' },
             { id: 'admin_dealers', ic: '👥', lb: 'All Dealers' },
             { id: 'admin_pending', ic: '⚠️', lb: 'Pending Receivings' },
+            { id: 'doc_upload', ic: '📤', lb: 'Upload Documents' },
             { id: 'report', ic: '📊', lb: 'Dispatch Report' },
         ],
     };
@@ -771,6 +773,8 @@ function Router({ page, locationData, freightMatrix, warehouses, vehicles, setVe
     const { user } = p;
     if (page === 'docviewer')
         return React.createElement(TallyDocumentViewer, { user: user, initialDocQuery: p.initialDocQuery });
+    if (page === 'doc_upload')
+        return React.createElement(PortalDocumentUpload, { user: user });
     if (page === 'home')
         return React.createElement(Dashboard, { ...pL });
     if (page === 'report')
@@ -1429,6 +1433,115 @@ function TallyDocumentViewer({ user, initialDocQuery }) {
                     React.createElement("button", { className: "btn bam", onClick: () => openUrl(d.DocumentURL), disabled: !d.DocumentURL }, "Open Document"),
                     d.DriveFileId && React.createElement("button", { className: "btn bgh", onClick: () => openUrl('https://drive.google.com/file/d/' + d.DriveFileId + '/view') }, "Open Drive File"))))));
 }
+// ══════════════════════════════════════════════
+//  PORTAL DOCUMENT UPLOAD — ONE UPLOAD TO DRIVE + LINK ROW
+// ══════════════════════════════════════════════
+function PortalDocumentUpload({ user }) {
+    const [companyCode, setCompanyCode] = useState('NSOP');
+    const [voucherDate, setVoucherDate] = useState('');
+    const [dealerCode, setDealerCode] = useState('');
+    const [dealerName, setDealerName] = useState('');
+    const [voucherType, setVoucherType] = useState('Mau Sales');
+    const [voucherNumber, setVoucherNumber] = useState('');
+    const [challanNumber, setChallanNumber] = useState('');
+    const [documentType, setDocumentType] = useState('Challan Photo');
+    const [isTest, setIsTest] = useState(true);
+    const [notes, setNotes] = useState('');
+    const [file, setFile] = useState(null);
+    const [busy, setBusy] = useState(false);
+    const [err, setErr] = useState('');
+    const [result, setResult] = useState(null);
+    const extOf = f => {
+        if (!f || !f.name) return 'jpg';
+        const m = f.name.toLowerCase().match(/\.([a-z0-9]+)$/);
+        return m ? m[1] : 'jpg';
+    };
+    const save = async () => {
+        setErr('');
+        setResult(null);
+        if (!file) { setErr('Please choose a photo/PDF first.'); return; }
+        if (!voucherNumber && !challanNumber) { setErr('Voucher number or challan number is required.'); return; }
+        if (!dealerCode) { setErr('Dealer code is required. Use Tally/MIS code like 054D0001 when available.'); return; }
+        setBusy(true);
+        try {
+            const photoData = await fileToDataUrl(file);
+            const r = await api('uploadPortalDocument', {
+                email: user.email,
+                photoData,
+                fileExt: extOf(file),
+                companyCode,
+                voucherDate,
+                dealerCode,
+                dealerName,
+                voucherType,
+                voucherNumber,
+                challanNumber: challanNumber || voucherNumber,
+                documentType,
+                isTest: isTest ? 'TRUE' : 'FALSE',
+                notes
+            });
+            if (!r || r.error) throw new Error(r && r.error ? r.error : 'Upload failed');
+            setResult(r);
+        } catch (e) {
+            setErr(e.message || String(e));
+        }
+        setBusy(false);
+    };
+    const openUrl = url => { if (url) window.open(url, '_blank', 'noopener,noreferrer'); };
+    return React.createElement(React.Fragment, null,
+        React.createElement("div", { className: "ph" },
+            React.createElement("div", null,
+                React.createElement("div", { className: "pt" }, "Upload Voucher Document"),
+                React.createElement("div", { className: "ps" }, "Upload once to Google Drive and auto-create Tally_Document_Links row"))),
+        React.createElement("div", { className: "pb" },
+            React.createElement("div", { className: "alert ai" },
+                React.createElement("span", null, "ℹ️"),
+                React.createElement("div", null,
+                    React.createElement("strong", null, "Use this for portal-visible documents."),
+                    React.createElement("br", null),
+                    "The file is saved in Drive and linked by Company + Date + Voucher Type + Voucher/Challan number. Dealers/TSE will later see these links in reports.")),
+            React.createElement("div", { className: "card" },
+                React.createElement("div", { className: "ch" }, React.createElement("span", { className: "ct" }, "Document details")),
+                React.createElement("div", { className: "cb" },
+                    React.createElement("div", { className: "r3" },
+                        React.createElement("div", { className: "fg" }, React.createElement("label", null, "Company"), React.createElement("input", { value: companyCode, onChange: e => setCompanyCode(e.target.value), placeholder: "NSOP" })),
+                        React.createElement("div", { className: "fg" }, React.createElement("label", null, "Voucher Date"), React.createElement("input", { type: "date", value: voucherDate, onChange: e => setVoucherDate(e.target.value) })),
+                        React.createElement("div", { className: "fg" }, React.createElement("label", null, "Voucher Type"), React.createElement("input", { value: voucherType, onChange: e => setVoucherType(e.target.value), placeholder: "Mau Sales / Ballia Sales" }))),
+                    React.createElement("div", { className: "r3" },
+                        React.createElement("div", { className: "fg" }, React.createElement("label", null, "Voucher Number"), React.createElement("input", { value: voucherNumber, onChange: e => setVoucherNumber(e.target.value), placeholder: "851" })),
+                        React.createElement("div", { className: "fg" }, React.createElement("label", null, "Challan Number"), React.createElement("input", { value: challanNumber, onChange: e => setChallanNumber(e.target.value), placeholder: "851" })),
+                        React.createElement("div", { className: "fg" }, React.createElement("label", null, "Document Type"), React.createElement("select", { value: documentType, onChange: e => setDocumentType(e.target.value) },
+                            React.createElement("option", { value: "Challan Photo" }, "Challan Photo"),
+                            React.createElement("option", { value: "Invoice PDF" }, "Invoice PDF"),
+                            React.createElement("option", { value: "Receiving Photo" }, "Receiving Photo"),
+                            React.createElement("option", { value: "Other Document" }, "Other Document")))),
+                    React.createElement("div", { className: "r2" },
+                        React.createElement("div", { className: "fg" }, React.createElement("label", null, "Dealer Code"), React.createElement("input", { value: dealerCode, onChange: e => setDealerCode(e.target.value), placeholder: "054D0001" })),
+                        React.createElement("div", { className: "fg" }, React.createElement("label", null, "Dealer Name"), React.createElement("input", { value: dealerName, onChange: e => setDealerName(e.target.value), placeholder: "PRAVEEN KUMAR" }))),
+                    React.createElement("div", { className: "uz", style: { marginBottom: 12 } },
+                        React.createElement("input", { type: "file", accept: "image/*,.pdf", onChange: e => setFile(e.target.files[0]) }),
+                        React.createElement("div", { style: { fontSize: 28, marginBottom: 6 } }, "📎"),
+                        file ? React.createElement("div", { style: { fontSize: 13 } },
+                            React.createElement("strong", { style: { color: '#d97706' } }, file.name),
+                            React.createElement("br", null),
+                            React.createElement("span", { style: { color: '#6b7280', fontSize: 12 } }, (file.size / 1024).toFixed(1), " KB"))
+                            : React.createElement("div", { style: { fontSize: 13, color: '#6b7280' } },
+                                React.createElement("strong", { style: { color: '#d97706' } }, "Tap to choose challan/photo/PDF"),
+                                React.createElement("br", null), "JPG, PNG, or PDF")),
+                    React.createElement("div", { className: "fg" }, React.createElement("label", null, "Notes"), React.createElement("textarea", { value: notes, onChange: e => setNotes(e.target.value), placeholder: "Optional remarks" })),
+                    React.createElement("label", { style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#374151', marginBottom: 12 } },
+                        React.createElement("input", { type: "checkbox", checked: isTest, onChange: e => setIsTest(e.target.checked) }),
+                        "Mark as test document (hidden from dealer views unless testing)"),
+                    err && React.createElement("div", { className: "alert aw" }, React.createElement("span", null, "⚠️"), React.createElement("div", null, err)),
+                    result && React.createElement("div", { className: "alert aok" }, React.createElement("span", null, "✅"), React.createElement("div", null,
+                        React.createElement("strong", null, "Uploaded and linked."),
+                        React.createElement("br", null),
+                        "Key: ", result.documentKey || '-',
+                        React.createElement("br", null),
+                        React.createElement("button", { className: "btn bam bsm", style: { marginTop: 6 }, onClick: () => openUrl(result.url) }, "Open Document"))),
+                    React.createElement("button", { className: "btn bam", onClick: save, disabled: busy }, busy ? React.createElement(React.Fragment, null, React.createElement("span", { className: "spin" }), " Uploading…") : 'Upload & Link Document')))));
+}
+
 // ══════════════════════════════════════════════
 //  DEALER MATERIAL ACCOUNT — TALLY HISTORY
 // ══════════════════════════════════════════════
