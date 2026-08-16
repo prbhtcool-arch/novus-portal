@@ -704,6 +704,7 @@ function Shell({ user, setUser, orders, setOrders, dealers, setDealers, location
         tse: [
             { id: 'home', ic: '🏠', lb: 'Dashboard' },
             { id: 'dealers', ic: '👥', lb: 'My Dealers' },
+            { id: 'tse_mis_balance', ic: '📒', lb: 'Current MIS Balance' },
             { id: 'approve', ic: '✏️', lb: 'Approve Orders', badge: myOrders.filter(o => o.status === 'placed').length },
             { id: 'approved', ic: '🚚', lb: 'Approved – Pending Dispatch' },
             { id: 'dispatched', ic: '📍', lb: 'Dispatched Orders' },
@@ -724,6 +725,7 @@ function Shell({ user, setUser, orders, setOrders, dealers, setDealers, location
             { id: 'home', ic: '🏠', lb: 'Dashboard' },
             { id: 'admin_orders', ic: '📋', lb: 'All Orders' },
             { id: 'admin_dealers', ic: '👥', lb: 'All Dealers' },
+            { id: 'tse_mis_balance', ic: '📒', lb: 'TSE MIS Balance' },
             { id: 'admin_pending', ic: '⚠️', lb: 'Pending Receivings' },
             { id: 'doc_upload', ic: '📤', lb: 'Upload Documents' },
             { id: 'report', ic: '📊', lb: 'Dispatch Report' },
@@ -779,6 +781,8 @@ function Router({ page, locationData, freightMatrix, warehouses, vehicles, setVe
         return React.createElement(Dashboard, { ...pL });
     if (page === 'report')
         return React.createElement(DispatchReport, { ...pL });
+    if (page === 'tse_mis_balance')
+        return React.createElement(TSECurrentMISBalances, { user: user });
     if (user.role === 'dealer') {
         if (page === 'place')
             return React.createElement(PlaceOrder, { ...pL });
@@ -831,6 +835,121 @@ function Router({ page, locationData, freightMatrix, warehouses, vehicles, setVe
     }
     return React.createElement(Dashboard, { ...pL });
 }
+
+// ══════════════════════════════════════════════
+//  TSE CURRENT MIS BALANCES
+// ══════════════════════════════════════════════
+function TSECurrentMISBalances({ user }) {
+    const h = React.createElement;
+    const defaultEmail = (user && user.email) || 'manojk.singh@prismjohnson.in';
+    const [email, setEmail] = useState(defaultEmail);
+    const [rows, setRows] = useState([]);
+    const [q, setQ] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [msg, setMsg] = useState('Load current balances synced from Novus MIS Tally.');
+    const [err, setErr] = useState('');
+    const isAdmin = user.role === 'admin';
+    const tseChoices = [
+        { email: 'manojk.singh@prismjohnson.in', label: 'Mau — Manoj Singh' },
+        { email: 'rohit.singh@prismjohnson.in', label: 'Ballia 1 — Rohit Singh' },
+        { email: 'kunwar.ravi@prismjohnson.in', label: 'Ballia 2 — Kunwar Ravi' },
+        { email: 'tse3@novus.in', label: 'Mau — old sample TSE' },
+        { email: 'tse1@novus.in', label: 'Ballia 1 — old sample TSE' },
+        { email: 'tse2@novus.in', label: 'Ballia 2 — old sample TSE' },
+    ];
+    const load = async (overrideEmail) => {
+        const e = String(overrideEmail || email || '').trim().toLowerCase();
+        if (!e) { setErr('Enter TSE/Admin email first.'); return; }
+        setLoading(true); setErr(''); setMsg('Loading TSE current MIS balances...');
+        try {
+            const res = await api('getTseCurrentMisBalances', { email: e });
+            const got = res.rows || [];
+            setRows(got);
+            setMsg(`Loaded ${got.length} dealer balance rows${res.territory ? ' · Territory: ' + res.territory : ''}`);
+        } catch (ex) {
+            setRows([]); setErr(ex.message || String(ex)); setMsg('Could not load balances.');
+        } finally { setLoading(false); }
+    };
+    useEffect(() => { load(defaultEmail); }, []);
+    const num = v => { const n = parseFloat(String(v || '').replace(/,/g, '')); return isNaN(n) ? 0 : n; };
+    const fmt = v => Math.round(num(v)).toLocaleString('en-IN');
+    const signed = (v, side) => String(side || '').toLowerCase() === 'cr' ? -Math.abs(num(v)) : Math.abs(num(v));
+    const chip = (v, side) => {
+        if (v === undefined || v === null || v === '') return h('span', { className: 'muted' }, '—');
+        const st = String(side || '').trim();
+        const cls = st.toLowerCase() === 'cr' ? 'ba' : (num(v) ? 'bd' : 'bcl');
+        return h('span', { className: `badge ${cls}` }, fmt(v), st ? ' ' + st : '');
+    };
+    const visible = rows.filter(r => {
+        const t = q.trim().toLowerCase();
+        if (!t) return true;
+        return [r.DealerName, r.TallyDealerCode, r.PortalDealerID, r.Territory, r.TSEName, r.MISGroupName, r.ItemsFound]
+            .some(x => String(x || '').toLowerCase().includes(t));
+    });
+    let totalDr = 0, totalCr = 0;
+    visible.forEach(r => { const v = signed(r.OverallBalance, r.OverallSide); if (v >= 0) totalDr += v; else totalCr += Math.abs(v); });
+    const net = totalDr - totalCr;
+    const snapshot = rows[0] && rows[0].SnapshotAt;
+    const dealerRow = r => h('tr', { key: r.BalanceKey || r.TallyDealerCode },
+        h('td', null,
+            h('div', { style: { fontWeight: 800, color: '#111827' } }, r.DealerName || ''),
+            h('div', { style: { fontSize: 11, color: '#9ca3af' } }, r.TallyDealerCode || '', ' · ', r.PortalDealerID || ''),
+            h('div', { style: { fontSize: 11, color: '#9ca3af' } }, r.MISGroupName || 'No MIS group')),
+        h('td', null, r.Territory || '', h('div', { style: { fontSize: 11, color: '#9ca3af' } }, r.TSEName || '')),
+        h('td', null, chip(r.OverallBalance, r.OverallSide)),
+        h('td', null, chip(r.PL_Balance, r.PL_Side)),
+        h('td', null, chip(r.AW_Balance, r.AW_Side)),
+        h('td', null, chip(r.DT_Balance, r.DT_Side)),
+        h('td', null, chip(r.CH_Balance, r.CH_Side)),
+        h('td', null, chip(r.OPC_Balance, r.OPC_Side)),
+        h('td', null, chip(r.NFR_Balance, r.NFR_Side)),
+        h('td', { style: { fontSize: 11, color: '#6b7280', maxWidth: 150, whiteSpace: 'normal' } }, r.ItemsFound || '')
+    );
+    return h(React.Fragment, null,
+        h('div', { className: 'ph' },
+            h('div', null,
+                h('div', { className: 'pt' }, 'TSE Current MIS Balance'),
+                h('div', { className: 'ps' }, 'Dealer-wise and item-wise balance from latest Novus MIS Tally sync', snapshot ? ` · Snapshot: ${snapshot}` : '')),
+            h('button', { className: 'btn bgh', onClick: () => load(), disabled: loading }, loading ? h('span', { className: 'spin' }) : '↻', ' Refresh')
+        ),
+        h('div', { className: 'pb' },
+            err ? h('div', { className: 'alert aer' }, h('span', null, '⚠️'), err)
+                : h('div', { className: 'alert ai' }, h('span', null, 'ℹ️'), msg),
+            h('div', { className: 'card' },
+                h('div', { className: 'ch' }, h('span', { className: 'ct' }, 'Balance filters')),
+                h('div', { className: 'cb' },
+                    h('div', { className: 'r3' },
+                        h('div', { className: 'fg' },
+                            h('label', null, 'TSE/Admin Email'),
+                            h('input', { value: email, disabled: !isAdmin, onChange: e => setEmail(e.target.value), placeholder: 'TSE email' })),
+                        h('div', { className: 'fg' },
+                            h('label', null, 'Quick Select'),
+                            h('select', { value: '', disabled: !isAdmin, onChange: e => { if (e.target.value) { setEmail(e.target.value); load(e.target.value); } } },
+                                h('option', { value: '' }, isAdmin ? 'Choose TSE' : 'TSE login fixed'),
+                                tseChoices.map(t => h('option', { key: t.email, value: t.email }, t.label)))),
+                        h('div', { className: 'fg' },
+                            h('label', null, 'Search Dealer / Code'),
+                            h('input', { value: q, onChange: e => setQ(e.target.value), placeholder: 'PRAVEEN / 054D0001 / PL' }))))),
+            h('div', { className: 'sg' },
+                h('div', { className: 'sc' }, h('div', { className: 'sv' }, visible.length), h('div', { className: 'sl' }, 'Dealers')),
+                h('div', { className: 'sc' }, h('div', { className: 'sv', style: { color: '#dc2626' } }, fmt(totalDr)), h('div', { className: 'sl' }, 'Total Dr')),
+                h('div', { className: 'sc' }, h('div', { className: 'sv', style: { color: '#16a34a' } }, fmt(totalCr)), h('div', { className: 'sl' }, 'Total Cr')),
+                h('div', { className: 'sc' }, h('div', { className: 'sv', style: { color: net < 0 ? '#16a34a' : '#dc2626' } }, fmt(Math.abs(net)), h('span', { style: { fontSize: 13, marginLeft: 4 } }, net < 0 ? 'Cr' : 'Dr')), h('div', { className: 'sl' }, 'Net'))),
+            h('div', { className: 'card' },
+                h('div', { className: 'ch' }, h('span', { className: 'ct' }, 'Dealer balances'), h('span', { className: 'chip' }, `${visible.length} rows`)),
+                h('div', { className: 'tw' },
+                    h('table', { className: 'tbl', style: { minWidth: 1100 } },
+                        h('thead', null, h('tr', null,
+                            h('th', null, 'Dealer'), h('th', null, 'TSE / Territory'), h('th', null, 'Overall'),
+                            h('th', null, 'PL'), h('th', null, 'AW'), h('th', null, 'DT'), h('th', null, 'CH'), h('th', null, 'OPC'), h('th', null, 'NFR'), h('th', null, 'Items Found'))),
+                        h('tbody', null, visible.length ? visible.map(dealerRow) : h('tr', null, h('td', { colSpan: 10, className: 'empty' }, 'No balance rows found.')))
+                    )
+                )
+            )
+        )
+    );
+}
+
 // ══════════════════════════════════════════════
 //  DASHBOARD
 // ══════════════════════════════════════════════
