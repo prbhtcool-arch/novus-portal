@@ -699,6 +699,7 @@ function Shell({ user, setUser, orders, setOrders, dealers, setDealers, location
             { id: 'retailers', ic: '🏪', lb: 'My Retailers' },
             { id: 'sites', ic: '🏗️', lb: 'My Sites' },
             { id: 'report', ic: '📊', lb: 'Dispatch Report' },
+            { id: 'tse_mis_balance', ic: '📒', lb: 'Current MIS Balance' },
             { id: 'material', ic: '📒', lb: 'Material Account' },
         ],
         tse: [
@@ -848,7 +849,13 @@ function TSECurrentMISBalances({ user }) {
     const [loading, setLoading] = useState(false);
     const [msg, setMsg] = useState('Load current balances synced from Novus MIS Tally.');
     const [err, setErr] = useState('');
+    const [txDealer, setTxDealer] = useState(null);
+    const [txRows, setTxRows] = useState([]);
+    const [txLoading, setTxLoading] = useState(false);
+    const [txErr, setTxErr] = useState('');
+    const [txFilter, setTxFilter] = useState('all');
     const isAdmin = user.role === 'admin';
+    const isDealer = user.role === 'dealer';
     const tseChoices = [
         { email: 'manojk.singh@prismjohnson.in', label: 'Mau — Manoj Singh' },
         { email: 'rohit.singh@prismjohnson.in', label: 'Ballia 1 — Rohit Singh' },
@@ -859,13 +866,13 @@ function TSECurrentMISBalances({ user }) {
     ];
     const load = async (overrideEmail) => {
         const e = String(overrideEmail || email || '').trim().toLowerCase();
-        if (!e) { setErr('Enter TSE/Admin email first.'); return; }
-        setLoading(true); setErr(''); setMsg('Loading TSE current MIS balances...');
+        if (!e) { setErr('Enter email first.'); return; }
+        setLoading(true); setErr(''); setMsg(isDealer ? 'Loading your current MIS balance...' : 'Loading TSE current MIS balances...');
         try {
             const res = await api('getTseCurrentMisBalances', { email: e });
             const got = res.rows || [];
             setRows(got);
-            setMsg(`Loaded ${got.length} dealer balance rows${res.territory ? ' · Territory: ' + res.territory : ''}`);
+            setMsg(`Loaded ${got.length} dealer balance row${got.length===1?'':'s'}${res.territory ? ' · Territory: ' + res.territory : ''}${res.dealerCode ? ' · Dealer: ' + res.dealerCode : ''}`);
         } catch (ex) {
             setRows([]); setErr(ex.message || String(ex)); setMsg('Could not load balances.');
         } finally { setLoading(false); }
@@ -890,9 +897,67 @@ function TSECurrentMISBalances({ user }) {
     visible.forEach(r => { const v = signed(r.OverallBalance, r.OverallSide); if (v >= 0) totalDr += v; else totalCr += Math.abs(v); });
     const net = totalDr - totalCr;
     const snapshot = rows[0] && rows[0].SnapshotAt;
+    const openTransactions = async (r) => {
+        setTxDealer(r); setTxRows([]); setTxErr(''); setTxFilter('all'); setTxLoading(true);
+        try {
+            const res = await api('getDealerTallyTransactions', { email: user.email, dealerCode: r.TallyDealerCode || r.DealerCode || r.PortalDealerID, limit: 500 });
+            setTxRows(res.transactions || []);
+        } catch (ex) {
+            setTxErr(ex.message || String(ex));
+        } finally { setTxLoading(false); }
+    };
+    const isSalesTxn = t => String(t.DisplayType || t.EventType || t.VoucherType || '').toLowerCase().includes('sales') || String(t.EventType || '').toLowerCase().includes('dispatch');
+    const isReceiptTxn = t => String(t.DisplayType || t.EventType || t.VoucherType || '').toLowerCase().includes('receipt') || String(t.EventType || '').toLowerCase().includes('invoice');
+    const shownTx = txRows.filter(t => txFilter === 'all' || (txFilter === 'sales' && isSalesTxn(t)) || (txFilter === 'receipt' && isReceiptTxn(t)));
+    const txEffect = (t) => {
+        const e = num(t.BalanceEffect);
+        const side = e >= 0 ? 'Dr' : 'Cr';
+        const cls = e >= 0 ? 'bd' : 'ba';
+        return h('span', { className: `badge ${cls}` }, fmt(Math.abs(e)), ' ', side);
+    };
+    const transactionModal = txDealer && h('div', { className: 'ov' },
+        h('div', { className: 'modal', style: { width: 980 } },
+            h('div', { className: 'mh' },
+                h('div', null,
+                    h('div', { className: 'mt' }, 'Dealer Transactions — ', txDealer.DealerName || ''),
+                    h('div', { className: 'muted' }, txDealer.TallyDealerCode || '', ' · Sales vouchers and Receipt vouchers from Tally sync')),
+                h('button', { className: 'lob', onClick: () => setTxDealer(null) }, '×')),
+            h('div', { className: 'mb' },
+                txErr ? h('div', { className: 'alert aer' }, h('span', null, '⚠️'), txErr) : null,
+                h('div', { className: 'r3', style: { marginBottom: 12 } },
+                    h('div', { className: 'fg' }, h('label', null, 'Filter'), h('select', { value: txFilter, onChange: e => setTxFilter(e.target.value) },
+                        h('option', { value: 'all' }, 'All vouchers'), h('option', { value: 'sales' }, 'Sales vouchers'), h('option', { value: 'receipt' }, 'Receipt vouchers'))),
+                    h('div', { className: 'fg' }, h('label', null, 'Rows'), h('input', { readOnly: true, value: `${shownTx.length} of ${txRows.length}` })),
+                    h('div', { className: 'fg' }, h('label', null, 'Note'), h('input', { readOnly: true, value: 'Sales voucher photo appears when linked in DMS' }))),
+                txLoading ? h('div', { className: 'empty' }, h('span', { className: 'spin' }), ' Loading transactions…') :
+                h('div', { className: 'tw' }, h('table', { className: 'tbl', style: { minWidth: 900 } },
+                    h('thead', null, h('tr', null,
+                        h('th', null, 'Date'), h('th', null, 'Voucher'), h('th', null, 'Items / Qty'), h('th', null, 'Effect'), h('th', null, 'Warehouse / Narration'), h('th', null, 'Photo'))),
+                    h('tbody', null, shownTx.length ? shownTx.map((t, i) => h('tr', { key: t.GroupKey || i },
+                        h('td', null, fmtDate(t.VoucherDate || '')),
+                        h('td', null,
+                            h('div', { style: { fontWeight: 800 } }, t.DisplayType || t.VoucherType || ''),
+                            h('div', { className: 'muted' }, t.VoucherType || '', ' · ', t.VoucherNumber || ''),
+                            t.ChallanNumber ? h('div', { className: 'muted' }, 'Challan: ', t.ChallanNumber) : null),
+                        h('td', null,
+                            h('div', { style: { fontWeight: 700 } }, t.ItemsText || ''),
+                            h('div', { className: 'muted' }, 'Total bags: ', fmt(t.TotalQuantity || t.Quantity || 0))),
+                        h('td', null, txEffect(t)),
+                        h('td', null,
+                            h('div', null, t.WarehouseLocation || ''),
+                            t.Narration ? h('div', { className: 'muted', style: { maxWidth: 260, whiteSpace: 'normal' } }, t.Narration) : null),
+                        h('td', null, t.PhotoURL ? h('a', { className: 'btn bsm bbl', href: t.PhotoURL, target: '_blank', rel: 'noreferrer' }, '📷 Open Photo') : (isSalesTxn(t) ? h('span', { className: 'muted' }, 'No photo') : h('span', { className: 'muted' }, '—')))
+                    )) : h('tr', null, h('td', { colSpan: 6, className: 'empty' }, 'No transactions found.')))
+                ))
+            ),
+            h('div', { className: 'mf' }, h('button', { className: 'btn bgh', onClick: () => setTxDealer(null) }, 'Close'))
+        )
+    );
     const dealerRow = r => h('tr', { key: r.BalanceKey || r.TallyDealerCode },
         h('td', null,
-            h('div', { style: { fontWeight: 800, color: '#111827' } }, r.DealerName || ''),
+            h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
+                h('span', { style: { fontWeight: 800, color: '#111827' } }, r.DealerName || ''),
+                h('button', { className: 'btn bsm bbl', onClick: () => openTransactions(r) }, 'Details')),
             h('div', { style: { fontSize: 11, color: '#9ca3af' } }, r.TallyDealerCode || '', ' · ', r.PortalDealerID || ''),
             h('div', { style: { fontSize: 11, color: '#9ca3af' } }, r.MISGroupName || 'No MIS group')),
         h('td', null, r.Territory || '', h('div', { style: { fontSize: 11, color: '#9ca3af' } }, r.TSEName || '')),
@@ -906,10 +971,11 @@ function TSECurrentMISBalances({ user }) {
         h('td', { style: { fontSize: 11, color: '#6b7280', maxWidth: 150, whiteSpace: 'normal' } }, r.ItemsFound || '')
     );
     return h(React.Fragment, null,
+        transactionModal,
         h('div', { className: 'ph' },
             h('div', null,
-                h('div', { className: 'pt' }, 'TSE Current MIS Balance'),
-                h('div', { className: 'ps' }, 'Dealer-wise and item-wise balance from latest Novus MIS Tally sync', snapshot ? ` · Snapshot: ${snapshot}` : '')),
+                h('div', { className: 'pt' }, isDealer ? 'My Current MIS Balance' : 'TSE Current MIS Balance'),
+                h('div', { className: 'ps' }, isDealer ? 'Your dealer-wise and item-wise balance from latest Novus MIS Tally sync' : 'Dealer-wise and item-wise balance from latest Novus MIS Tally sync', snapshot ? ` · Snapshot: ${snapshot}` : '')),
             h('button', { className: 'btn bgh', onClick: () => load(), disabled: loading }, loading ? h('span', { className: 'spin' }) : '↻', ' Refresh')
         ),
         h('div', { className: 'pb' },
@@ -920,12 +986,12 @@ function TSECurrentMISBalances({ user }) {
                 h('div', { className: 'cb' },
                     h('div', { className: 'r3' },
                         h('div', { className: 'fg' },
-                            h('label', null, 'TSE/Admin Email'),
-                            h('input', { value: email, disabled: !isAdmin, onChange: e => setEmail(e.target.value), placeholder: 'TSE email' })),
+                            h('label', null, isDealer ? 'Dealer Login Email' : 'TSE/Admin Email'),
+                            h('input', { value: email, disabled: !isAdmin, onChange: e => setEmail(e.target.value), placeholder: 'Email' })),
                         h('div', { className: 'fg' },
                             h('label', null, 'Quick Select'),
                             h('select', { value: '', disabled: !isAdmin, onChange: e => { if (e.target.value) { setEmail(e.target.value); load(e.target.value); } } },
-                                h('option', { value: '' }, isAdmin ? 'Choose TSE' : 'TSE login fixed'),
+                                h('option', { value: '' }, isAdmin ? 'Choose TSE' : (isDealer ? 'Dealer login fixed' : 'TSE login fixed')),
                                 tseChoices.map(t => h('option', { key: t.email, value: t.email }, t.label)))),
                         h('div', { className: 'fg' },
                             h('label', null, 'Search Dealer / Code'),
@@ -938,7 +1004,7 @@ function TSECurrentMISBalances({ user }) {
             h('div', { className: 'card' },
                 h('div', { className: 'ch' }, h('span', { className: 'ct' }, 'Dealer balances'), h('span', { className: 'chip' }, `${visible.length} rows`)),
                 h('div', { className: 'tw' },
-                    h('table', { className: 'tbl', style: { minWidth: 1100 } },
+                    h('table', { className: 'tbl', style: { minWidth: 1180 } },
                         h('thead', null, h('tr', null,
                             h('th', null, 'Dealer'), h('th', null, 'TSE / Territory'), h('th', null, 'Overall'),
                             h('th', null, 'PL'), h('th', null, 'AW'), h('th', null, 'DT'), h('th', null, 'CH'), h('th', null, 'OPC'), h('th', null, 'NFR'), h('th', null, 'Items Found'))),
