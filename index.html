@@ -413,7 +413,9 @@ function Stage1Account18({user}) {
     const [from,setFrom]=useState(''),[to,setTo]=useState(''),[item,setItem]=useState(''),[offset,setOffset]=useState(0);
     const seq=React.useRef(0);
     const fmt=n=>Number(n).toLocaleString('en-IN',{maximumFractionDigits:2});
-    const signed=n=>n===null||n===undefined?'Not available':fmt(Math.abs(n))+' '+(n<0?'Cr':n>0?'Dr':'')+' bags';
+    const signed=n=>n===null||n===undefined?'Not available':n===0?'0 bags':fmt(Math.abs(n))+' '+(n<0?'Cr':'Dr')+' bags';
+    const shortDate=v=>{const s=String(v||'').slice(0,10),m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);return m?m[3]+'-'+m[2]+'-'+m[1]:(v||'—');};
+    const narration=r=>r.Narration||r.narration||(r.NarrationUnavailable?'Narration unavailable for legacy row':'—');
     async function load(c=code,o=0){const request=++seq.current;setBusy(true);setError('');try{
       const r=await api('getStage1Account',{email:user.email,dealerCode:c,offset:o,fromDate:from,toDate:to,itemCode:item});
       if(!r.success)throw new Error(r.error||'Account response not confirmed');
@@ -430,17 +432,17 @@ function Stage1Account18({user}) {
       error&&h('div',{className:'alert ar',role:'alert'},error),
       user.role!=='dealer'&&h('label',null,'Dealer ',h('select',{value:code,onChange:e=>{setCode(e.target.value);load(e.target.value,0);}},h('option',{value:''},'Choose dealer'),...(data?.dealers||[]).map(d=>h('option',{key:d.code,value:d.code},d.name+' · '+d.code)))),
       h('button',{className:'btn bgh',disabled:busy,onClick:()=>load(code,0)},busy?'Loading…':'Refresh portal data'),
-      h('p',null,'MIS through: '+(data?.cutoff||'Waiting for connector')+' · Last successful publication: '+(data?.syncedAt||'—')),
+      h('p',null,'MIS through: '+(data?.cutoff?shortDate(data.cutoff):'Waiting for connector')+' · Last successful publication: '+(data?.syncedAt||'—')),
       h('div',{style:{display:'flex',gap:12,flexWrap:'wrap'}},
-        bagCard('Final MIS balance',signed(balance?.final_bags),'As of '+(balance?.as_of||'—')),
+        bagCard('Final MIS balance',signed(balance?.final_bags),'As of '+shortDate(balance?.as_of)),
         bagCard('Fresh NSOP effect',signed(data?.freshEffect),'After MIS date only'),
         bagCard('Tentative balance',signed(data?.tentativeBags),'Estimated bags; not posted in MIS')),
       h('h3',null,'Item balances'),
       table(['Item','Final MIS bags'],Object.entries(balance?.items||{}).map(([c,v])=>h('tr',{key:c},cell(c+(c==='OPC'?' · excluded from net':''),'item'),cell(signed(v),'balance')))),
       h('h3',null,'Fresh NSOP entries — pending in MIS'),
-      !data?.fresh?.length&&h('p',null,'No fresh entries in the last complete sync.'),
+      !data?.fresh?.length&&h('p',null,'No confirmed fresh entries in the last complete sync.'),
       table(['Date / voucher','Items / bags','Narration / warehouse','Effect','Photos'],(data?.fresh||[]).map(r=>h('tr',{key:r.coverage_key},
-        cell(r.voucher_date+' · '+r.nsop_voucher_type+' · '+r.nsop_voucher_number,'voucher'),cell(r.qty_summary,'items'),cell((r.narration||'')+' · '+(r.warehouse_location||''),'narration'),cell(signed(r.effect_bags),'effect'),cell(docs(r),'photos')))),
+        cell(shortDate(r.voucher_date)+' · '+r.nsop_voucher_type+' · '+r.nsop_voucher_number,'voucher'),cell(r.qty_summary,'items'),cell(narration(r)+' · '+(r.warehouse_location||'—'),'narration'),cell(signed(r.effect_bags),'effect'),cell(docs(r),'photos')))),
       h('h3',null,'MIS transactions'),
       h('div',{style:{display:'flex',gap:10,flexWrap:'wrap',marginBottom:12}},
         h('label',null,'From ',h('input',{type:'date',value:from,onChange:e=>setFrom(e.target.value)})),
@@ -448,7 +450,7 @@ function Stage1Account18({user}) {
         h('label',null,'Item ',h('select',{value:item,onChange:e=>setItem(e.target.value)},h('option',{value:''},'All'),...['PL','AW','DT','CH','NFR','OPC'].map(c=>h('option',{key:c,value:c},c)))),
         h('button',{className:'btn bgh',disabled:busy,onClick:()=>load(code,0)},'Apply filters')),
       table(['Date / voucher','Item / quantity','Narration / challan','Warehouse','Photos'],(data?.transactions||[]).map(r=>h('tr',{key:r.TransactionKey},
-        cell(r.VoucherDate+' · '+r.VoucherType+' · '+r.VoucherNumber,'voucher'),cell(r.ItemCode+' · '+fmt(r.Quantity)+' bags','item'),cell((r.Narration||'')+' · Challan '+(r.ChallanNumber||'—'),'narration'),cell(r.WarehouseLocation,'warehouse'),cell(docs(r),'photos')))),
+        cell(shortDate(r.VoucherDate)+' · '+r.VoucherType+' · '+r.VoucherNumber,'voucher'),cell(r.ItemCode+' · '+fmt(r.Quantity)+' bags','item'),cell(narration(r)+' · Challan '+(r.ChallanNumber||'—'),'narration'),cell(r.WarehouseLocation||'—','warehouse'),cell(docs(r),'photos')))),
       h('p',null,(data?.total||0)+' transaction lines · '+offset+'–'+(offset+(data?.transactions?.length||0))),
       h('button',{className:'btn bgh',disabled:busy||offset===0,onClick:()=>load(code,Math.max(0,offset-100))},'Previous'),
       h('button',{className:'btn bgh',disabled:busy||data?.nextOffset==null,onClick:()=>load(code,data.nextOffset)},'Next'));
