@@ -398,11 +398,70 @@ function apiPost(action, payload = {}) {
         form.submit();
     });
 }
+function Deployment18({user,operationsEnabled,onChange}) {
+    const h=React.createElement;
+    const [busy,setBusy]=useState(false),[error,setError]=useState('');
+    async function toggle(){setBusy(true);setError('');try{const r=await api('setDeploymentSettings',{email:user.email,operationsEnabled:!operationsEnabled});if(!r.success)throw new Error('Switch update not confirmed');onChange(r.operationsEnabled===true);}catch(e){setError(e.message);}finally{setBusy(false);}}
+    return h('div',{style:{padding:24}},h('h2',null,'Operational workflow'),
+      h('p',null,'OFF blocks order, approval, vehicle, loading, dispatch, receiving, return and credit changes for all users. Existing records stay stored. Bags, transactions and document uploads remain available.'),
+      error&&h('div',{role:'alert',className:'alert ar'},error),
+      h('button',{className:'btn '+(operationsEnabled?'brd':'bgr'),onClick:toggle,disabled:busy,'aria-pressed':operationsEnabled},busy?'Saving…':operationsEnabled?'Turn Stage 2 OFF':'Turn Stage 2 ON'));
+}
+function Stage1Account18({user}) {
+    const h=React.createElement;
+    const [data,setData]=useState(null),[code,setCode]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState('');
+    const [from,setFrom]=useState(''),[to,setTo]=useState(''),[item,setItem]=useState(''),[offset,setOffset]=useState(0);
+    const seq=React.useRef(0);
+    const fmt=n=>Number(n).toLocaleString('en-IN',{maximumFractionDigits:2});
+    const signed=n=>n===null||n===undefined?'Not available':fmt(Math.abs(n))+' '+(n<0?'Cr':n>0?'Dr':'')+' bags';
+    async function load(c=code,o=0){const request=++seq.current;setBusy(true);setError('');try{
+      const r=await api('getStage1Account',{email:user.email,dealerCode:c,offset:o,fromDate:from,toDate:to,itemCode:item});
+      if(!r.success)throw new Error(r.error||'Account response not confirmed');
+      if(request===seq.current){setData(r);setOffset(o);}
+    }catch(e){if(request===seq.current)setError(e.message);}finally{if(request===seq.current)setBusy(false);}}
+    useEffect(()=>{load('',0);return()=>{seq.current++;};},[user.email]);
+    const docs=r=>(r.Documents||[]).filter(d=>/^https:\/\//.test(d.url||'')).map((d,i)=>h('a',{key:i,href:d.url,target:'_blank',rel:'noopener noreferrer',style:{display:'block'}},d.type||'Photo / PDF'));
+    const balance=data?.balance;
+    const bagCard=(label,value,note)=>h('div',{className:'card',style:{padding:16,flex:'1 1 180px'}},h('div',null,label),h('h2',null,value),h('small',null,note));
+    function table(headers,rows){return h('div',{style:{overflowX:'auto'}},h('table',{style:{width:'100%',borderCollapse:'collapse'}},h('thead',null,h('tr',null,...headers.map(x=>h('th',{key:x,style:{textAlign:'left',padding:10}},x)))),h('tbody',null,...rows)));}
+    function cell(value,key){return h('td',{key,style:{padding:10,borderTop:'1px solid #e5e7eb',verticalAlign:'top'}},value);}
+    return h('div',{style:{padding:20}},h('h2',null,'Dealer material account'),
+      h('p',null,'Bags · MIS final · NFR included · OPC displayed separately and excluded from net'),
+      error&&h('div',{className:'alert ar',role:'alert'},error),
+      user.role!=='dealer'&&h('label',null,'Dealer ',h('select',{value:code,onChange:e=>{setCode(e.target.value);load(e.target.value,0);}},h('option',{value:''},'Choose dealer'),...(data?.dealers||[]).map(d=>h('option',{key:d.code,value:d.code},d.name+' · '+d.code)))),
+      h('button',{className:'btn bgh',disabled:busy,onClick:()=>load(code,0)},busy?'Loading…':'Refresh portal data'),
+      h('p',null,'MIS through: '+(data?.cutoff||'Waiting for connector')+' · Last successful publication: '+(data?.syncedAt||'—')),
+      h('div',{style:{display:'flex',gap:12,flexWrap:'wrap'}},
+        bagCard('Final MIS balance',signed(balance?.final_bags),'As of '+(balance?.as_of||'—')),
+        bagCard('Fresh NSOP effect',signed(data?.freshEffect),'After MIS date only'),
+        bagCard('Tentative balance',signed(data?.tentativeBags),'Estimated bags; not posted in MIS')),
+      h('h3',null,'Item balances'),
+      table(['Item','Final MIS bags'],Object.entries(balance?.items||{}).map(([c,v])=>h('tr',{key:c},cell(c+(c==='OPC'?' · excluded from net':''),'item'),cell(signed(v),'balance')))),
+      h('h3',null,'Fresh NSOP entries — pending in MIS'),
+      !data?.fresh?.length&&h('p',null,'No fresh entries in the last complete sync.'),
+      table(['Date / voucher','Items / bags','Narration / warehouse','Effect','Photos'],(data?.fresh||[]).map(r=>h('tr',{key:r.coverage_key},
+        cell(r.voucher_date+' · '+r.nsop_voucher_type+' · '+r.nsop_voucher_number,'voucher'),cell(r.qty_summary,'items'),cell((r.narration||'')+' · '+(r.warehouse_location||''),'narration'),cell(signed(r.effect_bags),'effect'),cell(docs(r),'photos')))),
+      h('h3',null,'MIS transactions'),
+      h('div',{style:{display:'flex',gap:10,flexWrap:'wrap',marginBottom:12}},
+        h('label',null,'From ',h('input',{type:'date',value:from,onChange:e=>setFrom(e.target.value)})),
+        h('label',null,'To ',h('input',{type:'date',value:to,onChange:e=>setTo(e.target.value)})),
+        h('label',null,'Item ',h('select',{value:item,onChange:e=>setItem(e.target.value)},h('option',{value:''},'All'),...['PL','AW','DT','CH','NFR','OPC'].map(c=>h('option',{key:c,value:c},c)))),
+        h('button',{className:'btn bgh',disabled:busy,onClick:()=>load(code,0)},'Apply filters')),
+      table(['Date / voucher','Item / quantity','Narration / challan','Warehouse','Photos'],(data?.transactions||[]).map(r=>h('tr',{key:r.TransactionKey},
+        cell(r.VoucherDate+' · '+r.VoucherType+' · '+r.VoucherNumber,'voucher'),cell(r.ItemCode+' · '+fmt(r.Quantity)+' bags','item'),cell((r.Narration||'')+' · Challan '+(r.ChallanNumber||'—'),'narration'),cell(r.WarehouseLocation,'warehouse'),cell(docs(r),'photos')))),
+      h('p',null,(data?.total||0)+' transaction lines · '+offset+'–'+(offset+(data?.transactions?.length||0))),
+      h('button',{className:'btn bgh',disabled:busy||offset===0,onClick:()=>load(code,Math.max(0,offset-100))},'Previous'),
+      h('button',{className:'btn bgh',disabled:busy||data?.nextOffset==null,onClick:()=>load(code,data.nextOffset)},'Next'));
+}
+
 function api(action, payload = {}) {
     if (CFG.DEMO_MODE)
         return Promise.reject(new Error('DEMO_MODE'));
+    const stored = JSON.parse(localStorage.getItem('novus_user') || '{}');
+    if (action !== 'login') payload = { ...payload, sessionToken: stored.user?.sessionToken || '' };
+    const writes = ['login','setDeploymentSettings','addOrder','updateOrderStatus','assignVehicle','uploadReceiving','uploadChallanPhoto','uploadReceivingPhoto','uploadChallanAndPortalDocument','addRetailer','addSite','addDriver','addVehicle','approveReceivingClaim','confirmReturnReceived','savePortalDocumentLink'];
     const hasFilePayload = Object.prototype.hasOwnProperty.call(payload, 'photoData');
-    if (hasFilePayload)
+    if (hasFilePayload || writes.includes(action))
         return apiPost(action, payload);
     return apiJSONP(action, payload);
 }
@@ -529,7 +588,7 @@ function App() {
                 localStorage.removeItem('novus_user');
                 return null;
             }
-            return u;
+            return u && u.sessionToken ? u : null;
         }
         catch (_a) {
             return null;
@@ -679,7 +738,15 @@ function Login({ setUser, setOrders, setDealers, setAppLoaded }) {
 //  SHELL
 // ══════════════════════════════════════════════
 function Shell({ user, setUser, orders, setOrders, dealers, setDealers, locationData, freightMatrix, warehouses, vehicles, setVehicles, drivers, setDrivers, initialDocQuery }) {
-    const [page, setPage] = useState(initialDocQuery ? 'docviewer' : 'home');
+    const [page, setPage] = useState(initialDocQuery ? 'docviewer' : 'stage1');
+    const [operationsEnabled, setOperationsEnabled] = useState(false);
+    const [settingsError, setSettingsError] = useState('');
+    useEffect(() => {
+        let live = true;
+        const refresh = () => api('getDeploymentSettings', {email:user.email}).then(r=>{if(live){setOperationsEnabled(r.operationsEnabled===true);setSettingsError('');}}).catch(e=>{if(live){setOperationsEnabled(false);setSettingsError(e.message);}});
+        refresh(); const timer = setInterval(refresh, 30000);
+        return () => {live=false;clearInterval(timer);};
+    }, [user.email]);
     const myOrders = orders.filter(o => {
         if (user.role === 'dealer')
             return normId(o.dealer) === normId(user.id);
@@ -732,7 +799,12 @@ function Shell({ user, setUser, orders, setOrders, dealers, setDealers, location
             { id: 'report', ic: '📊', lb: 'Dispatch Report' },
         ],
     };
-    const navs = initialDocQuery ? [{ id: 'docviewer', ic: '📎', lb: 'Voucher Document' }, ...(navMap[user.role] || [])] : navMap[user.role] || [];
+    const stageNav = user.role === 'logistics' ? [] : [{id:'stage1',ic:'📒',lb:'Dealer Account · Bags'}];
+    if (['admin','logistics'].includes(user.role)) stageNav.push({id:'doc_upload',ic:'📤',lb:'Upload Documents'});
+    if (user.role === 'admin') stageNav.push({id:'deployment',ic:'⚙️',lb:'Stage-2 Switch'});
+    if(initialDocQuery)stageNav.push({id:'docviewer',ic:'📎',lb:'Voucher Document'});
+    const navs = [...stageNav, ...(operationsEnabled ? (navMap[user.role]||[]).filter(n=>!['material','tse_mis_balance','doc_upload'].includes(n.id)) : [])];
+    const effectivePage = page === 'stage1' && user.role==='logistics' ? 'doc_upload' : (!operationsEnabled && !stageNav.some(n=>n.id===page) ? (user.role==='logistics'?'doc_upload':'stage1') : page);
     const sub = user.role === 'tse' ? `Territory: ${user.territory}` : user.role === 'logistics' ? whName(user.warehouse, warehouses) : user.role === 'admin' ? 'All Territories' : user.territory;
     const [sideOpen, setSideOpen] = useState(false);
     const closeSide = () => setSideOpen(false);
@@ -769,7 +841,11 @@ function Shell({ user, setUser, orders, setOrders, dealers, setDealers, location
                 React.createElement("span", null, "\uD83D\uDD27"),
                 React.createElement("strong", null, "Demo Mode"),
                 " \u2014 changes are not saved. Paste your Apps Script URL and set DEMO_MODE: false to go live."),
-            React.createElement(Router, { page: page, user: user, orders: orders, setOrders: setOrders, dealers: dealers, setDealers: setDealers, myOrders: myOrders, setPage: setPage, locationData: locationData, freightMatrix: freightMatrix, warehouses: warehouses, vehicles: vehicles, setVehicles: setVehicles, drivers: drivers, setDrivers: setDrivers, initialDocQuery: initialDocQuery }))));
+            settingsError && React.createElement('div',{className:'alert ar'},settingsError),
+            React.createElement('div',{style:{padding:'8px 20px',background:'#f0fdf4',color:'#166534'}},operationsEnabled?'Stage 2 ON · Operations enabled':'Stage 1 · Account and document access · Operations OFF'),
+            effectivePage === 'stage1' ? React.createElement(Stage1Account18,{user}) :
+            effectivePage === 'deployment' && user.role==='admin' ? React.createElement(Deployment18,{user,operationsEnabled,onChange:setOperationsEnabled}) :
+            React.createElement(Router, { page: effectivePage, user: user, orders: orders, setOrders: setOrders, dealers: dealers, setDealers: setDealers, myOrders: myOrders, setPage: setPage, locationData: locationData, freightMatrix: freightMatrix, warehouses: warehouses, vehicles: vehicles, setVehicles: setVehicles, drivers: drivers, setDrivers: setDrivers, initialDocQuery: initialDocQuery }))));
 }
 function Router({ page, locationData, freightMatrix, warehouses, vehicles, setVehicles, drivers, setDrivers, ...p }) {
     const pL = { ...p, locationData, freightMatrix, warehouses, vehicles, setVehicles, drivers, setDrivers };
@@ -1630,7 +1706,7 @@ function PortalDocumentUpload({ user }) {
     const [voucherNumber, setVoucherNumber] = useState('');
     const [challanNumber, setChallanNumber] = useState('');
     const [documentType, setDocumentType] = useState('Challan Photo');
-    const [isTest, setIsTest] = useState(true);
+    const [isTest, setIsTest] = useState(false);
     const [notes, setNotes] = useState('');
     const [file, setFile] = useState(null);
     const [busy, setBusy] = useState(false);
@@ -1665,7 +1741,7 @@ function PortalDocumentUpload({ user }) {
                 isTest: isTest ? 'TRUE' : 'FALSE',
                 notes
             });
-            if (!r || r.error) throw new Error(r && r.error ? r.error : 'Upload failed');
+            if (!r || r.error || !r.success || !r.url) throw new Error(r && r.error ? r.error : 'Upload not confirmed. Check voucher documents before retrying.');
             setResult(r);
         } catch (e) {
             setErr(e.message || String(e));
@@ -1800,10 +1876,35 @@ function MaterialAccount({ user }) {
         reset ? setLoading(false) : setLoadingMore(false);
     };
     useEffect(() => { fetchPage(true); }, [user.email]);
-    const overall = data && data.overall;
-    const overallBalance = balanceParts(overall);
-    const balanceCls = overallBalance.side === 'Dr' ? 'mat-balance-positive' : overallBalance.side === 'Cr' ? 'mat-balance-negative' : 'mat-balance-zero';
     const items = (data && data.itemBalances) || [];
+    const overall = data && data.overall;
+    // Dealer-group policy: OPC is displayed for audit, but is not part of the
+    // dealer's overall material balance. Every other displayed item, including
+    // NFR, must participate in the total. Derive the card from the item rows so
+    // a backend/group-total omission cannot silently drop NFR again.
+    const overallEligibleItems = items.filter(x => String(x.ItemCode || x.ItemName || '').trim().toUpperCase() !== 'OPC');
+    const itemDerivedAvailable = overallEligibleItems.length > 0 && overallEligibleItems.every(x => balanceParts(x).available);
+    const itemDerivedSigned = overallEligibleItems.reduce((sum, x) => {
+        const b = balanceParts(x);
+        return sum + (b.side === 'Cr' ? -b.abs : b.side === 'Dr' ? b.abs : 0);
+    }, 0);
+    const itemDerivedSummary = overallEligibleItems.reduce((sum, x) => {
+        sum.PhysicalDispatch += n(x.PhysicalDispatch);
+        sum.CompanyInvoice += n(x.CompanyInvoice);
+        sum.MaterialReturn += n(x.MaterialReturn);
+        sum.DirectCompanyPurchase += n(x.DirectCompanyPurchase);
+        sum.TransactionMovement += n(x.TransactionMovement);
+        return sum;
+    }, { PhysicalDispatch: 0, CompanyInvoice: 0, MaterialReturn: 0, DirectCompanyPurchase: 0, TransactionMovement: 0 });
+    const summaryOverall = overallEligibleItems.length ? { ...(overall || {}), ...itemDerivedSummary } : overall;
+    const overallBalance = itemDerivedAvailable ? {
+        available: true,
+        signed: itemDerivedSigned,
+        abs: Math.abs(itemDerivedSigned),
+        side: itemDerivedSigned < 0 ? 'Cr' : itemDerivedSigned > 0 ? 'Dr' : '-'
+    } : balanceParts(overall);
+    const overallSnapshotDate = (overall && overall.SnapshotDate) || (overallEligibleItems.find(x => x.SnapshotDate) || {}).SnapshotDate || '';
+    const balanceCls = overallBalance.side === 'Dr' ? 'mat-balance-positive' : overallBalance.side === 'Cr' ? 'mat-balance-negative' : 'mat-balance-zero';
     const itemCodes = [...new Set(items.map(x => x.ItemCode).filter(Boolean))].sort();
     const filtered = transactions.filter(t => {
         if (itemFilter !== 'all' && String(t.ItemCode) !== itemFilter)
@@ -1880,7 +1981,7 @@ function MaterialAccount({ user }) {
                 React.createElement("span", null, "\u2139\uFE0F"),
                 React.createElement("div", null,
                     "The displayed balance is the closing balance directly captured from Tally as on ",
-                    React.createElement("strong", null, fmtDate(overall.SnapshotDate)),
+                    React.createElement("strong", null, fmtDate(overallSnapshotDate)),
                     ". Synced transaction history (",
                     fmtDate(data.history && data.history.oldestDate),
                     " to ",
@@ -1890,26 +1991,26 @@ function MaterialAccount({ user }) {
                 React.createElement("div", { className: "mat-stat" },
                     React.createElement("div", { className: "k" }, "Tally Closing Balance"),
                     React.createElement("div", { className: `v ${balanceCls}` }, overallBalance.available ? `${fmtN(overallBalance.abs)} ${overallBalance.side}` : '—'),
-                    React.createElement("div", { className: "s" }, overallBalance.available ? `as on ${fmtDate(overall.SnapshotDate)}` : 'snapshot not synced')),
+                    React.createElement("div", { className: "s" }, overallBalance.available ? `as on ${fmtDate(overallSnapshotDate)} · OPC excluded` : 'snapshot not synced')),
                 React.createElement("div", { className: "mat-stat" },
                     React.createElement("div", { className: "k" }, "Period Movement"),
-                    React.createElement("div", { className: "v" }, overall ? `${n(overall.TransactionMovement) > 0 ? '+' : ''}${fmtN(overall.TransactionMovement)}` : '—'),
+                    React.createElement("div", { className: "v" }, summaryOverall ? `${n(summaryOverall.TransactionMovement) > 0 ? '+' : ''}${fmtN(summaryOverall.TransactionMovement)}` : '—'),
                     React.createElement("div", { className: "s" }, "effect of currently synced transaction history")),
                 React.createElement("div", { className: "mat-stat" },
                     React.createElement("div", { className: "k" }, "Warehouse Dispatch"),
-                    React.createElement("div", { className: "v" }, fmtN(overall && overall.PhysicalDispatch)),
+                    React.createElement("div", { className: "v" }, fmtN(summaryOverall && summaryOverall.PhysicalDispatch)),
                     React.createElement("div", { className: "s" }, "material issued from warehouse in synced history")),
                 React.createElement("div", { className: "mat-stat" },
                     React.createElement("div", { className: "k" }, "Company Invoice"),
-                    React.createElement("div", { className: "v" }, fmtN(overall && overall.CompanyInvoice)),
+                    React.createElement("div", { className: "v" }, fmtN(summaryOverall && summaryOverall.CompanyInvoice)),
                     React.createElement("div", { className: "s" }, "quantity invoiced by company in synced history")),
                 React.createElement("div", { className: "mat-stat" },
                     React.createElement("div", { className: "k" }, "Returns"),
-                    React.createElement("div", { className: "v" }, fmtN(overall && overall.MaterialReturn)),
+                    React.createElement("div", { className: "v" }, fmtN(summaryOverall && summaryOverall.MaterialReturn)),
                     React.createElement("div", { className: "s" }, "credit-note quantity in synced history")),
                 React.createElement("div", { className: "mat-stat" },
                     React.createElement("div", { className: "k" }, "Direct Plant Purchase"),
-                    React.createElement("div", { className: "v" }, fmtN(overall && overall.DirectCompanyPurchase)),
+                    React.createElement("div", { className: "v" }, fmtN(summaryOverall && summaryOverall.DirectCompanyPurchase)),
                     React.createElement("div", { className: "s" }, "history only \u00B7 zero balance effect"))),
             React.createElement("div", { className: "card" },
                 React.createElement("div", { className: "ch" },
