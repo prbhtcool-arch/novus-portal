@@ -591,117 +591,13 @@ function View19Docs({docs=[]}){
 }
 function View19Table({headers,children,className=''}){const h=React.createElement;return h('div',{className:'v-table-wrap'},h('table',{className},h('thead',null,h('tr',null,...headers.map((s,i)=>h('th',{key:s,className:i===headers.length-1?'numeric':''},s)))),h('tbody',null,children)));}
 
-function TSEView19({user,onSelect}){
-    const h=React.createElement;
-    const [data,setData]=useState(null),[busy,setBusy]=useState(true),[error,setError]=useState('');
-    const [search,setSearch]=useState(''),[side,setSide]=useState('all'),[sort,setSort]=useState('name'),[page,setPage]=useState(0);
-    const seq=React.useRef(0);
-    async function load(){const id=++seq.current;setBusy(true);setError('');try{
-        const r=await api('getTseCurrentMisBalancesFast');if(!r.success||!Array.isArray(r.rows))throw new Error(r.error||'Portfolio response is not available.');
-        if(id===seq.current){setData(r);setPage(0);}
-    }catch(e){if(id===seq.current)setError(e.message);}finally{if(id===seq.current)setBusy(false);}}
-    useEffect(()=>{load();return()=>{seq.current++;};},[user.email]);
-    const all=V19.portfolioRows(data?.rows),q=search.toLowerCase().trim();
-    const rows=all.filter(r=>(!q||[r.DealerName,r.TallyDealerCode,r.PortalDealerID].join(' ').toLowerCase().includes(q))&&
-        (side==='all'||side==='dr'&&r._net>0||side==='cr'&&r._net<0||side==='zero'&&r._net===0||side==='missing'&&r._net===null));
-    rows.sort((a,b)=>sort==='largest'?Math.abs(b._net||0)-Math.abs(a._net||0):sort==='dr'?(b._net??-Infinity)-(a._net??-Infinity):String(a.DealerName).localeCompare(String(b.DealerName)));
-    const dr=all.filter(r=>r._net>0),cr=all.filter(r=>r._net<0),missing=all.filter(r=>r._net===null).length;
-    const snapshots=[...new Set(all.map(r=>r.SnapshotAt).filter(Boolean))].sort();
-    const start=page*20,visible=rows.slice(start,start+20);
-    const change=fn=>e=>{fn(e.target.value);setPage(0);};
-    return h(React.Fragment,null,
-        h('header',{className:'v-head'},h('div',null,h('div',{className:'v-eyebrow'},user.role==='admin'?'BRANCH ACCOUNT DESK':'TERRITORY ACCOUNT DESK'),h('h1',null,user.role==='admin'?'Dealer portfolio':'My dealers'),h('div',{className:'v-meta'},(user.territory||'All authorized territories')+' · '+user.name)),h('button',{className:'v-btn',onClick:load,disabled:busy},busy?'Refreshing…':'Refresh portfolio')),
-        h('div',{className:'v-tabs'},h('button',{className:'v-tab active',type:'button'},'Overview & dealers')),
-        h('div',{className:'v-stamp'},h('span',null,'Source: current MIS item snapshots · Bags, not rupees'),h('span',null,snapshots.length?'Snapshot dates: '+V19.date(snapshots[0])+(snapshots.length>1?' to '+V19.date(snapshots[snapshots.length-1]):''):'Snapshot date not available')),
-        error&&h('div',{className:'v-error',role:'alert'},error,' ',data?'Last loaded portfolio remains visible; refresh failed.':'',h('button',{className:'v-btn',onClick:load,disabled:busy},'Retry')),
-        h('div',{className:'v-grid four'},
-            h(View19Card,{title:'DEALERS IN YOUR SCOPE',value:data?all.length:'—',note:'Server-authorized portfolio',kind:'final'}),
-            h(View19Card,{title:'DEBIT BALANCES · BAGS',value:data&&all.length>missing?V19.fmt(dr.reduce((n,r)=>n+r._net,0)):'—',note:dr.length+' dealers with Dr balance'}),
-            h(View19Card,{title:'CREDIT BALANCES · BAGS',value:data&&all.length>missing?V19.fmt(-cr.reduce((n,r)=>n+r._net,0)):'—',note:cr.length+' dealers with Cr balance'}),
-            h(View19Card,{title:'BALANCE NOT VERIFIED',value:data?missing:'—',note:'Missing / invalid item snapshot'})),
-        h('div',{className:'v-notice'},'Portfolio totals use this snapshot feed and exclude OPC. They are not rupee outstanding or credit limits. Open a dealer to see the separately committed MIS balance and fresh NSOP effect. Different snapshot dates are not a single-date consolidated balance.'),
-        h('section',{className:'v-panel'},h('div',{className:'v-panel-title'},h('h2',null,'Dealer accounts'),h('span',{className:'v-chip'},rows.length+' shown')),
-            h('div',{className:'v-form'},h('label',{className:'v-search'},'Search dealer / D-code',h('input',{value:search,onChange:change(setSearch),placeholder:'Name or dealer code'})),
-                h('label',null,'Balance',h('select',{value:side,onChange:change(setSide)},...Object.entries({all:'All balances',dr:'Dr only',cr:'Cr only',zero:'Zero',missing:'Not verified'}).map(([v,t])=>h('option',{key:v,value:v},t)))),
-                h('label',null,'Sort',h('select',{value:sort,onChange:change(setSort)},h('option',{value:'name'},'Dealer name'),h('option',{value:'largest'},'Largest absolute bags'),h('option',{value:'dr'},'Highest Dr first')))),
-            busy&&!data?h(View19Empty,{title:'Loading territory accounts…'},'Fetching only MIS balance rows; transaction history opens on demand.'):
-            !data?h(View19Empty,{title:'Portfolio unavailable'},'Use Retry above. No balances have been assumed.'):
-            !rows.length?h(View19Empty,{title:'No matching dealers'},all.length?'Change your search or balance filter.':'No MIS snapshot rows were returned for your authorized scope.'):
-            h(View19Table,{headers:['Dealer / D-code','Territory','Snapshot','MIS net · bags'],className:'v-portfolio'},visible.map((r,i)=>h('tr',{key:r.BalanceKey||r.TallyDealerCode+':'+i},
-                h('td',null,h('button',{className:'v-account-link',disabled:!r.TallyDealerCode,onClick:()=>onSelect({code:r.TallyDealerCode,name:r.DealerName,territory:r.Territory,portalId:r.PortalDealerID})},r.DealerName||'Unnamed dealer'),h('div',{className:'v-code'},r.TallyDealerCode||'Mapping unavailable')),
-                h('td',null,r.Territory||'—'),h('td',null,V19.date(r.SnapshotAt)),h('td',{className:'numeric'},h('strong',null,V19.signed(r._net)))))),
-            h('div',{className:'v-pagination'},h('span',null,rows.length?`${start+1}–${Math.min(start+20,rows.length)} of ${rows.length} dealers`:'0 dealers'),h('div',null,h('button',{className:'v-btn',disabled:page===0,onClick:()=>setPage(page-1)},'Previous dealers'),h('button',{className:'v-btn',disabled:start+20>=rows.length,onClick:()=>setPage(page+1)},'Next dealers')))),
-        h('p',{className:'v-note'},'Read-only release · No credit approval, dealer assignment or Tally writeback.'));
-}
 
 function Dealer360View19({user,dealer,onBack}){
-    const h=React.createElement;
-    const [data,setData]=useState(null),[busy,setBusy]=useState(true),[error,setError]=useState(''),[tab,setTab]=useState('summary');
-    const [fy,setFy]=useState(''),[from,setFrom]=useState(''),[to,setTo]=useState(''),[item,setItem]=useState(''),[offset,setOffset]=useState(0);
-    const [applied,setApplied]=useState({fromDate:'',toDate:'',itemCode:''});
-    const seq=React.useRef(0);
-    const lastRequest=React.useRef({o:0,filters:{fromDate:'',toDate:'',itemCode:''}});
-    async function load(o=0,filters=applied,force=false){lastRequest.current={o,filters};const id=++seq.current;setBusy(true);setError('');try{
-        const r=await api('getStage1Account',{dealerCode:dealer?.code||'',offset:o,...filters,_force:force});
-        if(!r.success||!Array.isArray(r.transactions)||!Array.isArray(r.fresh))throw new Error(r.error||'Account response is incomplete.');
-        if(id===seq.current){setData(r);setOffset(o);setApplied(filters);}
-    }catch(e){if(id===seq.current)setError(e.message);}finally{if(id===seq.current)setBusy(false);}}
-    useEffect(()=>{load(0,{fromDate:'',toDate:'',itemCode:''});return()=>{seq.current++;};},[user.email,dealer?.code]);
-    const name=dealer?.name||data?.balance?.dealer_name||user.name;
-    const balance=data?.balance,final=V19.number(balance?.final_bags),fresh=data?.fresh||[];
-    const groups=V19.groupLines(data?.transactions),docGroups=groups.filter(r=>(r.Documents||[]).length);
-    const code=data?.dealerCode||dealer?.code||user.id||'Not mapped';
-    function filters(){return h('form',{className:'v-form',onSubmit:e=>{e.preventDefault();if(from&&to&&from>to){setError('From date must not be after To date.');return;}load(0,{fromDate:from,toDate:to,itemCode:item});}},
-        h(PeriodSelect193,{onChange:p=>{setFrom(p.fromDate);setTo(p.toDate);setFy('');}}),h('label',null,'Financial year',h('select',{value:fy,onChange:e=>{setFy(e.target.value);const d=V19.fyDates(e.target.value);setFrom(d.fromDate);setTo(d.toDate);}},h('option',{value:''},'All synced history'),...V19.fyOptions(data?.cutoff).map(y=>h('option',{key:y,value:y},`${y}–${String(y+1).slice(-2)}`)))),
-        h('label',null,'From',h('input',{type:'date',value:from,onChange:e=>{setFy('');setFrom(e.target.value);}})),
-        h('label',null,'To',h('input',{type:'date',value:to,onChange:e=>{setFy('');setTo(e.target.value);}})),
-        h('label',null,'Item',h('select',{value:item,onChange:e=>setItem(e.target.value)},h('option',{value:''},'All items'),...V19.codes.map(c=>h('option',{value:c,key:c},c+' · '+V19.labels[c])))),
-        h('button',{className:'v-btn primary',type:'submit',disabled:busy},'Apply filters'));
-    }
-    const pagination=()=>h('div',{className:'v-pagination'},h('span',null,data?.total?`${offset+1}–${offset+(data.transactions||[]).length} of ${data.total} transaction lines`:'0 transaction lines'),
-        h('div',null,h('button',{className:'v-btn',disabled:busy||offset===0,onClick:()=>load(Math.max(0,offset-100))},'Previous transactions'),h('button',{className:'v-btn',disabled:busy||data?.nextOffset==null,onClick:()=>load(data.nextOffset)},'Next transactions')));
-    const txTable=()=>!groups.length?h(View19Empty,{title:'No MIS transactions in this range'},'Try another date or item filter. This does not change the final MIS balance.'):
-        h(View19Table,{headers:['Date / voucher','Items · MT','Narration & documents','Net effect · MT']},groups.map(r=>{
-            const effects=r.lines.filter(x=>x.ItemCode!=='OPC').map(x=>V19.number(x.BalanceEffect));
-            const effect=effects.some(x=>x===null)?null:effects.reduce((a,b)=>a+b,0);
-            return h('tr',{key:r.key},h('td',null,h('strong',null,V19.date(r.VoucherDate)),h('div',{className:'v-subrow'},r.VoucherType+' · '+(r.VoucherNumber||'No number'))),
-                h('td',null,...r.lines.map((x,i)=>h('div',{key:x.TransactionKey||i},x.ItemCode+' · '+MT193(x.Quantity)))),
-                h('td',null,h('details',null,h('summary',null,'Narration & details'),h('p',{className:'v-note'},r.Narration||'Narration unavailable for this row'),h('p',{className:'v-subrow'},(r.WarehouseLocation||'Warehouse not specified')+' · Challan '+(r.ChallanNumber||'—')),h(View19Docs,{docs:r.Documents}))),
-                h('td',{className:'numeric'},V19.signed(effect)));
-        }));
-    const freshTable=()=>!fresh.length?h(View19Empty,{title:'No confirmed fresh entries'},'The last successful publication returned no eligible fresh NSOP entries for this dealer.'):
-        h(View19Table,{headers:['Date / NSOP voucher','Items · MT','Narration / photos','Tentative effect']},fresh.map((r,i)=>h('tr',{key:r.coverage_key||i},h('td',null,h('strong',null,V19.date(r.voucher_date)),h('div',{className:'v-subrow'},r.nsop_voucher_type+' · '+r.nsop_voucher_number)),h('td',null,QtyText193(r.qty_summary)||'Not available'),h('td',null,h('details',null,h('summary',null,'Narration & photos'),h('p',{className:'v-note'},r.narration||'Narration unavailable'),h('div',{className:'v-subrow'},r.warehouse_location||'—'),h(View19Docs,{docs:r.Documents}))),h('td',{className:'numeric'},V19.signed(r.effect_bags)))));
-    return h(React.Fragment,null,
-        h('header',{className:'v-head'},h('div',null,dealer&&h('button',{className:'v-btn',onClick:onBack},'← Back to dealers'),h('div',{className:'v-eyebrow',style:{marginTop:dealer?12:0}},'DEALER 360 · MATERIAL ACCOUNT'),h('h1',null,name),h('div',{className:'v-meta'},code+' · '+(dealer?.territory||user.territory||'Authorized dealer account'))),
-            h('div',{className:'v-head-action'},h('button',{className:'v-btn',onClick:()=>load(offset,applied,true),disabled:busy},busy?'Refreshing…':'Refresh account'))),
-        h('nav',{className:'v-tabs','aria-label':'Dealer account sections'},...Object.entries({summary:'Summary',sold:'Sold',receipts:'Receipt',transactions:'All MIS',fresh:'Fresh NSOP',documents:'Documents',financial:'Financial account'}).map(([id,label])=>h('button',{key:id,className:'v-tab '+(tab===id?'active':''),'aria-current':tab===id?'page':undefined,onClick:()=>setTab(id)},label))),
-        h('div',{className:'v-stamp'},h('span',null,'MIS through: '+V19.date(data?.cutoff)),h('span',null,'Last successful publication: '+(data?.syncedAt||'Not available'))),
-        error&&h('div',{className:'v-error',role:'alert'},error,data?' Last loaded data remains visible; the requested refresh was not applied.':'',h('button',{className:'v-btn',onClick:()=>load(lastRequest.current.o,lastRequest.current.filters),disabled:busy},'Retry')),
-        busy&&!data?h(View19Empty,{title:'Loading dealer account…'},'Reading the last complete Stage-1 publication.'):
-        !data?h(View19Empty,{title:'Account unavailable'},'Retry when the portal connection is restored.'):
-        h(React.Fragment,null,
-            ['summary','sold','receipts','transactions'].includes(tab)&&h(DealerActivity19,{user,dealerCode:data.dealerCode,mode:tab==='transactions'?'ledger':tab,fresh:data.fresh,initialPeriod:dealer?.activityPeriod}),
-            tab==='summary'&&h(React.Fragment,null,
-                h('div',{className:'v-summary-rows'},h(View19Card,{title:'FRESH NSOP EFFECT',value:V19.signed(data.freshEffect),note:fresh.length+' confirmed entries after MIS cutoff'}),h(View19Card,{title:'TENTATIVE BALANCE',value:V19.signed(final===null||V19.number(data.freshEffect)===null?null:data.tentativeBags),note:'MIS + fresh effect · Not posted in MIS',kind:'estimate'})),
-                h('div',{className:'v-summary-stack'},h('section',{className:'v-panel'},h('div',{className:'v-panel-title'},h('h2',null,'Item balances'),h('span',{className:'v-chip'},'MT')),
-                    h(View19Table,{headers:['Product','Final MIS MT']},V19.codes.map(c=>h('tr',{key:c},h('td',null,h('strong',null,c),h('span',{className:'v-item-name'},V19.labels[c]),c==='OPC'&&h('span',{className:'v-chip grey'},'Excluded from net')),h('td',{className:'numeric'},V19.signed(balance?.items?.[c]))))),h('p',{className:'v-note'},'Net includes PL, AW, DT, CH and NFR. OPC is displayed separately. These are quantities, not rupees.')),
-                    h('aside',null,h('section',{className:'v-panel'},h('h2',null,'Account overview'),
-                        ...[['D-code',code],['Territory',dealer?.territory||user.territory||'Not available'],['RAMCO','Not supplied by current API'],['MIS balance date',V19.date(balance?.as_of)],['Account source','Committed Stage-1 / MIS']].map(([k,v])=>h('div',{className:'v-kv',key:k},h('span',null,k),h('strong',null,v)))),
-                        h('section',{className:'v-panel'},h('h2',null,'Account sections'),
-                            h('details',null,h('summary',null,'Fresh NSOP entries · '+fresh.length),h('p',{className:'v-note'},'Confirmed entries after the MIS cutoff contribute only to the tentative balance.'),h('button',{className:'v-btn',onClick:()=>setTab('fresh')},'View fresh entries')),
-                            h('details',null,h('summary',null,'MIS transactions & narration'),h('p',{className:'v-note'},'Filter by financial year, dates or item. Voucher details open on demand.'),h('button',{className:'v-btn',onClick:()=>setTab('transactions')},'Open transactions')),
-                            h('details',null,h('summary',null,'Financial sales, receipts & security'),h('p',{className:'v-note'},'The current feed is quantity-based. Rupee ledger, security deposit, payment days and monthly financial totals need the separate financial feed.'))))),
-                h('div',{className:'v-bottom'},h('button',{className:'v-btn',onClick:()=>setTab('transactions')},'View transactions'),h('button',{className:'v-btn primary',onClick:()=>setTab('documents')},'View documents'))),
-            tab==='fresh'&&h('section',{className:'v-panel'},h('div',{className:'v-panel-title'},h('h2',null,'Fresh NSOP · pending in MIS'),h('span',{className:'v-chip amber'},'TENTATIVE')),
-                h('p',{className:'v-note'},'After '+V19.date(data.cutoff)+' only. Historical reconciliation does not change final MIS balances. MIS transaction filters do not apply here.'),
-                data.postMisConflictCount>0&&h('div',{className:'v-notice'},data.postMisConflictCount+' post-MIS entries need operator review and are excluded from the confirmed fresh effect.'),freshTable()),
-            tab==='documents'&&h('section',{className:'v-panel'},h('h2',null,tab==='transactions'?'MIS transaction history':'Voucher documents'),filters(),
-                h('p',{className:'v-note'},'Applied range: '+(applied.fromDate?V19.date(applied.fromDate):'All synced history')+' to '+(applied.toDate?V19.date(applied.toDate):'latest synced')+' · '+(applied.itemCode||'All items')+'. Filters affect MIS history only, not the current balance.'),
-                tab==='transactions'?h(React.Fragment,null,h('p',{className:'v-note'},'Grouped within this 100-line page by date, type, number, narration and challan. A voucher may continue on another page. No running balance is inferred from partial history.'),txTable()):
-                    h(React.Fragment,null,h('p',{className:'v-note'},'Documents attached to the current MIS history page. Next/Previous moves through transaction pages; this is not a complete document register.'),
-                        docGroups.length?docGroups.map(r=>h('div',{className:'v-panel',key:r.key},h('h3',null,V19.date(r.VoucherDate)+' · '+r.VoucherType+' · '+r.VoucherNumber),h(View19Docs,{docs:r.Documents}))):h(View19Empty,{title:'No linked documents on this page'},'Try another date range or the next history page.'),
-                        h('details',null,h('summary',null,'Fresh NSOP documents · independent of MIS filters'),...fresh.filter(r=>(r.Documents||[]).length).map((r,i)=>h('div',{key:r.coverage_key||i,className:'v-note'},V19.date(r.voucher_date)+' · '+r.nsop_voucher_number,' ',h(View19Docs,{docs:r.Documents}))))),pagination()),
-            tab==='financial'&&h('section',{className:'v-panel'},h(View19Empty,{title:'Financial ledger feed not connected'},'This release displays MT only. Rupee outstanding, receipts/payments, security deposit and average payment days are not supplied by the current API.'),h('p',{className:'v-note'},'No bag figure has been relabelled as money. A financial ledger with verified opening and closing balances is a separate release.'))));
+ const h=React.createElement,[tab,setTab]=useState('summary');
+ return h(React.Fragment,null,
+  h('header',{className:'v-head'},h('div',null,dealer&&h('button',{className:'v-btn',onClick:onBack},'← Back to dealers'),h('div',{className:'v-eyebrow'},'DEALER ACCOUNT · MT'),h('h1',null,dealer?.name||user.name),h('div',{className:'v-meta'},(dealer?.code||user.id||'')+' · '+(dealer?.territory||user.territory||'')))),
+  h('nav',{className:'v-tabs','aria-label':'Dealer account sections'},...Object.entries({summary:'Summary',sold:'Sold',receipts:'Receipt',ledger:'Transactions',documents:'Documents'}).map(([id,label])=>h('button',{key:id,className:'v-tab '+(tab===id?'active':''),'aria-current':tab===id?'page':undefined,onClick:()=>setTab(id)},label))),
+  h(DealerActivity19,{user,dealerCode:dealer?.code||'',mode:tab,initialPeriod:dealer?.activityPeriod}));
 }
 
 /* v19.2 — server-aggregated activity; never totals the loaded page. */
@@ -722,15 +618,13 @@ function ActivityFilters19({draft,setDraft,onApply,busy,receipt=false}){
   h('button',{className:'v-btn primary',disabled:busy,type:'submit'},busy?'Loading…':'Apply period'));
 }
 function ActivityNotes19({data}){
- const h=React.createElement,s=data.summary||{},q=data.query;
- return h(React.Fragment,null,
-  h('p',{className:'v-note'},'Applied period: '+(q.fromDate?V19.date(q.fromDate):'All synced history')+' to '+V19.date(q.effectiveTo)+' · '+(q.itemCode||'All items, including OPC')+'. Last activity dates use all synced dates through today for this item selection.'),
-  h('p',{className:'v-note'},'Average lifting is MT per dispatch voucher, not ₹. Returns, credit notes, unclassified entries and fresh NSOP are outside these MIS sales/receipt totals. Current net is the published MIS balance (OPC excluded), not sales minus receipts or a historical period-end balance.'),
-  (s.invalidDates||s.invalidQuantities||s.unidentifiedSoldLines)?h('div',{className:'v-notice'},'Source review needed: '+s.invalidDates+' invalid dates; '+s.invalidQuantities+' invalid quantities; '+s.unidentifiedSoldLines+' dispatch lines without usable voucher identity. Affected metrics are unavailable rather than understated.'):null);
+ const h=React.createElement,q=data.query,s=data.summary||{};
+ return h(React.Fragment,null,h('p',{className:'v-note'},'Selected period: '+(q.fromDate?V19.date(q.fromDate):'All synced history')+' to '+V19.date(q.effectiveTo)+' · '+(q.itemCode||'All items')+'. Sales and lifting counts include all eligible dispatches once.'),h('p',{className:'v-note'},'Tentative Balance reflects eligible recorded movements and may change after reconciliation. It is the current account position, not the selected-period closing. OPC is separate from the net. Last activity dates use all synced history through today.'),(s.invalidDates||s.invalidQuantities||s.unidentifiedSoldLines)?h('div',{className:'v-notice'},'Some source records need review. Affected metrics are unavailable.'):null);
 }
+
 function ActivityMetrics19({summary:s,net,asOf}){
- const h=React.createElement,rows=[['Last sales date',V192.last(s.lastSalesDate)],['Last Receipt date',V192.last(s.lastReceiptDate)],['No. of liftings',V19.fmt(s.liftingCount)],['Average lifting',V192.bags(s.averageLiftingBags)],['Total sales',V192.bags(s.totalSalesBags)],['Total Receipt',V192.bags(s.totalReceiptBags)],['Current net · MIS final',h(Effect193,{value:net})]];
- return h(View19Table,{headers:['Summary metric','Value']},rows.map(([k,v])=>h('tr',{key:k},h('td',null,k),h('td',{className:'numeric'},v))),h('tr',null,h('td',null,'MIS balance as of'),h('td',{className:'numeric'},V19.date(asOf))));
+ const h=React.createElement,rows=[['Last sales date',V192.last(s.lastSalesDate)],['Last Receipt date',V192.last(s.lastReceiptDate)],['No. of liftings',V19.fmt(s.liftingCount)],['Average lifting',V192.bags(s.averageLiftingBags)],['Total sales',V192.bags(s.totalSalesBags)],['Total Receipt',V192.bags(s.totalReceiptBags)],['Tentative Balance',h(Effect193,{value:net})]];
+ return h(View19Table,{headers:['Summary metric','Value']},rows.map(([k,v])=>h('tr',{key:k},h('td',null,k),h('td',{className:'numeric'},v))),h('tr',null,h('td',null,'Latest included movement / balance date'),h('td',{className:'numeric'},V19.date(asOf))));
 }
 function DealerActivity19({user,dealerCode,mode,fresh=[],initialPeriod}){
  const h=React.createElement,[draft,setDraft]=useState(()=>initialPeriod||V192.defaults()),[applied,setApplied]=useState(()=>initialPeriod||V192.defaults()),[data,setData]=useState(null),[busy,setBusy]=useState(true),[error,setError]=useState(''),[offset,setOffset]=useState(0),[selected,setSelected]=useState('');
@@ -746,50 +640,50 @@ function DealerActivity19({user,dealerCode,mode,fresh=[],initialPeriod}){
  async function load(q=applied,o=0,force=false){
   if(q.fromDate&&q.toDate&&q.fromDate>q.toDate){setError('From date must not be after To date');return;}
   const id=++seq.current;setBusy(true);setError('');
-  try{const r=await api('getDealerActivity19',{...q,dealerCode,view:mode,offset:o,_force:force});if(!r.success||r.version!=='19.3')throw Error(r.error||'Install the v19.3 Apps Script add-on and deploy a new version.');if(id===seq.current){setData(r);setApplied(q);setOffset(o);}}
+  try{const r=await api('getDealerActivity19',{...q,dealerCode,view:mode,offset:o,_force:force});if(!r.success||r.version!=='19.4')throw Error(r.error||'Install the v19.4 Apps Script add-on and deploy a new version.');if(id===seq.current){setData(r);setApplied(q);setOffset(o);}}
   catch(e){if(id===seq.current)setError(e.message);}finally{if(id===seq.current)setBusy(false);}
  }
  useEffect(()=>{setSelected('');load(applied,0);return()=>{seq.current++;};},[user.email,dealerCode,mode]);
- const current=data&&data.view===mode,receipt=mode==='receipts',sold=mode==='sold',ledger=mode==='ledger';
+ const current=data&&data.view===mode,receipt=mode==='receipts',sold=mode==='sold',ledger=mode==='ledger',documents=mode==='documents';
  const freshRows=current?fresh.filter(r=>(!data.query.fromDate||r.voucher_date>=data.query.fromDate)&&r.voucher_date<=data.query.effectiveTo&&(!selected||String(r.qty_summary||'').split(';').some(s=>s.trim().split(':')[0]===selected))):[];
  function details(rows){return h(View19Table,{headers:[...(receipt?['Retailer']:[]),'Date / voucher / challan','Items · MT','Narration / photos',ledger?'Net effect / closing · MT':'Quantity · MT']},rows.map(r=>h('tr',{key:r.key},
-  receipt&&h('td',null,h('strong',null,r.Retailer.name),h('div',{className:'v-subrow'},r.Retailer.id),h('div',{className:'v-subrow'},r.Retailer.location||''),h('div',{className:'v-subrow'},r.Retailer.source)),
+  receipt&&h('td',null,h('strong',null,r.Retailer.name),h('div',{className:'v-subrow'},r.Retailer.id),h('div',{className:'v-subrow'},r.Retailer.location||''),h('div',{className:'v-subrow'},'From narration / retailer mapping')),
   h('td',null,h('strong',null,V19.date(r.VoucherDate)),h('div',{className:'v-subrow'},r.VoucherType+' · '+(r.VoucherNumber||'No number')),h('div',{className:'v-subrow'},'Challan: '+(r.ChallanNumber||'Not recorded'))),
   h('td',null,...r.Items.map((it,i)=>h('div',{key:i},it.code+' · '+V192.bags(it.bags)))),
   h('td',null,h('details',null,h('summary',null,'Narration & photos'),...r.Narrations.map((n,i)=>h('p',{className:'v-note',key:i},n)),h('p',{className:'v-note'},r.Warehouses.join(', ')),h(View19Docs,{docs:r.Documents}))),
   h('td',{className:'numeric'},ledger?h(React.Fragment,null,h(Effect193,{value:r.NetEffectBags}),h('div',{className:'v-closing'},'Closing: ',h(Effect193,{value:r.ClosingBags})),h('details',{className:'v-note'},h('summary',null,'Calculation'),r.ClosingBags===null?r.ClosingReason:h('span',null,'Opening '+V19.signed(r.OpeningBags)+' + effect '+V19.signed(r.NetEffectBags)+' = '+V19.signed(r.ClosingBags)),h('p',null,'Reconstructed; same-day voucher order is not posting time.'))):V192.bags(r.QuantityBags)) )));}
- return h('section',{className:'v-panel'},h('div',{className:'v-panel-title'},h('h2',null,mode==='summary'?'Dealer activity summary':sold?'Sold · item-wise dispatch':receipt?'Receipt · retailer-wise':'All MIS · closing calculation'),h('button',{className:'v-btn',disabled:busy,onClick:()=>load(applied,offset,true)},'Refresh from Sheets')),
+ return h('section',{className:'v-panel'},h('div',{className:'v-panel-title'},h('h2',null,mode==='summary'?'Dealer activity summary':sold?'Sold · item-wise dispatch':receipt?'Receipt · retailer-wise':documents?'Challan documents':'Transactions · tentative closing'),h('button',{className:'v-btn',disabled:busy,onClick:()=>load(applied,offset,true)},'Refresh from Sheets')),
   h(ActivityFilters19,{draft,setDraft,busy,receipt,onApply:()=>{setSelected('');load(draft,0);}}),
   h('div',{className:'v-note'},h('button',{className:'v-btn',disabled:busy||prefetch==='Prefetching selected-period reports…',onClick:warm},'Prefetch these reports'),prefetch),
   error&&h('div',{className:'v-error',role:'alert'},error,h('button',{className:'v-btn',disabled:busy,onClick:()=>load(applied,offset,true)},'Retry')),
   !current?h(View19Empty,{title:busy?'Loading report…':'Report unavailable'},'No missing values are treated as zero.'):
   h(React.Fragment,null,
    h('p',{className:'v-note'},'Report fetched: '+(data._cache?new Date(data._cache.savedAt).toLocaleString('en-IN'):'this request')+' · '+(data._cache?.source||'network')+' · Source published: '+(data.syncedAt||'Not available')),
-   mode==='summary'?h(React.Fragment,null,h(ActivityMetrics19,{summary:data.summary,net:data.netBalanceBags,asOf:data.netAsOf}),h(ActivityNotes19,{data})):
+   mode==='summary'?h(React.Fragment,null,h(ActivityMetrics19,{summary:data.summary,net:data.netBalanceBags,asOf:data.netAsOf}),h(ActivityNotes19,{data}),h('h3',null,'Item balances · tentative'),h(View19Table,{headers:['Item','MT']},V19.codes.map(c=>h('tr',{key:c},h('td',null,c+(c==='OPC'?' · excluded from net':'')),h('td',{className:'numeric'},V19.signed(data.itemBalances?.[c])))))):
    h(React.Fragment,null,
     sold&&h(React.Fragment,null,h('p',{className:'v-note'},'Select an item to open its challans. Item totals cover the entire selected period; each quantity is converted at 20 bags = 1 MT.'),h(View19Table,{headers:['Item','Liftings','Dispatched MT','Challans']},(data.itemTotals||[]).filter(x=>!draft.itemCode||x.code===draft.itemCode).map(x=>h('tr',{key:x.code},h('td',null,x.code+' · '+(V19.labels[x.code]||'')),h('td',null,x.liftings),h('td',null,MT193(x.bags)),h('td',null,h('button',{className:'v-btn','aria-expanded':selected===x.code,onClick:()=>{setSelected(x.code);load({...applied,itemCode:x.code},0);}},'View challans →')))))),
-    receipt&&h(React.Fragment,null,h('p',{className:'v-note'},'All synced MIS Receipts till '+V19.date(data.query.receiptThrough)+'. Full original narration is retained.'),data.unassignedReceiptGroups>0&&h('div',{className:'v-notice'},data.unassignedReceiptGroups+' voucher groups need retailer review.'),h('label',null,'Retailer ',h('select',{value:applied.retailerKey||'',onChange:e=>load({...applied,retailerKey:e.target.value},0)},h('option',{value:''},'All retailers'),...data.retailers.map(r=>h('option',{key:JSON.stringify([r.id,r.name]),value:JSON.stringify([r.id,r.name])},r.name+' '+r.id)))),h('details',null,h('summary',null,'Retailer totals · entire register'),h(View19Table,{headers:['Retailer','Vouchers','MT']},data.retailers.map(r=>h('tr',{key:JSON.stringify([r.id,r.name])},h('td',null,r.name+' '+r.id),h('td',null,r.vouchers),h('td',null,MT193(r.bags))))))),
-    ledger&&h('div',{className:'v-notice'},'Closing is reconstructed backwards from the MIS final balance as of '+V19.date(data.netAsOf)+'. It is indicative until history is reconciled. '+data.closingNote),
-    (!sold||selected)&&h('div',{className:'v-drill',key:mode+':'+selected},sold&&h('div',{className:'v-panel-title'},h('h3',null,selected+' · dedicated challans'),h('button',{className:'v-btn',onClick:()=>{setSelected('');load({...applied,itemCode:draft.itemCode},0);}},'← Item summary')),
-     busy?h('p',{role:'status'},'Loading selection…'):data.rows.length?details(data.rows):h(View19Empty,{title:'No entries in this selection'},'Change the period or product.'),
+    receipt&&h(React.Fragment,null,h('p',{className:'v-note'},'Receipts till '+V19.date(data.query.receiptThrough)+'. Full original narration is retained.'),data.unassignedReceiptGroups>0&&h('div',{className:'v-notice'},data.unassignedReceiptGroups+' voucher groups need retailer review.'),h('label',null,'Retailer ',h('select',{value:applied.retailerKey||'',onChange:e=>load({...applied,retailerKey:e.target.value},0)},h('option',{value:''},'All retailers'),...data.retailers.map(r=>h('option',{key:JSON.stringify([r.id,r.name]),value:JSON.stringify([r.id,r.name])},r.name+' '+r.id)))),h('details',null,h('summary',null,'Retailer totals · entire register'),h(View19Table,{headers:['Retailer','Vouchers','MT']},data.retailers.map(r=>h('tr',{key:JSON.stringify([r.id,r.name])},h('td',null,r.name+' '+r.id),h('td',null,r.vouchers),h('td',null,MT193(r.bags))))))),
+    ledger&&h('div',{className:'v-notice'},'Closing balances are tentative. Historical values are reconstructed; same-day order may differ from posting time. OPC is excluded from the net.'),
+    documents&&h('p',{className:'v-note'},'Documents linked to this transaction page. Use Next to browse further pages.'),(!sold||selected)&&h('div',{className:'v-drill',key:mode+':'+selected},sold&&h('div',{className:'v-panel-title'},h('h3',null,selected+' · dedicated challans'),h('button',{className:'v-btn',onClick:()=>{setSelected('');load({...applied,itemCode:draft.itemCode},0);}},'← Item summary')),
+     busy?h('p',{role:'status'},'Loading selection…'):data.rows.length?details(documents?data.rows.filter(r=>(r.Documents||[]).length):data.rows):h(View19Empty,{title:'No entries in this selection'},'Change the period or product.'),
      h('div',{className:'v-pagination'},h('span',null,data.total+' voucher groups'),h('button',{className:'v-btn',disabled:busy||!offset,onClick:()=>load(applied,Math.max(0,offset-40))},'Previous'),h('button',{className:'v-btn',disabled:busy||data.nextOffset==null,onClick:()=>load(applied,data.nextOffset)},'Next'))),
-    sold&&h('details',null,h('summary',null,'Fresh NSOP dispatches · pending MIS · '+freshRows.length),...freshRows.map((r,i)=>h('div',{className:'v-panel',key:r.coverage_key||i},h('strong',null,V19.date(r.voucher_date)+' · '+r.nsop_voucher_number),h('p',null,QtyText193(r.qty_summary)),h('p',{className:'v-note'},r.narration),h(View19Docs,{docs:r.Documents})))))));
+    null)));
 }
 
 function TSEActivity19({user,onSelect}){
  const h=React.createElement;
  const [draft,setDraft]=useState(V192.defaults),[applied,setApplied]=useState(V192.defaults),[data,setData]=useState(null),[busy,setBusy]=useState(true),[error,setError]=useState(''),[search,setSearch]=useState(''),[page,setPage]=useState(0);
  const seq=React.useRef(0),last=React.useRef(applied);
- async function load(q=applied,force=false){if(q.fromDate&&q.toDate&&q.fromDate>q.toDate){setError('From date must not be after To date');return;}const id=++seq.current;last.current=q;setBusy(true);setError('');try{const r=await api('getDealerPortfolio19',{...q,_force:force});if(!r.success||r.version!=='19.3'||!Array.isArray(r.rows))throw Error(r.error||'Portfolio response is incomplete');if(id===seq.current){setData(r);setApplied(q);setPage(0);}}catch(e){if(id===seq.current)setError(V192.error(e));}finally{if(id===seq.current)setBusy(false);}}
+ async function load(q=applied,force=false){if(q.fromDate&&q.toDate&&q.fromDate>q.toDate){setError('From date must not be after To date');return;}const id=++seq.current;last.current=q;setBusy(true);setError('');try{const r=await api('getDealerPortfolio19',{...q,_force:force});if(!r.success||r.version!=='19.4'||!Array.isArray(r.rows))throw Error(r.error||'Portfolio response is incomplete');if(id===seq.current){setData(r);setApplied(q);setPage(0);}}catch(e){if(id===seq.current)setError(V192.error(e));}finally{if(id===seq.current)setBusy(false);}}
  useEffect(()=>{load();return()=>{seq.current++;};},[user.email]);
  const rows=(data?.rows||[]).filter(r=>[r.name,r.code].join(' ').toLowerCase().includes(search.trim().toLowerCase())).sort((a,b)=>a.name.localeCompare(b.name));
  return h(React.Fragment,null,h('header',{className:'v-head'},h('div',null,h('div',{className:'v-eyebrow'},'DEALER ACTIVITY · MT'),h('h1',null,user.role==='admin'?'Dealer summary':'My dealers'),h('div',{className:'v-meta'},user.territory||'All authorized territories')),h('button',{className:'v-btn',onClick:()=>load(applied,true),disabled:busy},'Refresh dealer summary')),
   h('section',{className:'v-panel',style:{marginTop:16}},h(ActivityFilters19,{draft,setDraft,busy,onApply:()=>load(draft)}),
    error&&h('div',{className:'v-error',role:'alert'},error,data?' Last loaded summary remains visible.':'',h('button',{className:'v-btn',disabled:busy,onClick:()=>load(last.current)},'Retry summary')),
    !data?h(View19Empty,{title:busy?'Loading dealer summaries…':'Dealer summaries unavailable'},'All calculations use authorized backend rows.'):
-   h(React.Fragment,null,h(ActivityNotes19,{data:{query:data.query}}),h('div',{className:'v-stamp'},'Current net: committed MIS · Last publication: '+(data.syncedAt||'Not available')),
+   h(React.Fragment,null,h(ActivityNotes19,{data:{query:data.query}}),h('div',{className:'v-stamp'},'Account updated: '+(data.syncedAt||'Not available')),
     h('div',{className:'v-form'},h('label',{className:'v-search'},'Search dealer / D-code',h('input',{value:search,placeholder:'Dealer name or code',onChange:e=>{setSearch(e.target.value);setPage(0);}}))),
-    h(View19Table,{headers:['Dealer','Last sales','Last Receipt','Liftings','Avg lifting · MT','Sales · MT','Receipt · MT','Current net · MT']},rows.slice(page*20,page*20+20).map(r=>h('tr',{key:r.code},
+    h(View19Table,{headers:['Dealer','Last sales','Last Receipt','Liftings','Avg lifting · MT','Sales · MT','Receipt · MT','Tentative balance · MT']},rows.slice(page*20,page*20+20).map(r=>h('tr',{key:r.code},
      h('td',null,h('button',{className:'v-account-link',onClick:()=>onSelect({...r,activityPeriod:applied})},r.name),h('div',{className:'v-code'},r.code),h('small',null,r.territory)),h('td',null,V192.last(r.summary.lastSalesDate)),h('td',null,V192.last(r.summary.lastReceiptDate)),h('td',null,V19.fmt(r.summary.liftingCount)),h('td',null,r.summary.liftingCount===0?'—':MT193(r.summary.averageLiftingBags)),h('td',null,MT193(r.summary.totalSalesBags)),h('td',null,MT193(r.summary.totalReceiptBags)),h('td',{className:'numeric'},V19.signed(r.netBalanceBags),h('div',{className:'v-subrow'},'As of '+V19.date(r.netAsOf)),(r.summary.invalidDates||r.summary.invalidQuantities||r.summary.unidentifiedSoldLines)?h('div',{className:'v-subrow'},'Source review needed'):null)))),
     !rows.length&&h(View19Empty,{title:'No matching dealers'},'Change the search or check authorized dealer mappings.'),
     h('div',{className:'v-pagination'},h('span',null,rows.length+' dealers'),h('div',null,h('button',{className:'v-btn',disabled:!page,onClick:()=>setPage(page-1)},'Previous dealers'),h('button',{className:'v-btn',disabled:(page+1)*20>=rows.length,onClick:()=>setPage(page+1)},'Next dealers'))))));
@@ -821,7 +715,7 @@ const Cache193=(()=>{
  const reads=new Set(['getStage1Account','getDealerActivity19','getDealerPortfolio19']),pending=new Map();
  let database=null,epoch=0;
  const emit=message=>window.dispatchEvent(new CustomEvent('novus-cache',{detail:message}));
- function db(){if(!database)database=new Promise((resolve,reject)=>{const r=indexedDB.open('novus-reports-v193',1);r.onupgradeneeded=()=>r.result.createObjectStore('reports',{keyPath:'key'});r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});return database;}
+ function db(){if(!database)database=new Promise((resolve,reject)=>{const r=indexedDB.open('novus-reports-v194',1);r.onupgradeneeded=()=>r.result.createObjectStore('reports',{keyPath:'key'});r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});return database;}
  async function op(mode,fn){const d=await db();return new Promise((resolve,reject)=>{const t=d.transaction('reports',mode),r=fn(t.objectStore('reports'));t.oncomplete=()=>resolve(r?.result);t.onerror=()=>reject(t.error);t.onabort=()=>reject(t.error);});}
  async function clear(){epoch++;pending.clear();try{await op('readwrite',s=>s.clear());}catch(_){}emit('Local reports cleared.');}
  function session(){try{const s=JSON.parse(localStorage.getItem('novus_user')||'{}');return s.user?.sessionToken&&s.loginTime&&Date.now()-s.loginTime<6*3600000?s:null;}catch(_){return null;}}
@@ -1251,7 +1145,7 @@ function Shell({ user, setUser, orders, setOrders, dealers, setDealers, location
                 React.createElement("strong", null, "Demo Mode"),
                 " \u2014 changes are not saved. Paste your Apps Script URL and set DEMO_MODE: false to go live."),
             settingsError && React.createElement('div',{className:'alert ar'},settingsError),
-            React.createElement('div',{style:{padding:'8px 20px',background:'#f0fdf4',color:'#166534'}},operationsEnabled?'v19.3 views · Stage 2 ON · Operations enabled':'v19.3 views · Stage 1 · Account and document access · Operations OFF'),
+            React.createElement('div',{style:{padding:'8px 20px',background:'#f0fdf4',color:'#166534'}},operationsEnabled?'v19.4 views · Stage 2 ON · Operations enabled':'v19.4 views · Stage 1 · Account and document access · Operations OFF'),
             effectivePage === 'stage1' ? React.createElement(Views19,{user}) :
             effectivePage === 'deployment' && user.role==='admin' ? React.createElement(Deployment18,{user,operationsEnabled,onChange:setOperationsEnabled}) :
             React.createElement(Router, { page: effectivePage, user: user, orders: orders, setOrders: setOrders, dealers: dealers, setDealers: setDealers, myOrders: myOrders, setPage: setPage, locationData: locationData, freightMatrix: freightMatrix, warehouses: warehouses, vehicles: vehicles, setVehicles: setVehicles, drivers: drivers, setDrivers: setDrivers, initialDocQuery: initialDocQuery }))));
