@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
+<!-- Novus v19.1: Dealer/TSE read-only views. Existing backend contract preserved. -->
 <title>Novus Solutions – Cement Order & Document Portal</title>
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -211,6 +212,79 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#f5f6fa;color:#1a1d2
   .mat-mobile-narr{font-size:12px;color:#4b5563;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:8px;margin-top:8px;line-height:1.45}
 }
 
+
+/* v19.1 read-only role views. Scoped to avoid changing operational screens. */
+.main{min-width:0}
+.v19{--blue:#087bbd;--ink:#17344c;--muted:#607385;--line:#e1eaf0;font-size:14px;color:var(--ink);padding:24px;max-width:1520px;margin:auto}
+.v19 button,.v19 input,.v19 select{font:inherit}
+.v19 button{cursor:pointer}
+.v19 button:disabled{cursor:not-allowed;opacity:.55}
+.v19 button:focus-visible,.v19 a:focus-visible,.v19 summary:focus-visible{outline:3px solid #f4b942;outline-offset:3px}
+.v19 .v-head{background:linear-gradient(115deg,#077bbd,#039ad4);color:white;border-radius:16px 16px 0 0;padding:23px 26px;display:flex;gap:20px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.v19 h1{font-size:26px;line-height:1.2;margin:6px 0 8px;letter-spacing:-.5px}
+.v19 h2{font-size:17px;margin:0 0 12px}
+.v19 h3{font-size:14px;margin:0 0 8px}
+.v19 .v-eyebrow{font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase}
+.v19 .v-meta{font-size:12px;line-height:1.8;opacity:.94}
+.v19 .v-head-action{display:flex;gap:8px;align-items:center}
+.v19 .v-btn{padding:9px 14px;border:1px solid #cedde7;border-radius:8px;background:white;color:#175176;font-weight:600;font-size:12px;min-height:38px}
+.v19 .v-btn.primary{background:var(--blue);color:white;border-color:var(--blue)}
+.v19 .v-head .v-btn{border-color:#ffffff70;background:#ffffff18;color:white}
+.v19 .v-tabs{display:flex;background:white;border:1px solid var(--line);border-top:0;overflow:auto;padding:0 15px;border-radius:0 0 12px 12px;margin-bottom:18px}
+.v19 .v-tab{white-space:nowrap;border:0;border-bottom:3px solid transparent;background:none;color:var(--muted);padding:15px 17px;font-size:12px;font-weight:600;min-height:46px}
+.v19 .v-tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+.v19 .v-stamp{display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap;margin:0 0 14px;font-size:11px;color:var(--muted);line-height:1.7}
+.v19 .v-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:18px}
+.v19 .v-grid.four{grid-template-columns:repeat(4,minmax(0,1fr))}
+.v19 .v-card,.v19 .v-panel{border:1px solid var(--line);background:white;border-radius:12px;padding:20px}
+.v19 .v-card small{color:var(--muted);display:block;font-size:11px;line-height:1.6}
+.v19 .v-number{font-size:27px;font-weight:750;letter-spacing:-.7px;margin:8px 0;line-height:1.2}
+.v19 .v-number small{font-size:13px;display:inline;font-weight:500}
+.v19 .v-card.final{border-top:3px solid var(--blue)}
+.v19 .v-card.estimate{background:#f5faff;border-top:3px solid #92b4cf}
+.v19 .v-columns{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(270px,1fr);gap:18px}
+.v19 .v-panel{margin-bottom:16px}
+.v19 .v-panel-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.v19 .v-panel-title h2{margin:0}
+.v19 .v-chip{display:inline-block;padding:4px 9px;border-radius:5px;background:#eef7fc;color:#176191;font-size:10px;font-weight:700;white-space:nowrap}
+.v19 .v-chip.amber{background:#fff3d9;color:#845b06}
+.v19 .v-chip.grey{background:#f0f3f5;color:#5d6b77}
+.v19 .v-note{font-size:12px;line-height:1.7;color:var(--muted);margin:8px 0}
+.v19 .v-notice{padding:12px 15px;background:#fff8e9;border:1px solid #f0dfb6;border-radius:9px;color:#775718;font-size:12px;line-height:1.6;margin-bottom:14px}
+.v19 .v-error{padding:15px;border:1px solid #f4b8b8;background:#fff1f1;border-radius:10px;color:#923535;margin:12px 0;line-height:1.6}
+.v19 .v-empty{text-align:center;padding:34px 18px;color:var(--muted);line-height:1.8;border:1px dashed #cbdde8;border-radius:10px;background:#fbfdff}
+.v19 .v-empty strong{display:block;color:var(--ink);font-size:16px;margin-bottom:4px}
+.v19 .v-table-wrap{overflow:auto}
+.v19 table{width:100%;border-collapse:collapse;font-size:12px}
+.v19 th{text-align:left;font-size:10px;color:#6b7e8f;text-transform:uppercase;letter-spacing:.5px;font-weight:650;padding:11px 10px;background:#f7fafc;border-bottom:1px solid var(--line);white-space:nowrap}
+.v19 td{padding:13px 10px;border-bottom:1px solid #edf2f6;vertical-align:top;line-height:1.6}
+.v19 tr:last-child td{border-bottom:0}
+.v19 td.numeric,.v19 th.numeric{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.v19 .v-item-name{display:block;color:var(--muted);font-size:10px}
+.v19 .v-account-link{background:none;border:0;text-align:left;color:#076da7;font-weight:700;padding:0;line-height:1.6}
+.v19 .v-account-link:hover{text-decoration:underline}
+.v19 .v-form{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:14px}
+.v19 label{display:flex;flex-direction:column;gap:5px;font-size:11px;color:var(--muted)}
+.v19 input,.v19 select{padding:9px 10px;border:1px solid #cbdce7;background:white;border-radius:7px;color:var(--ink);min-height:39px;max-width:100%}
+.v19 .v-search{flex:1;min-width:180px}
+.v19 .v-search input{width:100%}
+.v19 .v-pagination{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:14px;font-size:11px;color:var(--muted)}
+.v19 .v-pagination div{display:flex;gap:7px}
+.v19 details{border-bottom:1px solid var(--line);padding:13px 0}
+.v19 details:last-child{border-bottom:0}
+.v19 summary{cursor:pointer;font-weight:600;font-size:13px}
+.v19 .v-doc{display:inline-block;color:#0677b7;text-decoration:none;background:#edf8ff;border-radius:6px;padding:7px 10px;margin:3px 5px 3px 0;font-size:11px}
+.v19 .v-doc:hover{text-decoration:underline}
+.v19 .v-kv{display:flex;justify-content:space-between;gap:15px;padding:10px 0;border-bottom:1px solid #edf2f6;font-size:12px}
+.v19 .v-kv span{color:var(--muted)}
+.v19 .v-kv strong{overflow-wrap:anywhere;min-width:0;text-align:right}
+.v19 .v-bottom{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+.v19 .v-subrow{color:var(--muted);font-size:11px;margin-top:3px;overflow-wrap:anywhere}
+.v19 .v-preview{background:#fff1bd;color:#624600;padding:10px 14px;margin-bottom:12px;border-radius:8px;font-size:12px;font-weight:650}
+.v19 .v-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.v19 .v-code{font-size:11px;font-family:ui-monospace,monospace;color:var(--muted)}
+@media(max-width:1050px){.v19 .v-grid.four{grid-template-columns:repeat(2,minmax(0,1fr))}.v19 .v-columns{grid-template-columns:1fr}.v19 .v-number{font-size:24px}}
+@media(max-width:650px){.v19{padding:12px}.v19 .v-head{padding:18px;gap:12px}.v19 h1{font-size:23px}.v19 .v-grid{grid-template-columns:1fr;gap:9px}.v19 .v-card{padding:14px 16px}.v19 .v-number{margin:5px 0}.v19 .v-tabs{padding:0 4px}.v19 .v-tab{padding:13px 12px}.v19 .v-panel{padding:14px}.v19 .v-table-wrap{margin:0 -5px}.v19 .v-form label{flex:1 1 130px}.v19 .v-grid.four .v-number{font-size:21px}.v19 .v-stamp{display:block}.v19 .v-stamp span{display:block}.v19 .v-bottom{position:sticky;bottom:0;background:#f5f6faf2;padding:10px 0;justify-content:stretch}.v19 .v-bottom button{flex:1}.v19 .v-portfolio{min-width:640px}}
 
 </style>
 </head>
@@ -456,6 +530,168 @@ function Stage1Account18({user}) {
       h('button',{className:'btn bgh',disabled:busy||data?.nextOffset==null,onClick:()=>load(code,data.nextOffset)},'Next'));
 }
 
+/* v19.1 view-only release: existing authenticated read APIs, no writeback. */
+const V19 = (() => {
+    const labels={PL:'Prism Plus',AW:'All Weather',DT:'Duratech',CH:'Champion',NFR:'NFR',OPC:'OPC'};
+    const codes=Object.keys(labels), netCodes=codes.filter(c=>c!=='OPC');
+    const number=v=>v===null||v===undefined||String(v).trim()===''?null:(Number.isFinite(Number(String(v).replace(/,/g,'')))?Number(String(v).replace(/,/g,'')):null);
+    const fmt=v=>number(v)===null?'Not available':number(v).toLocaleString('en-IN',{maximumFractionDigits:2});
+    const signed=v=>number(v)===null?'Not available':number(v)===0?'0 bags':fmt(Math.abs(number(v)))+' '+(number(v)<0?'Cr':'Dr')+' bags';
+    const date=v=>{const m=String(v||'').match(/^(\d{4})-(\d{2})-(\d{2})/);return m?`${m[3]} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m[2]-1]} ${m[1]}`:String(v||'Not available');};
+    function portfolioBalance(row){
+        // Do not trust a synthetic zero or OVERALL_FALLBACK as item-verified net.
+        const has=netCodes.some(c=>number(row[c+'_Balance'])!==null);
+        if(!has)return null;
+        if(netCodes.some(c=>number(row[c+'_Balance'])!==null&&number(row[c+'_Balance'])!==0&&!/^(dr|cr)$/i.test(String(row[c+'_Side']||''))))return null;
+        return netCodes.reduce((sum,c)=>sum+(String(row[c+'_Side']).toLowerCase()==='cr'?-1:1)*Math.abs(number(row[c+'_Balance'])||0),0);
+    }
+    function fyDates(fy){return fy?{fromDate:fy+'-04-01',toDate:(Number(fy)+1)+'-03-31'}:{fromDate:'',toDate:''};}
+    function fyOptions(cutoff){const y=Number(String(cutoff||'').slice(0,4))||new Date().getFullYear();let out=[];for(let n=Math.max(y,new Date().getFullYear());n>=2023;n--)out.push(n);return out;}
+    function groupLines(rows){
+        const groups=new Map();
+        (rows||[]).forEach(r=>{
+            // Empty voucher identifiers are never merged. Source line keys remain intact.
+            const key=r.VoucherNumber?JSON.stringify([r.VoucherDate,r.VoucherType,r.VoucherNumber,r.Narration||'',r.ChallanNumber||'']):r.TransactionKey;
+            if(!groups.has(key))groups.set(key,{key,...r,lines:[],Documents:[]});
+            const g=groups.get(key);g.lines.push(r);
+            (r.Documents||[]).forEach(d=>{if(!g.Documents.some(x=>x.url===d.url&&x.type===d.type))g.Documents.push(d);});
+        });return [...groups.values()];
+    }
+    function portfolioRows(rows){return (rows||[]).map(r=>({...r,_net:portfolioBalance(r)}));}
+    return {labels,codes,netCodes,number,fmt,signed,date,portfolioBalance,fyDates,fyOptions,groupLines,portfolioRows};
+})();
+
+function Views19({user}) {
+    const h=React.createElement;
+    const [selected,setSelected]=useState(null);
+    if(!['dealer','tse','admin'].includes(user.role))return h('div',{className:'v19'},'Account access is not available for this role.');
+    return h('div',{className:'v19'},
+        typeof NOVUS_PREVIEW!=='undefined'&&h('div',{className:'v-preview'},'DESIGN PREVIEW · Illustrative sample data only · No live API calls'),
+        user.role==='dealer'||selected?h(Dealer360View19,{key:user.email+':'+(selected?.code||'self'),user,dealer:selected,onBack:()=>setSelected(null)}):h(TSEView19,{user,onSelect:setSelected}));
+}
+function View19Card({title,value,note,kind=''}){
+    const h=React.createElement;return h('div',{className:'v-card '+kind},h('small',null,title),h('div',{className:'v-number'},value),h('small',null,note));
+}
+function View19Empty({title,children}){const h=React.createElement;return h('div',{className:'v-empty'},h('strong',null,title),children);}
+function View19Docs({docs=[]}){
+    const h=React.createElement;
+    const safe=docs.filter(d=>{try{return new URL(d.url).protocol==='https:';}catch(_){return false;}});
+    return safe.length?safe.map((d,i)=>h('a',{key:d.url+':'+i,className:'v-doc',href:d.url,target:'_blank',rel:'noopener noreferrer'},d.type||'Photo / PDF')):h('span',{className:'v-subrow'},'No linked document');
+}
+function View19Table({headers,children,className=''}){const h=React.createElement;return h('div',{className:'v-table-wrap'},h('table',{className},h('thead',null,h('tr',null,...headers.map((s,i)=>h('th',{key:s,className:i===headers.length-1?'numeric':''},s)))),h('tbody',null,children)));}
+
+function TSEView19({user,onSelect}){
+    const h=React.createElement;
+    const [data,setData]=useState(null),[busy,setBusy]=useState(true),[error,setError]=useState('');
+    const [search,setSearch]=useState(''),[side,setSide]=useState('all'),[sort,setSort]=useState('name'),[page,setPage]=useState(0);
+    const seq=React.useRef(0);
+    async function load(){const id=++seq.current;setBusy(true);setError('');try{
+        const r=await api('getTseCurrentMisBalancesFast');if(!r.success||!Array.isArray(r.rows))throw new Error(r.error||'Portfolio response is not available.');
+        if(id===seq.current){setData(r);setPage(0);}
+    }catch(e){if(id===seq.current)setError(e.message);}finally{if(id===seq.current)setBusy(false);}}
+    useEffect(()=>{load();return()=>{seq.current++;};},[user.email]);
+    const all=V19.portfolioRows(data?.rows),q=search.toLowerCase().trim();
+    const rows=all.filter(r=>(!q||[r.DealerName,r.TallyDealerCode,r.PortalDealerID].join(' ').toLowerCase().includes(q))&&
+        (side==='all'||side==='dr'&&r._net>0||side==='cr'&&r._net<0||side==='zero'&&r._net===0||side==='missing'&&r._net===null));
+    rows.sort((a,b)=>sort==='largest'?Math.abs(b._net||0)-Math.abs(a._net||0):sort==='dr'?(b._net??-Infinity)-(a._net??-Infinity):String(a.DealerName).localeCompare(String(b.DealerName)));
+    const dr=all.filter(r=>r._net>0),cr=all.filter(r=>r._net<0),missing=all.filter(r=>r._net===null).length;
+    const snapshots=[...new Set(all.map(r=>r.SnapshotAt).filter(Boolean))].sort();
+    const start=page*20,visible=rows.slice(start,start+20);
+    const change=fn=>e=>{fn(e.target.value);setPage(0);};
+    return h(React.Fragment,null,
+        h('header',{className:'v-head'},h('div',null,h('div',{className:'v-eyebrow'},user.role==='admin'?'BRANCH ACCOUNT DESK':'TERRITORY ACCOUNT DESK'),h('h1',null,user.role==='admin'?'Dealer portfolio':'My dealers'),h('div',{className:'v-meta'},(user.territory||'All authorized territories')+' · '+user.name)),h('button',{className:'v-btn',onClick:load,disabled:busy},busy?'Refreshing…':'Refresh portfolio')),
+        h('div',{className:'v-tabs'},h('button',{className:'v-tab active',type:'button'},'Overview & dealers')),
+        h('div',{className:'v-stamp'},h('span',null,'Source: current MIS item snapshots · Bags, not rupees'),h('span',null,snapshots.length?'Snapshot dates: '+V19.date(snapshots[0])+(snapshots.length>1?' to '+V19.date(snapshots[snapshots.length-1]):''):'Snapshot date not available')),
+        error&&h('div',{className:'v-error',role:'alert'},error,' ',data?'Last loaded portfolio remains visible; refresh failed.':'',h('button',{className:'v-btn',onClick:load,disabled:busy},'Retry')),
+        h('div',{className:'v-grid four'},
+            h(View19Card,{title:'DEALERS IN YOUR SCOPE',value:data?all.length:'—',note:'Server-authorized portfolio',kind:'final'}),
+            h(View19Card,{title:'DEBIT BALANCES · BAGS',value:data&&all.length>missing?V19.fmt(dr.reduce((n,r)=>n+r._net,0)):'—',note:dr.length+' dealers with Dr balance'}),
+            h(View19Card,{title:'CREDIT BALANCES · BAGS',value:data&&all.length>missing?V19.fmt(-cr.reduce((n,r)=>n+r._net,0)):'—',note:cr.length+' dealers with Cr balance'}),
+            h(View19Card,{title:'BALANCE NOT VERIFIED',value:data?missing:'—',note:'Missing / invalid item snapshot'})),
+        h('div',{className:'v-notice'},'Portfolio totals use this snapshot feed and exclude OPC. They are not rupee outstanding or credit limits. Open a dealer to see the separately committed MIS balance and fresh NSOP effect. Different snapshot dates are not a single-date consolidated balance.'),
+        h('section',{className:'v-panel'},h('div',{className:'v-panel-title'},h('h2',null,'Dealer accounts'),h('span',{className:'v-chip'},rows.length+' shown')),
+            h('div',{className:'v-form'},h('label',{className:'v-search'},'Search dealer / D-code',h('input',{value:search,onChange:change(setSearch),placeholder:'Name or dealer code'})),
+                h('label',null,'Balance',h('select',{value:side,onChange:change(setSide)},...Object.entries({all:'All balances',dr:'Dr only',cr:'Cr only',zero:'Zero',missing:'Not verified'}).map(([v,t])=>h('option',{key:v,value:v},t)))),
+                h('label',null,'Sort',h('select',{value:sort,onChange:change(setSort)},h('option',{value:'name'},'Dealer name'),h('option',{value:'largest'},'Largest absolute bags'),h('option',{value:'dr'},'Highest Dr first')))),
+            busy&&!data?h(View19Empty,{title:'Loading territory accounts…'},'Fetching only MIS balance rows; transaction history opens on demand.'):
+            !data?h(View19Empty,{title:'Portfolio unavailable'},'Use Retry above. No balances have been assumed.'):
+            !rows.length?h(View19Empty,{title:'No matching dealers'},all.length?'Change your search or balance filter.':'No MIS snapshot rows were returned for your authorized scope.'):
+            h(View19Table,{headers:['Dealer / D-code','Territory','Snapshot','MIS net · bags'],className:'v-portfolio'},visible.map((r,i)=>h('tr',{key:r.BalanceKey||r.TallyDealerCode+':'+i},
+                h('td',null,h('button',{className:'v-account-link',disabled:!r.TallyDealerCode,onClick:()=>onSelect({code:r.TallyDealerCode,name:r.DealerName,territory:r.Territory,portalId:r.PortalDealerID})},r.DealerName||'Unnamed dealer'),h('div',{className:'v-code'},r.TallyDealerCode||'Mapping unavailable')),
+                h('td',null,r.Territory||'—'),h('td',null,V19.date(r.SnapshotAt)),h('td',{className:'numeric'},h('strong',null,V19.signed(r._net)))))),
+            h('div',{className:'v-pagination'},h('span',null,rows.length?`${start+1}–${Math.min(start+20,rows.length)} of ${rows.length} dealers`:'0 dealers'),h('div',null,h('button',{className:'v-btn',disabled:page===0,onClick:()=>setPage(page-1)},'Previous dealers'),h('button',{className:'v-btn',disabled:start+20>=rows.length,onClick:()=>setPage(page+1)},'Next dealers')))),
+        h('p',{className:'v-note'},'Read-only release · No credit approval, dealer assignment or Tally writeback.'));
+}
+
+function Dealer360View19({user,dealer,onBack}){
+    const h=React.createElement;
+    const [data,setData]=useState(null),[busy,setBusy]=useState(true),[error,setError]=useState(''),[tab,setTab]=useState('summary');
+    const [fy,setFy]=useState(''),[from,setFrom]=useState(''),[to,setTo]=useState(''),[item,setItem]=useState(''),[offset,setOffset]=useState(0);
+    const [applied,setApplied]=useState({fromDate:'',toDate:'',itemCode:''});
+    const seq=React.useRef(0);
+    const lastRequest=React.useRef({o:0,filters:{fromDate:'',toDate:'',itemCode:''}});
+    async function load(o=0,filters=applied){lastRequest.current={o,filters};const id=++seq.current;setBusy(true);setError('');try{
+        const r=await api('getStage1Account',{dealerCode:dealer?.code||'',offset:o,...filters});
+        if(!r.success||!Array.isArray(r.transactions)||!Array.isArray(r.fresh))throw new Error(r.error||'Account response is incomplete.');
+        if(id===seq.current){setData(r);setOffset(o);setApplied(filters);}
+    }catch(e){if(id===seq.current)setError(e.message);}finally{if(id===seq.current)setBusy(false);}}
+    useEffect(()=>{load(0,{fromDate:'',toDate:'',itemCode:''});return()=>{seq.current++;};},[user.email,dealer?.code]);
+    const name=dealer?.name||data?.balance?.dealer_name||user.name;
+    const balance=data?.balance,final=V19.number(balance?.final_bags),fresh=data?.fresh||[];
+    const groups=V19.groupLines(data?.transactions),docGroups=groups.filter(r=>(r.Documents||[]).length);
+    const code=data?.dealerCode||dealer?.code||user.id||'Not mapped';
+    function filters(){return h('form',{className:'v-form',onSubmit:e=>{e.preventDefault();if(from&&to&&from>to){setError('From date must not be after To date.');return;}load(0,{fromDate:from,toDate:to,itemCode:item});}},
+        h('label',null,'Financial year',h('select',{value:fy,onChange:e=>{setFy(e.target.value);const d=V19.fyDates(e.target.value);setFrom(d.fromDate);setTo(d.toDate);}},h('option',{value:''},'All synced history'),...V19.fyOptions(data?.cutoff).map(y=>h('option',{key:y,value:y},`${y}–${String(y+1).slice(-2)}`)))),
+        h('label',null,'From',h('input',{type:'date',value:from,onChange:e=>{setFy('');setFrom(e.target.value);}})),
+        h('label',null,'To',h('input',{type:'date',value:to,onChange:e=>{setFy('');setTo(e.target.value);}})),
+        h('label',null,'Item',h('select',{value:item,onChange:e=>setItem(e.target.value)},h('option',{value:''},'All items'),...V19.codes.map(c=>h('option',{value:c,key:c},c+' · '+V19.labels[c])))),
+        h('button',{className:'v-btn primary',type:'submit',disabled:busy},'Apply filters'));
+    }
+    const pagination=()=>h('div',{className:'v-pagination'},h('span',null,data?.total?`${offset+1}–${offset+(data.transactions||[]).length} of ${data.total} transaction lines`:'0 transaction lines'),
+        h('div',null,h('button',{className:'v-btn',disabled:busy||offset===0,onClick:()=>load(Math.max(0,offset-100))},'Previous transactions'),h('button',{className:'v-btn',disabled:busy||data?.nextOffset==null,onClick:()=>load(data.nextOffset)},'Next transactions')));
+    const txTable=()=>!groups.length?h(View19Empty,{title:'No MIS transactions in this range'},'Try another date or item filter. This does not change the final MIS balance.'):
+        h(View19Table,{headers:['Date / voucher','Items · bags','Narration & documents','Net effect · bags']},groups.map(r=>{
+            const effects=r.lines.filter(x=>x.ItemCode!=='OPC').map(x=>V19.number(x.BalanceEffect));
+            const effect=effects.some(x=>x===null)?null:effects.reduce((a,b)=>a+b,0);
+            return h('tr',{key:r.key},h('td',null,h('strong',null,V19.date(r.VoucherDate)),h('div',{className:'v-subrow'},r.VoucherType+' · '+(r.VoucherNumber||'No number'))),
+                h('td',null,...r.lines.map((x,i)=>h('div',{key:x.TransactionKey||i},x.ItemCode+' · '+V19.fmt(x.Quantity)))),
+                h('td',null,h('details',null,h('summary',null,'Narration & details'),h('p',{className:'v-note'},r.Narration||'Narration unavailable for this row'),h('p',{className:'v-subrow'},(r.WarehouseLocation||'Warehouse not specified')+' · Challan '+(r.ChallanNumber||'—')),h(View19Docs,{docs:r.Documents}))),
+                h('td',{className:'numeric'},V19.signed(effect)));
+        }));
+    const freshTable=()=>!fresh.length?h(View19Empty,{title:'No confirmed fresh entries'},'The last successful publication returned no eligible fresh NSOP entries for this dealer.'):
+        h(View19Table,{headers:['Date / NSOP voucher','Items · bags','Narration / photos','Tentative effect']},fresh.map((r,i)=>h('tr',{key:r.coverage_key||i},h('td',null,h('strong',null,V19.date(r.voucher_date)),h('div',{className:'v-subrow'},r.nsop_voucher_type+' · '+r.nsop_voucher_number)),h('td',null,r.qty_summary||'Not available'),h('td',null,h('details',null,h('summary',null,'Narration & photos'),h('p',{className:'v-note'},r.narration||'Narration unavailable'),h('div',{className:'v-subrow'},r.warehouse_location||'—'),h(View19Docs,{docs:r.Documents}))),h('td',{className:'numeric'},V19.signed(r.effect_bags)))));
+    return h(React.Fragment,null,
+        h('header',{className:'v-head'},h('div',null,dealer&&h('button',{className:'v-btn',onClick:onBack},'← Back to dealers'),h('div',{className:'v-eyebrow',style:{marginTop:dealer?12:0}},'DEALER 360 · MATERIAL ACCOUNT'),h('h1',null,name),h('div',{className:'v-meta'},code+' · '+(dealer?.territory||user.territory||'Authorized dealer account'))),
+            h('div',{className:'v-head-action'},h('button',{className:'v-btn',onClick:()=>load(offset),disabled:busy},busy?'Refreshing…':'Refresh account'))),
+        h('nav',{className:'v-tabs','aria-label':'Dealer account sections'},...Object.entries({summary:'Summary',transactions:'MIS transactions',fresh:'Fresh NSOP',documents:'Documents',financial:'Financial account'}).map(([id,label])=>h('button',{key:id,className:'v-tab '+(tab===id?'active':''),'aria-current':tab===id?'page':undefined,onClick:()=>setTab(id)},label))),
+        h('div',{className:'v-stamp'},h('span',null,'MIS through: '+V19.date(data?.cutoff)),h('span',null,'Last successful publication: '+(data?.syncedAt||'Not available'))),
+        error&&h('div',{className:'v-error',role:'alert'},error,data?' Last loaded data remains visible; the requested refresh was not applied.':'',h('button',{className:'v-btn',onClick:()=>load(lastRequest.current.o,lastRequest.current.filters),disabled:busy},'Retry')),
+        busy&&!data?h(View19Empty,{title:'Loading dealer account…'},'Reading the last complete Stage-1 publication.'):
+        !data?h(View19Empty,{title:'Account unavailable'},'Retry when the portal connection is restored.'):
+        h(React.Fragment,null,
+            tab==='summary'&&h(React.Fragment,null,
+                h('div',{className:'v-grid'},h(View19Card,{title:'FINAL MIS BALANCE',value:V19.signed(final),note:'As of '+V19.date(balance?.as_of)+' · MIS is authoritative',kind:'final'}),h(View19Card,{title:'FRESH NSOP EFFECT',value:V19.signed(data.freshEffect),note:fresh.length+' confirmed entries after MIS cutoff'}),h(View19Card,{title:'TENTATIVE BALANCE',value:V19.signed(final===null||V19.number(data.freshEffect)===null?null:data.tentativeBags),note:'MIS + fresh effect · Not posted in MIS',kind:'estimate'})),
+                h('div',{className:'v-columns'},h('section',{className:'v-panel'},h('div',{className:'v-panel-title'},h('h2',null,'Item balances'),h('span',{className:'v-chip'},'BAGS')),
+                    h(View19Table,{headers:['Product','Final MIS bags']},V19.codes.map(c=>h('tr',{key:c},h('td',null,h('strong',null,c),h('span',{className:'v-item-name'},V19.labels[c]),c==='OPC'&&h('span',{className:'v-chip grey'},'Excluded from net')),h('td',{className:'numeric'},V19.signed(balance?.items?.[c]))))),h('p',{className:'v-note'},'Net includes PL, AW, DT, CH and NFR. OPC is displayed separately. These are quantities, not rupees.')),
+                    h('aside',null,h('section',{className:'v-panel'},h('h2',null,'Account overview'),
+                        ...[['D-code',code],['Territory',dealer?.territory||user.territory||'Not available'],['RAMCO','Not supplied by current API'],['MIS balance date',V19.date(balance?.as_of)],['Account source','Committed Stage-1 / MIS']].map(([k,v])=>h('div',{className:'v-kv',key:k},h('span',null,k),h('strong',null,v)))),
+                        h('section',{className:'v-panel'},h('h2',null,'Account sections'),
+                            h('details',null,h('summary',null,'Fresh NSOP entries · '+fresh.length),h('p',{className:'v-note'},'Confirmed entries after the MIS cutoff contribute only to the tentative balance.'),h('button',{className:'v-btn',onClick:()=>setTab('fresh')},'View fresh entries')),
+                            h('details',null,h('summary',null,'MIS transactions & narration'),h('p',{className:'v-note'},'Filter by financial year, dates or item. Voucher details open on demand.'),h('button',{className:'v-btn',onClick:()=>setTab('transactions')},'Open transactions')),
+                            h('details',null,h('summary',null,'Financial sales, receipts & security'),h('p',{className:'v-note'},'The current feed is quantity-based. Rupee ledger, security deposit, payment days and monthly financial totals need the separate financial feed.'))))),
+                h('div',{className:'v-bottom'},h('button',{className:'v-btn',onClick:()=>setTab('transactions')},'View transactions'),h('button',{className:'v-btn primary',onClick:()=>setTab('documents')},'View documents'))),
+            tab==='fresh'&&h('section',{className:'v-panel'},h('div',{className:'v-panel-title'},h('h2',null,'Fresh NSOP · pending in MIS'),h('span',{className:'v-chip amber'},'TENTATIVE')),
+                h('p',{className:'v-note'},'After '+V19.date(data.cutoff)+' only. Historical reconciliation does not change final MIS balances. MIS transaction filters do not apply here.'),
+                data.postMisConflictCount>0&&h('div',{className:'v-notice'},data.postMisConflictCount+' post-MIS entries need operator review and are excluded from the confirmed fresh effect.'),freshTable()),
+            (tab==='transactions'||tab==='documents')&&h('section',{className:'v-panel'},h('h2',null,tab==='transactions'?'MIS transaction history':'Voucher documents'),filters(),
+                h('p',{className:'v-note'},'Applied range: '+(applied.fromDate?V19.date(applied.fromDate):'All synced history')+' to '+(applied.toDate?V19.date(applied.toDate):'latest synced')+' · '+(applied.itemCode||'All items')+'. Filters affect MIS history only, not the current balance.'),
+                tab==='transactions'?h(React.Fragment,null,h('p',{className:'v-note'},'Grouped within this 100-line page by date, type, number, narration and challan. A voucher may continue on another page. No running balance is inferred from partial history.'),txTable()):
+                    h(React.Fragment,null,h('p',{className:'v-note'},'Documents attached to the current MIS history page. Next/Previous moves through transaction pages; this is not a complete document register.'),
+                        docGroups.length?docGroups.map(r=>h('div',{className:'v-panel',key:r.key},h('h3',null,V19.date(r.VoucherDate)+' · '+r.VoucherType+' · '+r.VoucherNumber),h(View19Docs,{docs:r.Documents}))):h(View19Empty,{title:'No linked documents on this page'},'Try another date range or the next history page.'),
+                        h('details',null,h('summary',null,'Fresh NSOP documents · independent of MIS filters'),...fresh.filter(r=>(r.Documents||[]).length).map((r,i)=>h('div',{key:r.coverage_key||i,className:'v-note'},V19.date(r.voucher_date)+' · '+r.nsop_voucher_number,' ',h(View19Docs,{docs:r.Documents}))))),pagination()),
+            tab==='financial'&&h('section',{className:'v-panel'},h(View19Empty,{title:'Financial ledger feed not connected'},'This release displays bags only. Rupee outstanding, receipts/payments, security deposit and average payment days are not supplied by the current API.'),h('p',{className:'v-note'},'No bag figure has been relabelled as money. A financial ledger with verified opening and closing balances is a separate release.'))));
+}
+
 function api(action, payload = {}) {
     if (CFG.DEMO_MODE)
         return Promise.reject(new Error('DEMO_MODE'));
@@ -610,13 +846,20 @@ function App() {
             localStorage.setItem('novus_user', JSON.stringify({ user: u, loginTime: Date.now() }));
         else
             localStorage.removeItem('novus_user');
+        setOrders([]); setDealers({}); setLocationData([]); setFreightMatrix([]);
+        setWarehouses(WHS); setVehicles([]); setDrivers([]); setAppLoaded(CFG.DEMO_MODE);
         setUser(u);
     };
     useEffect(() => {
-        if (!user || CFG.DEMO_MODE || appLoaded)
-            return;
-        setAppLoaded(true);
-        api('getAppData', { email: user.email }).then(appData => {
+        if (!user || CFG.DEMO_MODE) return;
+        setAppLoaded(true); // Stage-1 views fetch only their own read feeds.
+        let active=true, loaded=false, inFlight=false;
+        const loadOperations=()=>{
+          if (!active || loaded || inFlight) return;
+          inFlight=true;
+          api('getAppData', { email: user.email }).then(appData => {
+            if(!active)return;
+            loaded=true;
             if (appData.orders)
                 setOrders(appData.orders);
             let nd = {};
@@ -636,7 +879,12 @@ function App() {
                 setVehicles(appData.vehicles);
             if (appData.drivers)
                 setDrivers(appData.drivers);
-        }).catch(() => { });
+          }).catch(() => { }).finally(()=>{inFlight=false;});
+        };
+        const onOperations=e=>{if(e.detail?.email===user.email&&e.detail.enabled===true)loadOperations();};
+        window.addEventListener('novus:operations',onOperations);
+        api('getDeploymentSettings',{email:user.email}).then(r=>{if(r.operationsEnabled===true)loadOperations();}).catch(()=>{});
+        return ()=>{active=false;window.removeEventListener('novus:operations',onOperations);};
     }, [user]);
     useEffect(() => {
         if (!user)
@@ -743,6 +991,7 @@ function Shell({ user, setUser, orders, setOrders, dealers, setDealers, location
     const [page, setPage] = useState(initialDocQuery ? 'docviewer' : 'stage1');
     const [operationsEnabled, setOperationsEnabled] = useState(false);
     const [settingsError, setSettingsError] = useState('');
+    useEffect(()=>{window.dispatchEvent(new CustomEvent('novus:operations',{detail:{email:user.email,enabled:operationsEnabled}}));},[operationsEnabled,user.email]);
     useEffect(() => {
         let live = true;
         const refresh = () => api('getDeploymentSettings', {email:user.email}).then(r=>{if(live){setOperationsEnabled(r.operationsEnabled===true);setSettingsError('');}}).catch(e=>{if(live){setOperationsEnabled(false);setSettingsError(e.message);}});
@@ -801,7 +1050,7 @@ function Shell({ user, setUser, orders, setOrders, dealers, setDealers, location
             { id: 'report', ic: '📊', lb: 'Dispatch Report' },
         ],
     };
-    const stageNav = user.role === 'logistics' ? [] : [{id:'stage1',ic:'📒',lb:'Dealer Account · Bags'}];
+    const stageNav = user.role === 'logistics' ? [] : [{id:'stage1',ic:'📒',lb:user.role==='dealer'?'Dealer 360':user.role==='tse'?'My dealers':'Dealer portfolio'}];
     if (['admin','logistics'].includes(user.role)) stageNav.push({id:'doc_upload',ic:'📤',lb:'Upload Documents'});
     if (user.role === 'admin') stageNav.push({id:'deployment',ic:'⚙️',lb:'Stage-2 Switch'});
     if(initialDocQuery)stageNav.push({id:'docviewer',ic:'📎',lb:'Voucher Document'});
@@ -844,8 +1093,8 @@ function Shell({ user, setUser, orders, setOrders, dealers, setDealers, location
                 React.createElement("strong", null, "Demo Mode"),
                 " \u2014 changes are not saved. Paste your Apps Script URL and set DEMO_MODE: false to go live."),
             settingsError && React.createElement('div',{className:'alert ar'},settingsError),
-            React.createElement('div',{style:{padding:'8px 20px',background:'#f0fdf4',color:'#166534'}},operationsEnabled?'Stage 2 ON · Operations enabled':'Stage 1 · Account and document access · Operations OFF'),
-            effectivePage === 'stage1' ? React.createElement(Stage1Account18,{user}) :
+            React.createElement('div',{style:{padding:'8px 20px',background:'#f0fdf4',color:'#166534'}},operationsEnabled?'v19.1 views · Stage 2 ON · Operations enabled':'v19.1 views · Stage 1 · Account and document access · Operations OFF'),
+            effectivePage === 'stage1' ? React.createElement(Views19,{user}) :
             effectivePage === 'deployment' && user.role==='admin' ? React.createElement(Deployment18,{user,operationsEnabled,onChange:setOperationsEnabled}) :
             React.createElement(Router, { page: effectivePage, user: user, orders: orders, setOrders: setOrders, dealers: dealers, setDealers: setDealers, myOrders: myOrders, setPage: setPage, locationData: locationData, freightMatrix: freightMatrix, warehouses: warehouses, vehicles: vehicles, setVehicles: setVehicles, drivers: drivers, setDrivers: setDrivers, initialDocQuery: initialDocQuery }))));
 }
