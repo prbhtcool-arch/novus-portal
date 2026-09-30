@@ -299,6 +299,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#f5f6fa;color:#1a1d2
 
 
 .v19{font-size:17px;line-height:1.55}.v19 td,.v19 input,.v19 select,.v19 button{font-size:16px!important}.v19 th{font-size:14px!important}.v19 .v-note,.v19 .v-subrow,.v19 .v-stamp,.v19 small,.v19 label,.v19 .v-cache{font-size:14px!important}.v19 h2{font-size:23px}.v19 td{padding:15px 13px}.v19 tfoot{background:#eaf5fb;font-weight:700}.v19 tfoot th{font-size:16px!important;padding:16px 13px;border-top:2px solid #a5cfdf}.v19 .v-table-wrap{overflow-x:auto}@media(max-width:650px){.v19 td,.v19 button{font-size:15px!important}}
+
+.fetch-progress1971{margin:12px 0;padding:16px 20px;border:1px solid #bfdbfe;border-radius:12px;background:#eff6ff;color:#1e3a8a;font-size:16px}.fetch-progress-title{display:flex;justify-content:space-between;gap:12px}.fetch-progress1971 p{margin:8px 0}.fetch-progress1971 small{font-size:14px}.fetch-progress-track{height:8px;background:#dbeafe;overflow:hidden;border-radius:5px;margin:12px 0}.fetch-progress-motion{height:100%;width:30%;background:#2563eb;border-radius:5px;animation:fetch1971 1.5s ease-in-out infinite}@keyframes fetch1971{0%{transform:translateX(-100%)}100%{transform:translateX(340%)}}@media(prefers-reduced-motion:reduce){.fetch-progress-motion{animation:none;width:100%;opacity:.5}}
 </style>
 </head>
 <body>
@@ -592,11 +594,41 @@ function Company197({user}){
  section==='trend'&&table(['Period','Company sales · bags (MT)'],[{label:'Current month through '+data.asOf,value:d.salesMT},{label:'Previous complete month',value:d.previousMonthMT},{label:'Same month last year · complete month',value:d.previousYearMonthMT},{label:'Current financial year through '+data.asOf,value:d.ytdMT}],x=>[x.label,qty(x.value)])));
 }
 
+/* The API returns one JSON response: waiting has no measurable percentage. */
+const FetchProgress1971=(()=>{
+ let serial=0,last=null;const active=new Map(),listeners=new Set();
+ function publish(s){last=s;listeners.forEach(fn=>fn(s));}
+ function begin(action){const id=++serial,s={id,startedAt:Date.now(),status:'waiting',label:action==='getDealerPortfolio19'?'Fetching authorised dealers': 'Fetching your dealer account',detail:'Request sent. Google Sheets is preparing the report.',counts:''};active.set(id,s);publish(s);return id;}
+ function finish(id,r,error){const s=active.get(id);if(!s)return;active.delete(id);
+  let counts='';if(!error){
+   if(r.companyReport)counts=r.rows.length+' dealer'+(r.rows.length===1?'':'s')+' received';
+   else if(Array.isArray(r.dealers)){const n=r.dealers.reduce((a,d)=>a+(d.dataset?.reports?.ledger?.rows?.length||0),0);counts=r.dealers.length+' dealers received · '+n+' transaction groups';}
+   else if(r.reports)counts='1 dealer received · '+(r.reports.ledger?.rows?.length||0)+' transaction groups';
+   else if(Array.isArray(r.rows))counts=r.rows.length+' report rows received';
+  }
+  const done={...s,status:error?'error':'complete',finishedAt:Date.now(),detail:error?error:'Report received. Preparing the view and local cache.',counts};
+  publish(active.size?Array.from(active.values()).at(-1):done);
+ }
+ function cached(message){if(last&&last.status==='complete'&&!active.size)publish({...last,detail:message});}
+ return {begin,finish,cached,reset(){active.clear();publish(null);},get:()=>last,subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn);}};
+})();
+function FetchProgress1971View(){
+ const h=React.createElement,[state,setState]=useState(FetchProgress1971.get),[clock,setClock]=useState(Date.now());
+ useEffect(()=>FetchProgress1971.subscribe(s=>{setState(s);setClock(Date.now());}),[]);
+ useEffect(()=>{if(state?.status!=='waiting')return;const t=setInterval(()=>setClock(Date.now()),1000);return()=>clearInterval(t);},[state?.id,state?.status]);
+ if(!state)return null;const waiting=state.status==='waiting',failed=state.status==='error',elapsed=Math.max(0,Math.floor(((state.finishedAt||clock)-state.startedAt)/1000));
+ return h('section',{className:'fetch-progress1971','aria-label':'Dealer data loading progress','aria-busy':waiting},
+ h('div',{className:'fetch-progress-title'},h('strong',null,failed?'Could not load dealer data':waiting?state.label:'Dealer data received'),h('span',null,elapsed+' sec')),
+ waiting&&h('div',{className:'fetch-progress-track',role:'progressbar','aria-label':'Waiting for dealer report'},h('div',{className:'fetch-progress-motion'})),
+ h('p',{role:'status','aria-live':'polite'},state.detail),state.counts&&h('p',null,state.counts),
+ waiting&&h('small',null,elapsed>=30?'Still waiting for the server. Keep this page open; the first FY download can take up to 180 seconds.':'First download fetches the financial-year data. Later tabs use the local copy.'));
+}
+
 function Views19({user}) {
     const h=React.createElement;
     const [selected,setSelected]=useState(null),[company,setCompany]=useState(false);
     if(!['dealer','tse','admin'].includes(user.role))return h('div',{className:'v19'},'Account access is not available for this role.');
-    return h('div',{className:'v19'},h('nav',{className:'v-tabs'},h('button',{className:'v-tab '+(!company?'active':''),onClick:()=>setCompany(false)},'Account'),h('button',{className:'v-tab '+(company?'active':''),onClick:()=>setCompany(true)},'Company report')),company?h(Company197,{user}):h(React.Fragment,null,h(CacheStatus193),
+    return h('div',{className:'v19'},h(FetchProgress1971View),h('nav',{className:'v-tabs'},h('button',{className:'v-tab '+(!company?'active':''),onClick:()=>setCompany(false)},'Account'),h('button',{className:'v-tab '+(company?'active':''),onClick:()=>setCompany(true)},'Company report')),company?h(Company197,{user}):h(React.Fragment,null,h(CacheStatus193),
         typeof NOVUS_PREVIEW!=='undefined'&&h('div',{className:'v-preview'},'DESIGN PREVIEW · Illustrative sample data only · No live API calls'),
         user.role==='dealer'||selected?h(Dealer360View19,{key:user.email+':'+(selected?.code||'self'),user,dealer:selected,onBack:()=>setSelected(null)}):h(TSEActivity19,{user,onSelect:setSelected})));
 }
@@ -762,10 +794,10 @@ const Local196=(()=>{
 const Cache193=(()=>{
  const reads=new Set(['getStage1Account','getDealerActivity19','getDealerPortfolio19']),pending=new Map(),memory=new Map();
  let database=null,epoch=0;
- const emit=message=>window.dispatchEvent(new CustomEvent('novus-cache',{detail:message}));
+ const emit=message=>{FetchProgress1971.cached(message);window.dispatchEvent(new CustomEvent('novus-cache',{detail:message}));};
  function db(){if(!database)database=new Promise((resolve,reject)=>{const r=indexedDB.open('novus-reports-v196',1);r.onupgradeneeded=()=>r.result.createObjectStore('reports',{keyPath:'key'});r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});return database;}
  async function op(mode,fn){const d=await db();return new Promise((resolve,reject)=>{const t=d.transaction('reports',mode),r=fn(t.objectStore('reports'));t.oncomplete=()=>resolve(r?.result);t.onerror=()=>reject(t.error);t.onabort=()=>reject(t.error);});}
- async function clear(){Company197Cache.clear();epoch++;pending.clear();memory.clear();try{await op('readwrite',s=>s.clear());}catch(_){}emit('Local reports cleared.');}
+ async function clear(){FetchProgress1971.reset();Company197Cache.clear();epoch++;pending.clear();memory.clear();try{await op('readwrite',s=>s.clear());}catch(_){}emit('Local reports cleared.');}
  function session(){try{const s=JSON.parse(localStorage.getItem('novus_user')||'{}');return s.user?.sessionToken&&s.loginTime&&Date.now()-s.loginTime<6*3600000?s:null;}catch(_){return null;}}
  async function keyFor(s,a,p){const raw=JSON.stringify([CFG.SCRIPT_URL,s.user.email,s.user.role,s.user.territory,s.user.id,s.user.sessionToken,a,Object.keys(p).sort().map(k=>[k,p[k]])]);return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(raw))),b=>b.toString(16).padStart(2,'0')).join('');}
  async function trim(){const list=await op('readonly',s=>s.getAll());const remove=(list||[]).sort((a,b)=>b.savedAt-a.savedAt).filter((r,i)=>i>=80||Date.now()-r.savedAt>6*3600000);if(remove.length)await op('readwrite',s=>{remove.forEach(r=>s.delete(r.key));});}
@@ -811,7 +843,13 @@ async function api(action,payload={}) {
  }
  return Cache193.read(action,clean,apiNetwork193);
 }
-function apiNetwork193(action, payload = {}) {
+async function apiNetwork193(action,payload={}) {
+ if(!['getDealerActivity19','getDealerPortfolio19'].includes(action))return apiNetworkRaw1971(action,payload);
+ const id=FetchProgress1971.begin(action);
+ try{const r=await apiNetworkRaw1971(action,payload);if(r.error||r.success===false)throw Error(r.error||'Report failed');FetchProgress1971.finish(id,r);return r;}
+ catch(e){FetchProgress1971.finish(id,null,e.message);throw e;}
+}
+function apiNetworkRaw1971(action, payload = {}) {
     if (CFG.DEMO_MODE)
         return Promise.reject(new Error('DEMO_MODE'));
     const stored = JSON.parse(localStorage.getItem('novus_user') || '{}');
