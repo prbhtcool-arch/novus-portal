@@ -574,13 +574,31 @@ const V19 = (() => {
     return {labels,codes,netCodes,number,fmt,signed,date,portfolioBalance,fyDates,fyOptions,groupLines,portfolioRows};
 })();
 
+const Company197Cache=new Map();
+function Company197({user}){
+ const h=React.createElement,[data,setData]=useState(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[search,setSearch]=useState(''),[selected,setSelected]=useState(''),[section,setSection]=useState('invoices');
+ const key=JSON.stringify([CFG.SCRIPT_URL,user.email,user.role,user.territory,user.id,user.sessionToken]);
+ async function load(force=false){setBusy(true);setError('');try{let cached=Company197Cache.get(key),r=cached&&Date.now()-cached.at<21600000?cached.data:null;if(force||!r){r=await apiNetwork193(user.role==='dealer'?'getDealerActivity19':'getDealerPortfolio19',{view:'company'});if(!r.success||!r.companyReport)throw Error(r.error||'Deploy the company report Apps Script update first.');Company197Cache.set(key,{at:Date.now(),data:r});}setData(r);}catch(e){setError(e.message);}finally{setBusy(false);}}
+ useEffect(()=>{load();return()=>{};},[key]);
+ const money=v=>'₹'+Number(v||0).toLocaleString('en-IN',{maximumFractionDigits:2}),qty=mt=>Qty196(Number(mt)*20),rows=(data?.rows||[]).filter(d=>(d.name+' '+d.code+' '+d.territory).toLowerCase().includes(search.toLowerCase())),sum=k=>rows.reduce((a,d)=>a+Number(d[k]||0),0),d=(data?.rows||[]).find(x=>x.code===selected)||(user.role==='dealer'?rows[0]:null);
+ function table(headers,items,render,footer){return h(View19Table,{headers,footer},items.map((x,i)=>h('tr',{key:i},...render(x).map((v,j)=>h('td',{key:j},v)))));}
+ return h('section',null,h('h1',null,'Company report'),h('p',null,'Company invoices, cash collections and rupee outstanding. Material liftings and tentative balance remain in Account.'),h('button',{className:'v-btn',disabled:busy,onClick:()=>load(true)},busy?'Loading…':'Refresh company report'),error&&h('p',{role:'alert'},error),data&&h('p',null,(data.periodFrom||'')+' to '+(data.asOf||'')+' · Imported '+(data.importedAt||'')+' · '+(data.source||data.note||'')),h('input',{placeholder:'Find dealer / territory',value:search,onChange:e=>setSearch(e.target.value),'aria-label':'Find dealer'}),
+ table(['Dealer','Company sales · bags (MT)','Target · bags (MT)','Achievement','Cash collected','Company outstanding','26+ days outstanding'],rows,x=>[h('button',{className:'v-btn',onClick:()=>setSelected(x.code)},x.name+' · '+x.code),qty(x.salesMT),qty(x.targetMT),x.targetMT?(x.salesMT/x.targetMT*100).toFixed(1)+'%':'—',money(x.collectionDetailRs),money(x.outstandingRs),x.ageingRs?money(x.ageingRs.slice(3).reduce((a,b)=>a+b,0)):'Unavailable'],h('tr',null,...['Total · '+rows.length+' dealers',qty(sum('salesMT')),qty(sum('targetMT')),sum('targetMT')?(sum('salesMT')/sum('targetMT')*100).toFixed(1)+'%':'—',money(sum('collectionDetailRs')),money(sum('outstandingRs')),rows.some(x=>!x.ageingRs)?'Unavailable':money(rows.reduce((a,x)=>a+x.ageingRs.slice(3).reduce((a,b)=>a+b,0),0))].map((v,i)=>h('th',{key:i},v)))),
+ d&&h('div',null,h('h2',null,d.name),h('p',null,'Invoice quantity check: '+qty(d.invoiceTotalMT)+' · Difference from company sales: '+qty(d.invoiceDifferenceMT)+'. Company outstanding sign is retained from the report.'),table(['0–7 days','8–15 days','16–25 days','26–60 days','61–180 days','Over 180 days'],[d.ageingRs||[]],x=>x.length?x.map(money):Array(6).fill('Unavailable')),
+ h('nav',{className:'v-tabs'},...['invoices','collections','retailers','trend'].map(t=>h('button',{key:t,className:'v-tab '+(section===t?'active':''),onClick:()=>setSection(t)},t[0].toUpperCase()+t.slice(1)))),
+ section==='invoices'&&table(['Date','Invoice','Item','Consignee','Quantity · bags (MT)','Invoice value','Truck'],d.invoices,x=>[x.date,x.invoice,x.item,x.consignee,qty(x.mt),money(x.valueRs),x.truck],h('tr',null,h('th',{colSpan:4},'Total · '+d.invoices.length+' invoice lines'),h('th',null,qty(d.invoiceTotalMT)),h('th',null,money(d.invoices.reduce((a,x)=>a+x.valueRs,0))),h('th',null,'—'))),
+ section==='collections'&&table(['Date','Reference','Cash amount'],d.collections,x=>[x.date,x.reference,money(x.rupees)],h('tr',null,h('th',{colSpan:2},'Total cash collection'),h('th',null,money(d.collectionDetailRs)))),
+ section==='retailers'&&table(['Consignee','Segment','Company sales · bags (MT)','YTD · bags (MT)'],d.retailers,x=>[x.name,x.segment,qty(x.salesMT),qty(x.ytdMT)],h('tr',null,h('th',{colSpan:2},'All listed consignees'),h('th',null,qty(d.retailers.reduce((a,x)=>a+x.salesMT,0))),h('th',null,qty(d.retailers.reduce((a,x)=>a+x.ytdMT,0))))),
+ section==='trend'&&table(['Period','Company sales · bags (MT)'],[{label:'Current month through '+data.asOf,value:d.salesMT},{label:'Previous complete month',value:d.previousMonthMT},{label:'Same month last year · complete month',value:d.previousYearMonthMT},{label:'Current financial year through '+data.asOf,value:d.ytdMT}],x=>[x.label,qty(x.value)])));
+}
+
 function Views19({user}) {
     const h=React.createElement;
-    const [selected,setSelected]=useState(null);
+    const [selected,setSelected]=useState(null),[company,setCompany]=useState(false);
     if(!['dealer','tse','admin'].includes(user.role))return h('div',{className:'v19'},'Account access is not available for this role.');
-    return h('div',{className:'v19'},h(CacheStatus193),
+    return h('div',{className:'v19'},h('nav',{className:'v-tabs'},h('button',{className:'v-tab '+(!company?'active':''),onClick:()=>setCompany(false)},'Account'),h('button',{className:'v-tab '+(company?'active':''),onClick:()=>setCompany(true)},'Company report')),company?h(Company197,{user}):h(React.Fragment,null,h(CacheStatus193),
         typeof NOVUS_PREVIEW!=='undefined'&&h('div',{className:'v-preview'},'DESIGN PREVIEW · Illustrative sample data only · No live API calls'),
-        user.role==='dealer'||selected?h(Dealer360View19,{key:user.email+':'+(selected?.code||'self'),user,dealer:selected,onBack:()=>setSelected(null)}):h(TSEActivity19,{user,onSelect:setSelected}));
+        user.role==='dealer'||selected?h(Dealer360View19,{key:user.email+':'+(selected?.code||'self'),user,dealer:selected,onBack:()=>setSelected(null)}):h(TSEActivity19,{user,onSelect:setSelected})));
 }
 function View19Card({title,value,note,kind=''}){
     const h=React.createElement;return h('div',{className:'v-card '+kind},h('small',null,title),h('div',{className:'v-number'},value),h('small',null,note));
@@ -747,7 +765,7 @@ const Cache193=(()=>{
  const emit=message=>window.dispatchEvent(new CustomEvent('novus-cache',{detail:message}));
  function db(){if(!database)database=new Promise((resolve,reject)=>{const r=indexedDB.open('novus-reports-v196',1);r.onupgradeneeded=()=>r.result.createObjectStore('reports',{keyPath:'key'});r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});return database;}
  async function op(mode,fn){const d=await db();return new Promise((resolve,reject)=>{const t=d.transaction('reports',mode),r=fn(t.objectStore('reports'));t.oncomplete=()=>resolve(r?.result);t.onerror=()=>reject(t.error);t.onabort=()=>reject(t.error);});}
- async function clear(){epoch++;pending.clear();memory.clear();try{await op('readwrite',s=>s.clear());}catch(_){}emit('Local reports cleared.');}
+ async function clear(){Company197Cache.clear();epoch++;pending.clear();memory.clear();try{await op('readwrite',s=>s.clear());}catch(_){}emit('Local reports cleared.');}
  function session(){try{const s=JSON.parse(localStorage.getItem('novus_user')||'{}');return s.user?.sessionToken&&s.loginTime&&Date.now()-s.loginTime<6*3600000?s:null;}catch(_){return null;}}
  async function keyFor(s,a,p){const raw=JSON.stringify([CFG.SCRIPT_URL,s.user.email,s.user.role,s.user.territory,s.user.id,s.user.sessionToken,a,Object.keys(p).sort().map(k=>[k,p[k]])]);return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(raw))),b=>b.toString(16).padStart(2,'0')).join('');}
  async function trim(){const list=await op('readonly',s=>s.getAll());const remove=(list||[]).sort((a,b)=>b.savedAt-a.savedAt).filter((r,i)=>i>=80||Date.now()-r.savedAt>6*3600000);if(remove.length)await op('readwrite',s=>{remove.forEach(r=>s.delete(r.key));});}
