@@ -321,6 +321,46 @@ button,input,select,textarea{font:inherit}button,input,select{min-height:44px}bu
 .v19 .v-ledger-scroll::-webkit-scrollbar-thumb{background:#758ba7;border:3px solid #eef2f7;border-radius:8px}
 .v19 .v-ledger-scroll::-webkit-scrollbar-track{background:#eef2f7}
 .v19 .v-opening{background:#eef8f0;font-weight:700}
+
+/* Flow22 mobile repair: actual columns, one value container, no table sizing on phones. */
+.v19 .v-cell-value{min-width:0;overflow-wrap:anywhere}
+@media(max-width:768px){
+ .v19 .v-table-wrap{width:100%;margin-left:0;margin-right:0;min-width:0}
+ .v19 .v-table-wrap table,.v19 .v-table-wrap tbody,.v19 .v-table-wrap tfoot{display:block;width:100%;min-width:0!important;max-width:100%}
+ .v19 .v-table-wrap tr{display:block;width:100%;min-width:0;max-width:100%;box-sizing:border-box}
+ .v19 .v-table-wrap td{display:grid!important;grid-template-columns:minmax(0,36%) minmax(0,1fr);gap:12px;width:100%;box-sizing:border-box;white-space:normal}
+ .v19 .v-table-wrap td:before{min-width:0;overflow-wrap:anywhere}
+ .v19 .v-table-wrap .v-cell-value{width:100%;max-width:100%;white-space:normal}
+ .v19 .v-table-wrap td .v-cell-value{justify-self:stretch;text-align:right}
+ .v19 .v-table-wrap tbody th,.v19 .v-table-wrap tfoot th{display:block;width:100%;max-width:100%;box-sizing:border-box;white-space:normal;overflow-wrap:anywhere;padding:10px 4px}
+ .v19 .v-table-wrap tbody th.numeric{text-align:right}
+ .v19 .v-ledger-scroll{max-height:65vh;overflow-y:auto;overflow-x:hidden}
+ .v19 .v-table-wrap summary{white-space:normal;overflow-wrap:anywhere}
+}
+
+/* The scene lives in Shell, outside every tab: its animation phase survives navigation. */
+.motion22-band{--motion22-ink:#356579;--motion22-soft:#e8f3f3;--motion22-paper:#fff;display:flex;align-items:center;gap:14px;padding:10px 24px;background:linear-gradient(110deg,#f0f8f7,#f7f9fd);border-bottom:1px solid #dce9eb;min-height:86px;color:var(--motion22-ink);contain:layout style;position:sticky;top:0;z-index:80}
+.motion22-copy{flex:0 1 210px;min-width:0}.motion22-copy strong{display:block;font-size:16px;color:#172f43}.motion22-copy small{display:block;font-size:13px;color:#59677a;margin-top:4px}
+.motion22-art{min-width:0;flex:1;max-width:700px;margin-left:auto;overflow:hidden}.motion22-scene{display:block;width:100%;height:76px;overflow:visible}
+.motion22-part{color:var(--motion22-ink);opacity:.25;transition:opacity .35s ease,color .35s ease}.motion22-route{opacity:.3;animation:motion22-route 8s linear infinite}.motion22-road{opacity:.15}
+.motion22-band[data-context="account"] .motion22-account,.motion22-band[data-context="os"] .motion22-account,.motion22-band[data-context="ledger"] .motion22-account,.motion22-band[data-context="history"] .motion22-account,
+.motion22-band[data-context="lifting"] .motion22-lifting,.motion22-band[data-context="lifting"] .motion22-stock,
+.motion22-band[data-context="receipts"] .motion22-receipts,.motion22-band[data-context="documents"] .motion22-receipts,
+.motion22-band[data-context="stock"] .motion22-stock,.motion22-band[data-context="retailers"] .motion22-retailers,
+.motion22-band[data-context="premium"] .motion22-premium,.motion22-band[data-context="premium"] .motion22-receipts,
+.motion22-band[data-context="gu"] .motion22-lifting,.motion22-band[data-context="gu"] .motion22-receipts{opacity:1;color:#137e89}
+.motion22-truck-route{animation:motion22-truck 12s linear infinite;will-change:transform}.motion22-bags{fill:currentColor;animation:motion22-bags 3s ease-in-out infinite}.motion22-stack{fill:currentColor;animation:motion22-bags 4s ease-in-out infinite}.motion22-sheet{animation:motion22-sheet 5s ease-in-out infinite}.motion22-ledger-line{animation:motion22-ledger 5s ease-in-out infinite}.motion22-badge{animation:motion22-badge 6s ease-in-out infinite}
+.motion22-toggle{flex:none;min-height:44px;min-width:58px;border:1px solid #c6dadf;background:#ffffffc9;color:#35576b;border-radius:9px;padding:8px;font-size:13px;cursor:pointer}
+.motion22-band[data-paused="true"] .motion22-scene *{animation-play-state:paused!important}
+@keyframes motion22-route{to{stroke-dashoffset:-104}}
+@keyframes motion22-truck{0%,100%{transform:translateX(0)}25%{transform:translateX(20px)}75%{transform:translateX(20px)}50%{transform:translateX(40px)}}
+@keyframes motion22-bags{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes motion22-sheet{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes motion22-ledger{0%,100%{opacity:.45}50%{opacity:1}}
+@keyframes motion22-badge{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}
+@media(max-width:768px){.motion22-band{top:60px;padding:8px 14px;gap:8px;flex-wrap:wrap;min-height:96px}.motion22-copy{flex:1;max-width:none}.motion22-art{flex:1 0 100%;order:3;max-width:100%;height:52px}.motion22-scene{height:52px}.motion22-toggle{min-width:64px}.motion22-copy strong{font-size:15px}.motion22-copy small{font-size:12px}}
+@media(prefers-reduced-motion:reduce){.motion22-band .motion22-scene *{animation:none!important;transition:none!important}}
+
 </style>
 </head>
 <body>
@@ -617,6 +657,7 @@ function CompanySummary200(d,q){
 
 function Company197({user,initialPage='summary',focusCode='',embedded=false}){
  const h=React.createElement,[data,setData]=useState(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[search,setSearch]=useState(''),[retailerSearch,setRetailerSearch]=useState(''),[selected,setSelected]=useState(focusCode),[page,setPage]=useState(initialPage),[draft,setDraft]=useState(V192.defaults),[q,setQ]=useState(V192.defaults);
+ useMotion22(({stock:'stock',summary:'account',os:'os',previous:'history',pp:'premium',gu:'gu',retailers:'retailers',invoices:'receipts',checks:'ledger'})[page],({stock:'Warehouse stock',summary:'Company summary',os:'Company outstanding',previous:'Previous year lifting',pp:'Premium item mix',gu:'GU lifting & invoicing',retailers:'Retailer lifting',invoices:'Invoice receipts',checks:'MIS review'})[page]);
  const key=JSON.stringify([CFG.SCRIPT_URL,user.email,user.role,user.territory,user.id,user.sessionToken]);
  async function load(force=false){setBusy(true);setError('');try{let cached=Company197Cache.get(key),r=cached&&Date.now()-cached.at<21600000?cached.data:null;if(force||!r){r=await apiNetwork193(user.role==='dealer'?'getDealerActivity19':'getDealerPortfolio19',{view:'company'});if(!r.success||!r.companyReport)throw Error(r.error||'Deploy the v20 Apps Script files first.');Company197Cache.set(key,{at:Date.now(),data:r});}setData(r);}catch(e){setError(e.message);}finally{setBusy(false);}}
  useEffect(()=>{load();},[key]);useEffect(()=>setPage(initialPage),[initialPage]);useEffect(()=>setSelected(focusCode),[focusCode]);
@@ -671,6 +712,60 @@ function FetchProgress1971View(){
  waiting&&h('small',null,elapsed>=30?'Still waiting for the server. Keep this page open; the first FY download can take up to 180 seconds.':'First download fetches the financial-year data. Later tabs use the local copy.'));
 }
 
+/* Persistent context illustration. No network calls and no animation clock in React. */
+const Motion22=(()=>{
+ const listeners=new Set();let value={kind:'account',title:'Dealer account'};
+ return {get:()=>value,set(kind,title){const next={kind:kind||'account',title:title||'Dealer account'};if(next.kind===value.kind&&next.title===value.title)return;value=next;listeners.forEach(fn=>fn(value));},subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn);}};
+})();
+function useMotion22(kind,title){useEffect(()=>{if(kind)Motion22.set(kind,title);},[kind,title]);}
+const MOTION22_SCENE=`
+ <path class="motion22-road" d="M16 88H680" fill="none" stroke="currentColor" stroke-width="2"/>
+ <path class="motion22-route" d="M130 38H616" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="4 9"/>
+ <g class="motion22-part motion22-stock">
+  <path d="M20 40L62 14L104 40V82H20Z" fill="var(--motion22-soft)" stroke="currentColor" stroke-width="2"/>
+  <path d="M47 82V46H77V82M35 40H89" fill="none" stroke="currentColor" stroke-width="2"/>
+  <g class="motion22-stack"><rect x="28" y="64" width="16" height="9" rx="2"/><rect x="28" y="52" width="16" height="9" rx="2"/><rect x="80" y="64" width="16" height="9" rx="2"/></g>
+ </g>
+ <g class="motion22-truck-route"><g class="motion22-part motion22-lifting">
+  <rect x="135" y="58" width="62" height="24" rx="4" fill="var(--motion22-soft)" stroke="currentColor" stroke-width="2"/>
+  <path d="M197 62H211L222 72V82H197Z" fill="var(--motion22-soft)" stroke="currentColor" stroke-width="2"/>
+  <path d="M203 65H209L216 72H203Z" fill="currentColor" opacity=".3"/>
+  <g class="motion22-bags"><rect x="140" y="48" width="16" height="8" rx="2"/><rect x="160" y="48" width="16" height="8" rx="2"/><rect x="180" y="48" width="13" height="8" rx="2"/></g>
+  <circle cx="152" cy="84" r="6" fill="var(--motion22-paper)" stroke="currentColor" stroke-width="3"/><circle cx="209" cy="84" r="6" fill="var(--motion22-paper)" stroke="currentColor" stroke-width="3"/>
+ </g></g>
+ <g class="motion22-part motion22-receipts" transform="translate(316 12)">
+  <g class="motion22-sheet"><path d="M0 0H42L55 13V65H0Z" fill="var(--motion22-paper)" stroke="currentColor" stroke-width="2"/>
+  <path d="M42 0V13H55M10 23H44M10 32H44M10 41H33" fill="none" stroke="currentColor" stroke-width="2"/>
+  <path class="motion22-check" d="M28 53L34 59L46 47" fill="none" stroke="currentColor" stroke-width="3"/>
+  </g>
+ </g>
+ <g class="motion22-part motion22-account" transform="translate(439 18)">
+  <path d="M0 2Q18 -4 34 5Q50 -4 68 2V57Q50 51 34 60Q18 51 0 57Z" fill="var(--motion22-paper)" stroke="currentColor" stroke-width="2"/>
+  <path d="M34 5V60" fill="none" stroke="currentColor" stroke-width="2"/>
+  <path class="motion22-ledger-line" d="M8 18H26M8 28H26M8 38H26M42 18H60M42 28H60M42 38H60" fill="none" stroke="currentColor" stroke-width="2"/>
+ </g>
+ <g class="motion22-part motion22-retailers" transform="translate(576 19)">
+  <path d="M0 16H70V61H0Z" fill="var(--motion22-soft)" stroke="currentColor" stroke-width="2"/>
+  <path d="M-3 16L5 0H65L73 16Z" fill="var(--motion22-paper)" stroke="currentColor" stroke-width="2"/>
+  <path d="M17 0V16M35 0V16M53 0V16M10 29H29V61M41 29H60V46" fill="none" stroke="currentColor" stroke-width="2"/>
+ </g>
+ <g class="motion22-part motion22-premium" transform="translate(392 48)"><g class="motion22-badge">
+  <circle r="12" fill="var(--motion22-paper)" stroke="currentColor" stroke-width="2"/>
+  <path d="M-5 11L-8 24L0 20L8 24L5 11M-6 0L-2 4L6 -5" fill="none" stroke="currentColor" stroke-width="2"/>
+ </g></g>`;
+const Motion22Scene=React.memo(function Motion22Scene(){return React.createElement('svg',{className:'motion22-scene',viewBox:'0 0 700 102','aria-hidden':true,focusable:false,dangerouslySetInnerHTML:{__html:MOTION22_SCENE}});});
+function ContextMotion22(){
+ const h=React.createElement,[context,setContext]=useState(Motion22.get),[paused,setPaused]=useState(()=>{try{return localStorage.getItem('novus-motion-paused')==='1';}catch(_){return false;}}),[fetchState,setFetchState]=useState(FetchProgress1971.get);
+ useEffect(()=>Motion22.subscribe(setContext),[]);
+ useEffect(()=>FetchProgress1971.subscribe(setFetchState),[]);
+ function toggle(){setPaused(old=>{const next=!old;try{localStorage.setItem('novus-motion-paused',next?'1':'0');}catch(_){}return next;});}
+ const busy=fetchState?.status==='waiting',failed=fetchState?.status==='error';
+ return h('aside',{className:'motion22-band','data-context':context.kind,'data-paused':String(paused),'aria-label':'Page context'},
+  h('div',{className:'motion22-copy'},h('strong',null,context.title),h('small',{role:'status','aria-live':'polite'},busy?'Fetching report…':failed?'Report could not load':'Account & document access')),
+  h('div',{className:'motion22-art'},h(Motion22Scene)),
+  h('button',{type:'button',className:'motion22-toggle',onClick:toggle,'aria-pressed':paused,'aria-label':paused?'Resume page animations':'Pause page animations'},paused?'Resume':'Pause'));
+}
+
 function Views19({user}) {
  const h=React.createElement,[selected,setSelected]=useState(null),[company,setCompany]=useState('');
  useEffect(()=>{const change=e=>{setSelected(null);setCompany(e.detail||'');};window.addEventListener('novus:ui-report',change);return()=>window.removeEventListener('novus:ui-report',change);},[]);
@@ -689,7 +784,22 @@ function View19Docs({docs=[]}){
 }
 function QuantityLayout211({children}){const parts=String(children).split(/(\(?[\d,.]+ MT\)?)/g);return React.createElement('span',{className:'ui-qty'},...parts.map((v,i)=>/MT/.test(v)?React.createElement('small',{key:i,className:'ui-mt'},v):v));}
 function QuantityCells211(nodes){return React.Children.map(nodes,n=>typeof n==='string'&&/\d[\d,.]* MT/.test(n)?React.createElement(QuantityLayout211,null,n):React.isValidElement(n)&&typeof n.type==='string'?React.cloneElement(n,{},QuantityCells211(n.props.children)):n);}
-function View19Table({headers,children,className='',footer,scroll=false}){const h=React.createElement;const labelled=React.Children.map(children,row=>React.isValidElement(row)?React.cloneElement(row,{},React.Children.map(row.props.children,(cell,i)=>React.isValidElement(cell)?React.cloneElement(cell,{'data-label':headers[i]||''},QuantityCells211(cell.props.children)):cell)):row);return h('div',{className:'v-table-wrap'+(scroll?' v-ledger-scroll':''),tabIndex:scroll?0:undefined,role:scroll?'region':undefined,'aria-label':scroll?'Transactions: scroll vertically to browse this page':undefined},h('table',{className},h('thead',null,h('tr',null,...headers.map((s,i)=>h('th',{key:s,className:i===headers.length-1?'numeric':''},s)))),h('tbody',null,labelled),footer&&h('tfoot',null,QuantityCells211(footer))));}
+function View19Table({headers,children,className='',footer,scroll=false}){
+ const h=React.createElement;
+ function rowContent(row){
+  if(!React.isValidElement(row))return row;
+  if(row.type===React.Fragment)return h(React.Fragment,null,React.Children.toArray(row.props.children).map(rowContent));
+  if(row.type!=='tr')return row;
+  let column=0;
+  const cells=React.Children.toArray(row.props.children).map(cell=>{
+   if(!React.isValidElement(cell)||(cell.type!=='td'&&cell.type!=='th'))return cell;
+   const label=headers[column]||'';column+=Number(cell.props.colSpan)||1;
+   return React.cloneElement(cell,{'data-label':cell.type==='td'?label:undefined},h('div',{className:'v-cell-value'},QuantityCells211(cell.props.children)));
+  });
+  return React.cloneElement(row,{},cells);
+ }
+ return h('div',{className:'v-table-wrap'+(scroll?' v-ledger-scroll':''),tabIndex:scroll?0:undefined,role:scroll?'region':undefined,'aria-label':scroll?'Transactions: scroll vertically to browse this page':undefined},h('table',{className},h('thead',null,h('tr',null,...headers.map((s,i)=>h('th',{key:s,className:i===headers.length-1?'numeric':''},s)))),h('tbody',null,React.Children.toArray(children).map(rowContent)),footer&&h('tfoot',null,React.Children.toArray(footer).map(rowContent))));
+}
 
 
 function Dealer360View19({user,dealer,onBack}){
@@ -732,6 +842,7 @@ function ActivityMetrics19({summary:s,net,asOf}){
 }
 function DealerActivity19({user,dealerCode,mode,fresh=[],initialPeriod}){
  const h=React.createElement,[draft,setDraft]=useState(()=>initialPeriod||V192.defaults()),[applied,setApplied]=useState(()=>initialPeriod||V192.defaults()),[data,setData]=useState(null),[busy,setBusy]=useState(true),[error,setError]=useState(''),[offset,setOffset]=useState(0),[selected,setSelected]=useState('');
+ useMotion22(({summary:'account',sold:'lifting',receipts:'receipts',ledger:'ledger',documents:'documents'})[mode],({summary:'Dealer account',sold:'Lifting & challans',receipts:'Invoice receipts',ledger:'Account movements',documents:'Challan documents'})[mode]);
  const seq=React.useRef(0),[prefetch,setPrefetch]=useState('');
  async function warm(){
   setPrefetch('Downloading current financial year…');
@@ -772,6 +883,7 @@ function DealerActivity19({user,dealerCode,mode,fresh=[],initialPeriod}){
 }
 
 function TSEActivity19({user,onSelect}){
+ useMotion22('account','My dealers · territory overview');
  const h=React.createElement;
  const [draft,setDraft]=useState(V192.defaults),[applied,setApplied]=useState(V192.defaults),[data,setData]=useState(null),[busy,setBusy]=useState(true),[error,setError]=useState(''),[search,setSearch]=useState(''),[page,setPage]=useState(0);
  const seq=React.useRef(0),last=React.useRef(applied);
@@ -1273,6 +1385,7 @@ function Shell({ user, setUser, orders, setOrders, dealers, setDealers, location
     if(initialDocQuery)stageNav.push({id:'docviewer',ic:'📎',lb:'Voucher Document'});
     const navs = [...stageNav, ...(operationsEnabled ? (navMap[user.role]||[]).filter(n=>!['material','tse_mis_balance','doc_upload'].includes(n.id)) : [])];
     const effectivePage = page === 'stage1' && user.role==='logistics' ? 'doc_upload' : (!operationsEnabled && !stageNav.some(n=>n.id===page) ? (user.role==='logistics'?'doc_upload':'stage1') : page);
+    useMotion22(effectivePage==='stage1'?null:({doc_upload:'documents',docviewer:'documents',report:'lifting',dealer_receivings:'receipts',retailers:'retailers',sites:'retailers'})[effectivePage]||'account',({doc_upload:'Upload challan documents',docviewer:'Voucher documents',report:'Dispatch report',deployment:'Operations controls'})[effectivePage]||'Novus operations');
     const sub = user.role === 'tse' ? `Territory: ${user.territory}` : user.role === 'logistics' ? whName(user.warehouse, warehouses) : user.role === 'admin' ? 'All Territories' : user.territory;
     const [sideOpen, setSideOpen] = useState(false);
     const closeSide = () => setSideOpen(false);
@@ -1310,13 +1423,14 @@ function Shell({ user, setUser, orders, setOrders, dealers, setDealers, location
                     React.createElement("button", { className: "lob", onClick: () => setUser(null), title: "Sign out" }, "\u23FB")))),
         React.createElement("nav",{className:"ui-bottom","aria-label":"Primary navigation"},bottoms.map(([id,icon,label,act])=>React.createElement("button",{key:id,onClick:act,"aria-current":uiTab===id?"page":undefined},React.createElement("span",{"aria-hidden":true},icon),label))),
         React.createElement("div", { className: "main" },
-            React.createElement("header",{className:"ui-utility"},React.createElement("div",{className:"ui-brand"},React.createElement("strong",null,user.name),React.createElement("small",null,sub)),React.createElement("small",null,"UI‑1 · "+(operationsEnabled?"Operations enabled":"Account access"))),
+            React.createElement("header",{className:"ui-utility"},React.createElement("div",{className:"ui-brand"},React.createElement("strong",null,user.name),React.createElement("small",null,sub)),React.createElement("small",null,"UI‑3 · "+(operationsEnabled?"Operations enabled":"Account access"))),
+            React.createElement(ContextMotion22),
             CFG.DEMO_MODE && React.createElement("div", { className: "alert aw", style: { margin: 0, borderRadius: 0, borderLeft: 'none', borderRight: 'none', borderTop: 'none' } },
                 React.createElement("span", null, "\uD83D\uDD27"),
                 React.createElement("strong", null, "Demo Mode"),
                 " \u2014 changes are not saved. Paste your Apps Script URL and set DEMO_MODE: false to go live."),
             settingsError && React.createElement('div',{className:'alert ar'},settingsError),
-            React.createElement('div',{style:{padding:'8px 20px',background:'#f0fdf4',color:'#166534'}},operationsEnabled?'UI‑1 · v20 source views · Stage 2 ON · Operations enabled':'UI‑1 · v20 source views · Stage 1 · Account and document access · Operations OFF'),
+            React.createElement('div',{style:{padding:'8px 20px',background:'#f0fdf4',color:'#166534'}},operationsEnabled?'UI‑3 · Flow22 context motion · Stage 2 ON · Operations enabled':'UI‑3 · Flow22 context motion · Stage 1 · Account and document access · Operations OFF'),
             effectivePage === 'stage1' ? React.createElement(Views19,{user}) :
             effectivePage === 'deployment' && user.role==='admin' ? React.createElement(Deployment18,{user,operationsEnabled,onChange:setOperationsEnabled}) :
             React.createElement(Router, { page: effectivePage, user: user, orders: orders, setOrders: setOrders, dealers: dealers, setDealers: setDealers, myOrders: myOrders, setPage: setPage, locationData: locationData, freightMatrix: freightMatrix, warehouses: warehouses, vehicles: vehicles, setVehicles: setVehicles, drivers: drivers, setDrivers: setDrivers, initialDocQuery: initialDocQuery }))));
